@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pearle Vision - Owner Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pearl-green: #007a33;
+            --pearl-dark-green: #005c24;
+            --light-gray: #f8f9fa;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-gray);
+        }
+        .btn-primary {
+            background-color: var(--pearl-green);
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: var(--pearl-dark-green);
+        }
+        .btn-danger {
+            background-color: #dc2626; /* red-600 */
+            color: white;
+            transition: background-color 0.3s;
+        }
+        .btn-danger:hover {
+             background-color: #b91c1c; /* red-700 */
+        }
+        .card {
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+        }
+        .modal-overlay {
+            background-color: rgba(0,0,0,0.5);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header Bar -->
+    <header class="bg-white shadow-md p-4 flex justify-between items-center sticky top-0 z-20">
+        <div>
+            <img src="https://i.imgur.com/8nC06jU.png" alt="Pearle Vision Logo" class="h-8">
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="text-sm font-medium">Welcome, Store Owner</span>
+            <button class="text-sm text-gray-600 hover:text-gray-900">Log Out</button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="p-4 sm:p-6 lg:p-8">
+        <div class="max-w-7xl mx-auto space-y-8">
+
+            <!-- Section A: Sales Dashboard -->
+            <div class="card">
+                <h2 class="text-2xl font-bold mb-4">Sales Dashboard</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-gray-100 p-4 rounded-lg text-center">
+                        <p class="text-sm text-gray-600">Total Quotes Today</p>
+                        <p class="text-3xl font-bold">12</p>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg text-center">
+                        <p class="text-sm text-gray-600">Total Sales This Month</p>
+                        <p class="text-3xl font-bold">$15,750</p>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg text-center">
+                        <p class="text-sm text-gray-600">Average Quote Value</p>
+                        <p class="text-3xl font-bold">$325.50</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section C: User Management -->
+             <div class="card">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">User Management</h2>
+                    <button id="add-new-user-btn" class="btn-primary text-white font-bold py-2 px-4 rounded">
+                        + Add User
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2">Email</th>
+                                <th class="p-2">Role</th>
+                                <th class="p-2 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <!-- User rows will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+            <!-- Section B: Component & Pricing Management -->
+            <div class="card">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Component & Pricing Management</h2>
+                    <button id="add-new-btn" class="btn-primary text-white font-bold py-2 px-4 rounded">
+                        + Add New Item
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2">Item</th>
+                                <th class="p-2">Category</th>
+                                <th class="p-2">Retail Price</th>
+                                <th class="p-2 text-center">Active</th>
+                                <th class="p-2 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="components-table-body">
+                            <!-- Rows will be inserted here by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Add/Edit Item Modal -->
+    <div id="item-modal" class="fixed inset-0 z-30 hidden items-center justify-center modal-overlay">
+        <div class="card w-full max-w-md">
+            <h3 id="modal-title" class="text-xl font-bold mb-4">Add New Item</h3>
+            <form id="item-form" class="space-y-4">
+                <input type="hidden" id="item-id">
+                <div>
+                    <label for="item-name" class="block text-sm font-medium text-gray-700">Item Name</label>
+                    <input type="text" id="item-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                </div>
+                <div>
+                    <label for="item-category" class="block text-sm font-medium text-gray-700">Category</label>
+                    <input type="text" id="item-category" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                </div>
+                <div>
+                    <label for="item-price" class="block text-sm font-medium text-gray-700">Retail Price</label>
+                    <input type="number" step="0.01" id="item-price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                </div>
+                <div class="flex justify-end space-x-2 pt-4">
+                    <button type="button" id="cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded">Cancel</button>
+                    <button type="submit" class="btn-primary text-white font-bold py-2 px-4 rounded">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div id="user-modal" class="fixed inset-0 z-30 hidden items-center justify-center modal-overlay">
+        <div class="card w-full max-w-md">
+            <h3 class="text-xl font-bold mb-4">Add New User</h3>
+            <form id="user-form" class="space-y-4">
+                <div>
+                    <label for="user-email" class="block text-sm font-medium text-gray-700">Email</label>
+                    <input type="email" id="user-email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                </div>
+                <div>
+                    <label for="user-password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="user-password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                </div>
+                 <div>
+                    <label for="user-role" class="block text-sm font-medium text-gray-700">Role</label>
+                    <select id="user-role" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required>
+                        <option value="optician">Optician</option>
+                        <option value="owner">Owner (Admin)</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-2 pt-4">
+                    <button type="button" id="cancel-user-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded">Cancel</button>
+                    <button type="submit" class="btn-primary text-white font-bold py-2 px-4 rounded">Create User</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- DATA (This would be fetched from Supabase) ---
+        let priceListData = [
+            { id: 1, Item: "S.V.", Category: "Rx", Retail: 120, is_active: true },
+            { id: 2, Item: "BiFocal", Category: "Rx", Retail: 255, is_active: true },
+            { id: 3, Item: "Poly", Category: "Material", Retail: 70, is_active: true },
+            { id: 4, Item: "Std. A.R.", Category: "Coatings", Retail: 84, is_active: true },
+            { id: 5, Item: "Transition", Category: "Color", Retail: 135, is_active: false },
+            { id: 6, Item: "Progressive", Category: "Custom Measurements", Retail: 10, is_active: true },
+            { id: 7, Item: "1 Yr Protection Plan", Category: "Protection", Retail: 39.95, is_active: true }
+        ];
+
+        let userData = [
+            { id: 'user-1', email: 'owner@pearle.com', role: 'owner'},
+            { id: 'user-2', email: 'jane.d@pearle.com', role: 'optician'},
+            { id: 'user-3', email: 'john.a@pearle.com', role: 'optician'}
+        ];
+
+        // --- DOM ELEMENTS ---
+        const componentsTableBody = document.getElementById('components-table-body');
+        const usersTableBody = document.getElementById('users-table-body');
+
+        const itemModal = document.getElementById('item-modal');
+        const itemForm = document.getElementById('item-form');
+        const addNewBtn = document.getElementById('add-new-btn');
+        const cancelBtn = document.getElementById('cancel-btn');
+
+        const userModal = document.getElementById('user-modal');
+        const userForm = document.getElementById('user-form');
+        const addUserBtn = document.getElementById('add-new-user-btn');
+        const cancelUserBtn = document.getElementById('cancel-user-btn');
+
+
+        // --- FUNCTIONS ---
+        const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+
+        const renderComponentsTable = () => {
+            componentsTableBody.innerHTML = '';
+            priceListData.forEach(item => {
+                const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="p-2">${item.Item}</td>
+                    <td class="p-2">${item.Category}</td>
+                    <td class="p-2">${formatCurrency(item.Retail)}</td>
+                    <td class="p-2 text-center">
+                        <input type="checkbox" data-id="${item.id}" class="active-toggle h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500" ${item.is_active ? 'checked' : ''}>
+                    </td>
+                    <td class="p-2 text-center">
+                        <button data-id="${item.id}" class="edit-btn text-sm text-blue-600 hover:underline">Edit</button>
+                    </td>
+                `;
+                componentsTableBody.appendChild(row);
+            });
+        };
+
+        const renderUsersTable = () => {
+            usersTableBody.innerHTML = '';
+            userData.forEach(user => {
+                const row = document.createElement('tr');
+                row.className = 'border-b hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="p-2">${user.email}</td>
+                    <td class="p-2">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</td>
+                    <td class="p-2 text-center">
+                        <button data-id="${user.id}" class="remove-user-btn text-sm btn-danger px-2 py-1 rounded">Remove</button>
+                    </td>
+                `;
+                usersTableBody.appendChild(row);
+            });
+        };
+
+        const openItemModal = (item = null) => {
+            itemForm.reset();
+            if (item) {
+                itemModal.querySelector('#modal-title').textContent = 'Edit Item';
+                itemModal.querySelector('#item-id').value = item.id;
+                itemModal.querySelector('#item-name').value = item.Item;
+                itemModal.querySelector('#item-category').value = item.Category;
+                itemModal.querySelector('#item-price').value = item.Retail;
+            } else {
+                itemModal.querySelector('#modal-title').textContent = 'Add New Item';
+                itemModal.querySelector('#item-id').value = '';
+            }
+            itemModal.classList.remove('hidden');
+            itemModal.classList.add('flex');
+        };
+        const closeItemModal = () => itemModal.classList.add('hidden');
+
+        const openUserModal = () => {
+            userForm.reset();
+            userModal.classList.remove('hidden');
+            userModal.classList.add('flex');
+        };
+        const closeUserModal = () => userModal.classList.add('hidden');
+
+        // --- EVENT LISTENERS ---
+        addNewBtn.addEventListener('click', () => openItemModal());
+        cancelBtn.addEventListener('click', closeItemModal);
+        itemModal.addEventListener('click', (e) => { if (e.target === itemModal) closeItemModal(); });
+
+        addUserBtn.addEventListener('click', openUserModal);
+        cancelUserBtn.addEventListener('click', closeUserModal);
+        userModal.addEventListener('click', (e) => { if (e.target === userModal) closeUserModal(); });
+
+
+        itemForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = document.getElementById('item-id').value;
+            const newItemData = {
+                Item: document.getElementById('item-name').value,
+                Category: document.getElementById('item-category').value,
+                Retail: parseFloat(document.getElementById('item-price').value),
+                is_active: true
+            };
+
+            if (id) {
+                // ** SUPABASE LOGIC: UPDATE ITEM **
+                console.log('Updating item:', id, newItemData);
+                const index = priceListData.findIndex(item => item.id == id);
+                priceListData[index] = { ...priceListData[index], ...newItemData };
+
+            } else {
+                // ** SUPABASE LOGIC: ADD NEW ITEM **
+                console.log('Adding new item:', newItemData);
+                newItemData.id = Date.now();
+                priceListData.push(newItemData);
+            }
+            renderComponentsTable();
+            closeItemModal();
+        });
+
+        userForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newUser = {
+                id: `user-${Date.now()}`,
+                email: document.getElementById('user-email').value,
+                role: document.getElementById('user-role').value
+            };
+            // ** SUPABASE LOGIC: CREATE NEW AUTH USER & SET ROLE **
+            console.log('Creating new user:', newUser);
+            userData.push(newUser);
+            renderUsersTable();
+            closeUserModal();
+        });
+
+        componentsTableBody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('edit-btn')) {
+                const id = e.target.dataset.id;
+                const itemToEdit = priceListData.find(item => item.id == id);
+                openItemModal(itemToEdit);
+            }
+            if (e.target.classList.contains('active-toggle')) {
+                const id = e.target.dataset.id;
+                const isActive = e.target.checked;
+                console.log(`Setting item ${id} active status to: ${isActive}`);
+                const index = priceListData.findIndex(item => item.id == id);
+                priceListData[index].is_active = isActive;
+            }
+        });
+
+        usersTableBody.addEventListener('click', (e) => {
+            if (e.target.classList.contains('remove-user-btn')) {
+                 if (confirm('Are you sure you want to remove this user?')) {
+                    const id = e.target.dataset.id;
+                     // ** SUPABASE LOGIC: REMOVE AUTH USER & ROLE **
+                    console.log(`Removing user: ${id}`);
+                    userData = userData.filter(user => user.id !== id);
+                    renderUsersTable();
+                 }
+            }
+        });
+
+        // --- INITIALIZATION ---
+        renderComponentsTable();
+        renderUsersTable();
+    });
+</script>
+</body>
+</html>

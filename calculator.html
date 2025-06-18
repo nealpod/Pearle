@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pearle Vision - Price Calculator v0</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pearl-green: #007a33;
+            --pearl-dark-green: #005c24;
+            --pearl-light-green: #e6f2e9;
+            --light-gray: #f8f9fa;
+            --border-gray: #e2e8f0;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-gray);
+        }
+        .btn-primary {
+            background-color: var(--pearl-green);
+            transition: background-color 0.3s;
+        }
+        .btn-primary:hover {
+            background-color: var(--pearl-dark-green);
+        }
+        .btn-secondary {
+            background-color: #e2e8f0;
+            color: #4a5568;
+            transition: background-color 0.3s;
+        }
+        .btn-secondary:hover {
+            background-color: #cbd5e0;
+        }
+        .summary-value {
+            font-weight: 500;
+            color: #1a202c;
+        }
+        .summary-total-final {
+            color: var(--pearl-dark-green);
+        }
+        .summary-item-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out, padding 0.3s ease-in-out;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+        .summary-item-details.open {
+            max-height: 200px; /* Adjust as needed */
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        .summary-item-header {
+            cursor: pointer;
+        }
+        .component-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .component-price {
+            font-weight: 500;
+            color: var(--pearl-dark-green);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Header Bar -->
+    <header class="bg-white shadow-md p-4 flex justify-between items-center">
+        <div>
+            <img src="https://i.imgur.com/8nC06jU.png" alt="Pearle Vision Logo" class="h-8">
+        </div>
+        <div class="flex items-center space-x-4">
+            <span class="text-sm font-medium">Welcome, Jane Doe</span>
+            <button class="text-sm text-gray-600 hover:text-gray-900">Log Out</button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="p-4 sm:p-6 lg:p-8">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- Left Column: Configuration Panel -->
+            <div class="lg:col-span-2 space-y-6">
+
+                <!-- Card 1: Customer & Frame -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Customer & Frame</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="customer-name" class="block text-sm font-medium text-gray-700">Customer Name</label>
+                            <input type="text" id="customer-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                        </div>
+                        <div>
+                            <label for="insurance-type-select" class="block text-sm font-medium text-gray-700">Insurance</label>
+                            <select id="insurance-type-select" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                                <option>VSP</option>
+                                <option>Other Insurance</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                             <div class="component-label">
+                                <label for="frame-retail-price" class="block font-medium text-gray-700">Frame Details</label>
+                                <span id="price-frame" class="component-price"></span>
+                            </div>
+                            <div class="flex items-center space-x-2 mt-1">
+                               <input type="text" inputmode="decimal" id="frame-retail-price" placeholder="Frame Retail Price" class="config-input block w-full border-gray-300 rounded-md shadow-sm">
+                               <input type="text" inputmode="decimal" id="allowance-frame" placeholder="Allowance" class="config-input dollar-format w-1/2 border-gray-300 rounded-md shadow-sm text-sm">
+                               <input type="text" inputmode="decimal" id="discount-frame" placeholder="Discount" class="config-input percent-format w-1/2 border-gray-300 rounded-md shadow-sm text-sm">
+                               <input type="text" inputmode="decimal" id="copay-frame" placeholder="CoPay" class="config-input dollar-format w-1/2 border-gray-300 rounded-md shadow-sm text-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Integrated Lens Configuration -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                     <h3 class="text-xl font-semibold mb-4 border-b pb-2">Lens & Add-On Configuration</h3>
+                     <div id="dynamic-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <!-- Dynamic options and their inputs will be inserted here by JavaScript -->
+                     </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Live Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-white p-6 rounded-lg shadow sticky top-8">
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Quote Summary</h3>
+                    <div id="summary-items" class="space-y-1 text-sm">
+                       <p class="text-gray-500">Your selections will appear here.</p>
+                    </div>
+                    <div class="border-t my-4"></div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Retail Total</span>
+                            <span id="summary-retail" class="summary-value">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Insurance Savings</span>
+                            <span id="summary-ins-svgs" class="summary-value">$0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">Your Cost (pre Co-Pay)</span>
+                            <span id="summary-your-cost" class="summary-value">$0.00</span>
+                        </div>
+                    </div>
+                    <div class="border-t my-4"></div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-lg font-bold">Final Cost</span>
+                        <span id="summary-final-cost" class="text-2xl font-bold summary-total-final">$0.00</span>
+                    </div>
+
+                    <div class="mt-6 flex space-x-2">
+                        <button id="reset-button" class="btn-secondary font-bold py-2 px-4 rounded w-full">Reset</button>
+                        <button id="save-quote-button" class="btn-primary text-white font-bold py-2 px-4 rounded w-full">Save Quote</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+<script>
+    // Data store for all pricing information. In a real app, this would be fetched from Supabase.
+    const priceListData = [
+        { "Item": "None", "Category": "All", "Retail": 0 },
+        { "Item": "S.V.", "Category": "Rx", "Retail": 120 },
+        { "Item": "BiFocal", "Category": "Rx", "Retail": 255 },
+        { "Item": "PG Basic - KA - VSP", "Category": "Rx", "Retail": 300 },
+        { "Item": "PG Better - FA - VSP", "Category": "Rx", "Retail": 350 },
+        { "Item": "PG Best - NA - VSP", "Category": "Rx", "Retail": 400 },
+        { "Item": "PG Basic - Tier 1", "Category": "Rx", "Retail": 300 },
+        { "Item": "PG Better - Tier 4", "Category": "Rx", "Retail": 400 },
+        { "Item": "Standard Plastic", "Category": "Lens Type", "Retail": 0 },
+        { "Item": "Aspheric", "Category": "Lens Type", "Retail": 40 },
+        { "Item": "Digital", "Category": "Lens Type", "Retail": 60 },
+        { "Item": "S.V. Digital Aspheric", "Category": "Lens Type", "Retail": 50 },
+        { "Item": "BiFocal Digital Aspheric", "Category": "Lens Type", "Retail": 60 },
+        { "Item": "Prog. Digital Aspheric", "Category": "Lens Type", "Retail": 60 },
+        { "Item": "VSP Mat Co-Pay", "Category": "Material Co-Pay", "Retail": 0 },
+        { "Item": "Plastic", "Category": "Material", "Retail": 0 },
+        { "Item": "Poly", "Category": "Material", "Retail": 70 },
+        { "Item": "Hi index 1.67", "Category": "Material", "Retail": 150 },
+        { "Item": "No Color", "Category": "Color", "Retail": 0 },
+        { "Item": "Tint Solid", "Category": "Color", "Retail": 35 },
+        { "Item": "Tint Gradient", "Category": "Color", "Retail": 45 },
+        { "Item": "Transition", "Category": "Color", "Retail": 135 },
+        { "Item": "Polarized", "Category": "Color", "Retail": 150 },
+        { "Item": "No Coating", "Category": "Coatings", "Retail": 0 },
+        { "Item": "Std. A.R.", "Category": "Coatings", "Retail": 84 },
+        { "Item": "Prem A.R.", "Category": "Coatings", "Retail": 130 },
+        { "Item": "RayBan AR T3", "Category": "Coatings", "Retail": 150 },
+        { "Item": "QT - Std. A.R. - C", "Category": "Coatings", "Retail": 85 },
+        { "Item": "QV - Prem. A.R. - D", "Category": "Coatings", "Retail": 130 },
+        { "Item": "Blue Light Filter", "Category": "Blue Light", "Retail": 65 },
+        { "Item": "Polished Edge", "Category": "Edge Polish", "Retail": 25 },
+        { "Item": "No Custom Measurements", "Category": "Custom Measurements", "Retail": 0 },
+        { "Item": "Progressive", "Category": "Custom Measurements", "Retail": 10 },
+        { "Item": "Single Vision", "Category": "Custom Measurements", "Retail": 10 },
+        { "Item": "No Extras", "Category": "Add-Ons", "Retail": 0 },
+        { "Item": "RB Authentic Processing", "Category": "Add-Ons", "Retail": 30 },
+        { "Item": "Okley Authentic Processing", "Category": "Add-Ons", "Retail": 100 },
+        { "Item": "Trns Style Colors", "Category": "Add-Ons", "Retail": 175 },
+        { "Item": "Trns XTRActive", "Category": "Add-Ons", "Retail": 175 },
+        { "Item": "Mirror Finishing", "Category": "Add-Ons", "Retail": 50 },
+        { "Item": "Add Prism Rx", "Category": "Add-Ons", "Retail": 25 },
+        { "Item": "Tech Add-On", "Category": "Add-Ons", "Retail": 10 },
+        { "Item": "Drill Mounts", "Category": "Add-Ons", "Retail": 25 },
+        { "Item": "Roll & Polish", "Category": "Add-Ons", "Retail": 40 },
+        { "Item": "1 Yr Protection Plan", "Category": "Protection", "Retail": 39.95 }
+    ];
+
+    const optionsGrid = document.getElementById('dynamic-options-grid');
+    const summaryItemsEl = document.getElementById('summary-items');
+
+    const categories = [
+        { id: 'Rx', label: 'Rx' },
+        { id: 'Lens Type', label: 'Lens Type' }, 
+        { id: 'Material', label: 'Material' },
+        { id: 'Color', label: 'Color' }, 
+        { id: 'Coatings', label: 'Coatings' }, 
+        { id: 'Blue Light', label: 'Blue Light Filter' },
+        { id: 'Edge Polish', label: 'Edge Polish' }, 
+        { id: "Custom Measurements", label: "Custom Measurements" },
+        { id: 'Add-Ons', label: 'Add-Ons' }, 
+        { id: 'Protection', label: '1Yr. Protection' }
+    ];
+
+    const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+
+    const onFocus = (event) => {
+        let value = event.target.value;
+        value = value.replace(/[$,%]/g, '');
+        event.target.value = value;
+    };
+
+    const onBlur = (event) => {
+        let value = event.target.value;
+        if (value) {
+            if (event.target.classList.contains('dollar-format')) {
+                event.target.value = `$${value}`;
+            } else if (event.target.classList.contains('percent-format')) {
+                event.target.value = `${value}%`;
+            }
+        }
+    };
+
+    function buildInputs() {
+        optionsGrid.innerHTML = '';
+
+        categories.forEach(cat => {
+            const catId = cat.id.replace(/\s+/g, '-').toLowerCase();
+            const container = document.createElement('div');
+            container.id = `container-${catId}`;
+            container.className = 'space-y-1';
+
+            const options = priceListData.filter(p => p.Category === cat.id && !p.Item.toLowerCase().startsWith('no ') && p.Item !== 'None');
+
+            if (options.length <= 1) {
+                const singleOption = options[0] || { Item: cat.label };
+                container.innerHTML = `
+                    <div class="component-label">
+                         <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="checkbox-${catId}" data-item-name="${singleOption.Item}" class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                            <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
+                         </label>
+                         <span id="price-${catId}" class="component-price"></span>
+                    </div>
+                    <div class="flex space-x-1">
+                        <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" data-category="${cat.id}" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" data-category="${cat.id}" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" data-category="${cat.id}" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                    </div>
+                `;
+            } else {
+                const allOptions = [priceListData.find(p => p.Item === 'None'), ...options];
+                container.innerHTML = `
+                    <div class="component-label">
+                        <label for="select-${catId}" class="font-medium text-gray-700">${cat.label}</label>
+                        <span id="price-${catId}" class="component-price"></span>
+                    </div>
+                    <select id="select-${catId}" data-category="${cat.id}" class="config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                        ${allOptions.map(o => `<option value="${o.Item}">${o.Item}</option>`).join('')}
+                    </select>
+                    <div class="flex space-x-1">
+                        <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" data-category="${cat.id}" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" data-category="${cat.id}" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" data-category="${cat.id}" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                    </div>
+                `;
+            }
+
+            optionsGrid.appendChild(container);
+
+            if (cat.id === 'Rx') {
+                const vspCopayContainer = document.createElement('div');
+                vspCopayContainer.id = 'container-material-co-pay';
+                vspCopayContainer.className = 'space-y-1';
+                vspCopayContainer.style.display = 'none'; 
+                vspCopayContainer.innerHTML = `
+                    <div class="component-label">
+                        <label class="font-medium text-gray-700">VSP Material Co-Pay</label>
+                        <span id="price-material-co-pay" class="component-price"></span>
+                    </div>
+                    <div class="flex">
+                        <input type="text" inputmode="decimal" id="copay-material-co-pay" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                    </div>
+                `;
+                optionsGrid.appendChild(vspCopayContainer);
+            }
+        });
+
+        document.querySelectorAll('.config-option, .config-input').forEach(el => {
+            el.addEventListener('input', updateCalculations);
+            if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
+                el.addEventListener('focus', onFocus);
+                el.addEventListener('blur', onBlur);
+            }
+        });
+    }
+
+    function getCleanValue(elementId) {
+        const el = document.getElementById(elementId);
+        if (el && el.value) {
+            return parseFloat(el.value.replace(/[$,%]/g, '')) || 0;
+        }
+        return 0;
+    }
+
+    function updateRxDropdown() {
+        const insuranceType = document.getElementById('insurance-type-select').value;
+        const rxSelect = document.getElementById('select-rx');
+        if (!rxSelect) return;
+
+        const vspOptions = ["None", "S.V.", "BiFocal", "PG Basic - KA - VSP", "PG Better - FA - VSP", "PG Best - NA - VSP"];
+        const otherOptions = ["None", "S.V.", "BiFocal", "PG Basic - Tier 1", "PG Better - Tier 4"];
+        const optionsToShow = (insuranceType === 'VSP') ? vspOptions : otherOptions;
+
+        const currentRxValue = rxSelect.value;
+
+        rxSelect.innerHTML = optionsToShow.map(opt => `<option value="${opt}">${opt}</option>`).join('');
+
+        if (optionsToShow.includes(currentRxValue)) {
+            rxSelect.value = currentRxValue;
+        }
+    }
+
+    function updateCalculations() {
+        const insuranceType = document.getElementById('insurance-type-select').value;
+        let totalRetail = 0, totalInsSvgs = 0, totalYourCost = 0, totalFinalCost = 0;
+
+        updateRxDropdown(); 
+
+        summaryItemsEl.innerHTML = '<p class="text-gray-500 initial-text">Your selections will appear here.</p>'; 
+        let summaryContent = '';
+
+        const frameInputs = {
+            retail: getCleanValue('frame-retail-price'),
+            insAllow: getCleanValue('allowance-frame'),
+            discount: getCleanValue('discount-frame'),
+            copay: getCleanValue('copay-frame')
+        };
+        let frameFinalCost = 0;
+        if (frameInputs.retail > 0) {
+            let frameYourCost = (frameInputs.retail - frameInputs.insAllow) * (1 - (frameInputs.discount / 100));
+            frameYourCost = Math.max(0, frameYourCost);
+            frameFinalCost = frameYourCost + frameInputs.copay;
+            let frameInsSvgs = frameInputs.retail - frameFinalCost;
+
+            totalRetail += frameInputs.retail;
+            totalInsSvgs += frameInsSvgs;
+            totalYourCost += frameYourCost;
+            totalFinalCost += frameFinalCost;
+
+            summaryContent += createSummaryItemHTML('frame', 'Frame', frameInputs, {yourCost: frameYourCost, insSvgs: frameInsSvgs, finalCost: frameFinalCost});
+        }
+         document.getElementById('price-frame').textContent = frameFinalCost > 0 ? formatCurrency(frameFinalCost) : '';
+
+
+        const rxSelect = document.getElementById('select-rx');
+        const lensTypeSelect = document.getElementById('select-lens-type');
+        if (rxSelect && lensTypeSelect) {
+            const rxValue = rxSelect.value;
+            let targetLensType = 'None';
+            switch (rxValue) {
+                case 'S.V.': targetLensType = 'S.V. Digital Aspheric'; break;
+                case 'BiFocal': targetLensType = 'BiFocal Digital Aspheric'; break;
+                case 'PG Basic - KA - VSP': case 'PG Better - FA - VSP': case 'PG Best - NA - VSP':
+                case 'PG Basic - Tier 1': case 'PG Better - Tier 4':
+                    targetLensType = 'Prog. Digital Aspheric'; break;
+            }
+            lensTypeSelect.value = targetLensType;
+            lensTypeSelect.disabled = (targetLensType !== 'None');
+        }
+
+        const vspCopayContainer = document.getElementById('container-material-co-pay');
+        if (vspCopayContainer) {
+            if (insuranceType === 'VSP') {
+                vspCopayContainer.style.display = 'block';
+            } else {
+                vspCopayContainer.style.display = 'none';
+                document.getElementById('copay-material-co-pay').value = ''; 
+            }
+        }
+
+        categories.forEach(cat => {
+            const catId = cat.id.replace(/\s+/g, '-').toLowerCase();
+            const priceEl = document.getElementById(`price-${catId}`);
+
+            let selectedValue;
+            const checkbox = document.getElementById(`checkbox-${catId}`);
+            if (checkbox) {
+                if(checkbox.checked) {
+                    selectedValue = checkbox.dataset.itemName;
+                } else {
+                    if(priceEl) priceEl.textContent = '';
+                    return;
+                }
+            } else {
+                 selectedValue = document.getElementById(`select-${catId}`).value;
+            }
+
+            if (selectedValue === "None") {
+                 if(priceEl) priceEl.textContent = '';
+                 return;
+            }
+
+            const selectedItem = priceListData.find(p => p.Item === selectedValue);
+            if (!selectedItem) return;
+
+            const inputs = {
+                retail: selectedItem.Retail,
+                insAllow: getCleanValue(`allowance-${catId}`),
+                discount: getCleanValue(`discount-${catId}`),
+                copay: getCleanValue(`copay-${catId}`),
+            };
+
+            let costAfterDiscount = inputs.retail * (1 - (inputs.discount / 100));
+            let yourCost = costAfterDiscount - inputs.insAllow;
+
+            yourCost = Math.max(0, yourCost);
+            const finalCost = yourCost + inputs.copay;
+            const insSvgs = inputs.retail - finalCost;
+
+            totalRetail += inputs.retail;
+            totalInsSvgs += insSvgs;
+            totalYourCost += yourCost;
+            totalFinalCost += finalCost;
+
+            summaryContent += createSummaryItemHTML(catId, `${cat.label}`, inputs, {yourCost, insSvgs, finalCost});
+            if (priceEl) priceEl.textContent = formatCurrency(finalCost);
+        });
+
+        const vspCopayValue = getCleanValue('copay-material-co-pay');
+        const vspCopayPriceEl = document.getElementById('price-material-co-pay');
+        if (insuranceType === 'VSP' && vspCopayValue > 0) {
+            const finalCost = vspCopayValue;
+            totalFinalCost += finalCost; 
+
+            const vspInputs = { retail: 0, insAllow: 0, discount: 0, copay: vspCopayValue };
+            const vspOutputs = { yourCost: 0, insSvgs: -vspCopayValue, finalCost: vspCopayValue };
+            summaryContent += createSummaryItemHTML('material-co-pay', 'VSP Material Co-Pay', vspInputs, vspOutputs);
+            vspCopayPriceEl.textContent = formatCurrency(finalCost);
+        } else if (vspCopayPriceEl) {
+            vspCopayPriceEl.textContent = '';
+        }
+
+        if(summaryContent) {
+            summaryItemsEl.innerHTML = summaryContent;
+        }
+
+        document.getElementById('summary-retail').textContent = formatCurrency(totalRetail);
+        document.getElementById('summary-ins-svgs').textContent = formatCurrency(totalInsSvgs);
+        document.getElementById('summary-your-cost').textContent = formatCurrency(totalYourCost);
+        document.getElementById('summary-final-cost').textContent = formatCurrency(totalFinalCost);
+    }
+
+    function createSummaryItemHTML(id, title, inputs, outputs) {
+        let discountCalc;
+        if (id === 'frame') {
+            discountCalc = (inputs.retail - inputs.insAllow) * (inputs.discount / 100);
+        } else {
+            discountCalc = inputs.retail * (inputs.discount / 100);
+        }
+
+        return `
+            <div class="border-b border-gray-200 pb-1">
+                <div class="summary-item-header flex justify-between items-center" onclick="toggleDetails('${id}')">
+                    <span class="font-medium">${title}</span>
+                    <span class="font-semibold">${formatCurrency(outputs.finalCost)}</span>
+                </div>
+                <div id="details-${id}" class="summary-item-details bg-gray-50 rounded px-3 text-gray-600">
+                    <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Retail</span><span>${formatCurrency(inputs.retail)}</span></div>
+                    <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Ins. Allowance</span><span>-${formatCurrency(inputs.insAllow)}</span></div>
+                    <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Discount (${inputs.discount}%)</span><span>-${formatCurrency(discountCalc)}</span></div>
+                    <div class="flex justify-between text-xs pt-1"><span>Co-Pay</span><span>+${formatCurrency(inputs.copay)}</span></div>
+                </div>
+            </div>
+        `;
+    }
+
+    window.toggleDetails = function(id) {
+        const detailsEl = document.getElementById(`details-${id}`);
+        if(detailsEl) {
+            detailsEl.classList.toggle('open');
+        }
+    }
+
+    function resetCalculator() {
+        document.querySelectorAll('input[type="text"], input[type="number"], select').forEach(el => {
+            if (el.type === 'checkbox') {
+                 el.checked = false;
+            } else if (el.tagName === 'INPUT') {
+                el.value = '';
+            } else if (el.tagName === 'SELECT') {
+                el.selectedIndex = 0;
+            }
+        });
+        updateCalculations();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        buildInputs();
+        document.getElementById('reset-button').addEventListener('click', resetCalculator);
+        document.getElementById('save-quote-button').addEventListener('click', () => {
+            console.log("Quote saved (placeholder).");
+            alert("Quote saved (placeholder)!");
+        });
+
+        document.querySelectorAll('input[type="text"], input[type="number"], select').forEach(el => {
+             el.addEventListener('input', updateCalculations);
+             if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
+                el.addEventListener('focus', onFocus);
+                el.addEventListener('blur', onBlur);
+            }
+        });
+
+        updateCalculations();
+    });
+
+</script>
+</body>
+</html>
