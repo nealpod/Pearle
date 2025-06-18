@@ -78,7 +78,7 @@
             }
 
             if (authData.user) {
-                const { data: roleData, error: roleError } = await supabase
+                /* const { data: roleData, error: roleError } = await supabase
                     .from('users_roles')
                     .select('role')
                     .eq('id', authData.user.id)
@@ -89,7 +89,7 @@
                     return;
                 }
 
-               /* if (roleData.role === 'owner') {
+                if (roleData.role === 'owner') {
                     window.location.href = './admin.html';
                 } else if (roleData.role === 'optician') {
                     window.location.href = './calculator.html';
