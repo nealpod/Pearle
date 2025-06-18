@@ -92,8 +92,10 @@
 
                 if (roleData.role === 'owner') {
                     window.location.href = './admin.html';
-                else {
+                } else if (roleData.role === 'optician') {
                     window.location.href = './calculator.html';
+                } else {
+                    statusMessage.innerText = 'Unknown user role.';
                 } 
                     
             }
