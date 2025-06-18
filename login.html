@@ -38,7 +38,6 @@
             <h1 class="text-2xl font-bold text-gray-800">Store Portal Login</h1>
         </div>
 
-        <!-- Login Form -->
         <form id="login-form">
             <div class="mb-4">
                 <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
@@ -54,40 +53,51 @@
                 </button>
             </div>
         </form>
-
-        <!-- Status Message -->
+        
         <p id="status-message" class="text-center text-red-500 text-xs mt-4">&nbsp;</p>
     </div>
 
-    <script>
-        // Example of where Supabase logic would go
+    <script type="module">
+        import { supabase } from './supabase-client.js';
+
         const loginForm = document.getElementById('login-form');
         const statusMessage = document.getElementById('status-message');
 
-        loginForm.addEventListener('submit', (event) => {
+        loginForm.addEventListener('submit', async (event) => {
             event.preventDefault();
-
+            statusMessage.innerText = 'Signing in...';
+            
             const email = loginForm.email.value;
             const password = loginForm.password.value;
 
-            // ** SUPABASE LOGIC WOULD GO HERE **
-            // 1. Initialize Supabase client
-            // 2. Call supabase.auth.signInWithPassword({ email, password })
-            // 3. Handle success: Check user role from 'users_roles' table
-            // 4. Redirect to 'admin.html' or 'calculator.html' based on role
-            // 5. Handle error: show error in statusMessage.innerText
+            const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
-            // Mock functionality:
-            statusMessage.innerText = 'Connecting to backend...';
-            if (email && password) {
-                console.log('Attempting login for:', email);
-                // On success, you would redirect:
-                // window.location.href = '/path/to/your/calculator.html'; 
-            } else {
-                 statusMessage.innerText = 'Please enter both email and password.';
+            if (authError) {
+                statusMessage.innerText = authError.message;
+                return;
+            }
+
+            if (authData.user) {
+                const { data: roleData, error: roleError } = await supabase
+                    .from('users_roles')
+                    .select('role')
+                    .eq('id', authData.user.id)
+                    .single();
+
+                if (roleError) {
+                    statusMessage.innerText = "Couldn't verify user role. Please contact support.";
+                    return;
+                }
+
+                if (roleData.role === 'owner') {
+                    window.location.href = './admin.html';
+                } else if (roleData.role === 'optician') {
+                    window.location.href = './calculator.html';
+                } else {
+                    statusMessage.innerText = 'Unknown user role.';
+                }
             }
         });
     </script>
-
 </body>
 </html>
