@@ -78,13 +78,8 @@
             }
 
             if (authData.user) {
-                    
-                    console.log('User ID:', authData.user.id);
-                    console.log('Email:', authData.user.email);
-                    console.log('Created at:', authData.user.created_at);
-                    console.log('All user info:', authData.user);  
 
-                /* const { data: roleData, error: roleError } = await supabase
+                const { data: roleData, error: roleError } = await supabase
                     .from('users_roles')
                     .select('role')
                     .eq('id', authData.user.id)
@@ -101,7 +96,7 @@
                     window.location.href = './calculator.html';
                 } else {
                     statusMessage.innerText = 'Unknown user role.';
-                } */
+                } 
 
                 window.location.href = "./calculator.html"
                     
