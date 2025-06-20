@@ -20,20 +20,38 @@
             font-family: 'Roboto', sans-serif;
             background-color: var(--light-gray);
         }
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
         .btn-primary {
             background-color: var(--pearl-green);
-            transition: background-color 0.3s;
+            color: white;
         }
         .btn-primary:hover {
             background-color: var(--pearl-dark-green);
         }
+        .btn-primary:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
         .btn-secondary {
             background-color: #e2e8f0;
             color: #4a5568;
-            transition: background-color 0.3s;
         }
         .btn-secondary:hover {
             background-color: #cbd5e0;
+        }
+        .btn-remove {
+            background-color: #fef2f2;
+            color: #ef4444;
+            padding: 0.5rem;
+        }
+        .btn-remove:hover {
+            background-color: #fee2e2;
         }
         .summary-value {
             font-weight: 500;
@@ -66,6 +84,16 @@
             font-weight: 500;
             color: var(--pearl-dark-green);
         }
+        .input-group {
+            background-color: #f7fafc; 
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+        }
+        .input-group.error {
+            border-color: #ef4444; /* red-500 */
+            box-shadow: 0 0 0 1px #ef4444;
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -73,7 +101,7 @@
     <!-- Header Bar -->
     <header class="bg-white shadow-md p-4 flex justify-between items-center">
         <div>
-            <img src="https://i.imgur.com/8nC06jU.png" alt="Pearle Vision Logo" class="h-8">
+            <img src="https://i.imgur.com/8nC06jU.png" alt="Pearle Vision Logo" class="h-8" onerror="this.onerror=null;this.src='https://placehold.co/150x40/ffffff/000000?text=Logo';">
         </div>
         <div class="flex items-center space-x-4">
             <span class="text-sm font-medium">Welcome, Jane Doe</span>
@@ -92,27 +120,26 @@
                 <div class="bg-white p-6 rounded-lg shadow">
                     <h3 class="text-xl font-semibold mb-4 border-b pb-2">Customer & Frame</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                        <div class="input-group space-y-2">
                             <label for="customer-name" class="block text-sm font-medium text-gray-700">Customer Name</label>
-                            <input type="text" id="customer-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                            <input type="text" id="customer-name" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
                         </div>
-                        <div>
+                        <div class="input-group space-y-2">
                             <label for="insurance-type-select" class="block text-sm font-medium text-gray-700">Insurance</label>
-                            <select id="insurance-type-select" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
-                                <option>VSP</option>
+                            <select id="insurance-type-select" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
                                 <option>Other Insurance</option>
+                                <option>VSP</option>
                             </select>
                         </div>
-                        <div class="md:col-span-2">
+                        <div id="frame-group" class="md:col-span-2 input-group space-y-2">
                              <div class="component-label">
                                 <label for="frame-retail-price" class="block font-medium text-gray-700">Frame Details</label>
                                 <span id="price-frame" class="component-price"></span>
                             </div>
-                            <div class="flex items-center space-x-2 mt-1">
-                               <input type="text" inputmode="decimal" id="frame-retail-price" placeholder="Frame Retail Price" class="config-input block w-full border-gray-300 rounded-md shadow-sm">
-                               <input type="text" inputmode="decimal" id="allowance-frame" placeholder="Allowance" class="config-input dollar-format w-1/2 border-gray-300 rounded-md shadow-sm text-sm">
-                               <input type="text" inputmode="decimal" id="discount-frame" placeholder="Discount" class="config-input percent-format w-1/2 border-gray-300 rounded-md shadow-sm text-sm">
-                               <input type="text" inputmode="decimal" id="copay-frame" placeholder="CoPay" class="config-input dollar-format w-1/2 border-gray-300 rounded-md shadow-sm text-sm">
+                            <div class="flex items-center space-x-2">
+                               <input type="text" inputmode="decimal" id="frame-retail-price" placeholder="Price" class="config-input w-2/4 border-gray-300 rounded-md shadow-sm dollar-format">
+                               <input type="text" inputmode="decimal" id="allowance-frame" placeholder="Allowance" class="config-input dollar-format w-1/4 border-gray-300 rounded-md shadow-sm text-sm">
+                               <input type="text" inputmode="decimal" id="discount-frame" placeholder="Discount" class="config-input percent-format w-1/4 border-gray-300 rounded-md shadow-sm text-sm">
                             </div>
                         </div>
                     </div>
@@ -120,10 +147,10 @@
 
                 <!-- Card 2: Integrated Lens Configuration -->
                 <div class="bg-white p-6 rounded-lg shadow">
-                     <h3 class="text-xl font-semibold mb-4 border-b pb-2">Lens & Add-On Configuration</h3>
-                     <div id="dynamic-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <!-- Dynamic options and their inputs will be inserted here by JavaScript -->
-                     </div>
+                      <h3 class="text-xl font-semibold mb-4 border-b pb-2">Lens & Add-On Configuration</h3>
+                      <div id="dynamic-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                          <!-- Dynamic options and their inputs will be inserted here by JavaScript -->
+                      </div>
                 </div>
 
             </div>
@@ -145,10 +172,6 @@
                             <span class="text-gray-600">Insurance Savings</span>
                             <span id="summary-ins-svgs" class="summary-value">$0.00</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Your Cost (pre Co-Pay)</span>
-                            <span id="summary-your-cost" class="summary-value">$0.00</span>
-                        </div>
                     </div>
                     <div class="border-t my-4"></div>
                     <div class="flex justify-between items-center">
@@ -157,16 +180,39 @@
                     </div>
 
                     <div class="mt-6 flex space-x-2">
-                        <button id="reset-button" class="btn-secondary font-bold py-2 px-4 rounded w-full">Reset</button>
-                        <button id="save-quote-button" class="btn-primary text-white font-bold py-2 px-4 rounded w-full">Save Quote</button>
+                        <button id="reset-button" class="btn btn-secondary w-full">Reset</button>
+                        <button id="save-quote-button" class="btn btn-primary w-full">Save Quote</button>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
+    <!-- Error Modal -->
+    <div id="error-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Invalid Price Calculation</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p id="error-modal-message" class="text-sm text-gray-500"></p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-error-modal-btn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
 <script>
-    // Data store for all pricing information. In a real app, this would be fetched from Supabase.
+    // Data store for all pricing information.
     const priceListData = [
         { "Item": "None", "Category": "All", "Retail": 0 },
         { "Item": "S.V.", "Category": "Rx", "Retail": 120 },
@@ -217,21 +263,23 @@
 
     const optionsGrid = document.getElementById('dynamic-options-grid');
     const summaryItemsEl = document.getElementById('summary-items');
+    let addonCounter = 0;
 
     const categories = [
         { id: 'Rx', label: 'Rx' },
-        { id: 'Lens Type', label: 'Lens Type' }, 
+        { id: 'Lens Type', label: 'Lens Design' }, 
         { id: 'Material', label: 'Material' },
         { id: 'Color', label: 'Color' }, 
         { id: 'Coatings', label: 'Coatings' }, 
         { id: 'Blue Light', label: 'Blue Light Filter' },
         { id: 'Edge Polish', label: 'Edge Polish' }, 
         { id: "Custom Measurements", label: "Custom Measurements" },
-        { id: 'Add-Ons', label: 'Add-Ons' }, 
-        { id: 'Protection', label: '1Yr. Protection' }
+        { id: 'Protection', label: '1Yr. Protection' },
+        { id: 'Add-Ons', label: 'Add-Ons' }
     ];
 
     const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
+    const toId = (str) => str.replace(/\s+/g, '-').toLowerCase();
 
     const onFocus = (event) => {
         let value = event.target.value;
@@ -242,65 +290,77 @@
     const onBlur = (event) => {
         let value = event.target.value;
         if (value) {
-            if (event.target.classList.contains('dollar-format')) {
-                event.target.value = `$${value}`;
-            } else if (event.target.classList.contains('percent-format')) {
-                event.target.value = `${value}%`;
-            }
+            if (event.target.classList.contains('dollar-format')) event.target.value = `$${value}`;
+            else if (event.target.classList.contains('percent-format')) event.target.value = `${value}%`;
         }
     };
+    
+    function showErrorModal(message) {
+        const modal = document.getElementById('error-modal');
+        const modalMessage = document.getElementById('error-modal-message');
+        modalMessage.textContent = message;
+        modal.classList.remove('hidden');
+    }
 
     function buildInputs() {
         optionsGrid.innerHTML = '';
-
         categories.forEach(cat => {
-            const catId = cat.id.replace(/\s+/g, '-').toLowerCase();
+            const catId = toId(cat.id);
             const container = document.createElement('div');
             container.id = `container-${catId}`;
-            container.className = 'space-y-1';
 
-            const options = priceListData.filter(p => p.Category === cat.id && !p.Item.toLowerCase().startsWith('no ') && p.Item !== 'None');
-
-            if (options.length <= 1) {
-                const singleOption = options[0] || { Item: cat.label };
+            if (cat.id === 'Add-Ons') {
+                container.className = 'md:col-span-2 space-y-2';
                 container.innerHTML = `
-                    <div class="component-label">
-                         <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="checkbox-${catId}" data-item-name="${singleOption.Item}" class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
-                            <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
-                         </label>
-                         <span id="price-${catId}" class="component-price"></span>
-                    </div>
-                    <div class="flex space-x-1">
-                        <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" data-category="${cat.id}" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                        <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" data-category="${cat.id}" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                        <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" data-category="${cat.id}" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                    </div>
+                    <h4 class="font-medium text-gray-700">${cat.label}</h4>
+                    <div id="addons-repeater-container" class="space-y-3"></div>
+                    <button id="add-addon-btn" type="button" class="btn btn-primary text-sm px-3 py-1">+ Add Add-On</button>
                 `;
             } else {
-                const allOptions = [priceListData.find(p => p.Item === 'None'), ...options];
-                container.innerHTML = `
-                    <div class="component-label">
-                        <label for="select-${catId}" class="font-medium text-gray-700">${cat.label}</label>
-                        <span id="price-${catId}" class="component-price"></span>
-                    </div>
-                    <select id="select-${catId}" data-category="${cat.id}" class="config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
-                        ${allOptions.map(o => `<option value="${o.Item}">${o.Item}</option>`).join('')}
-                    </select>
-                    <div class="flex space-x-1">
-                        <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" data-category="${cat.id}" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                        <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" data-category="${cat.id}" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                        <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" data-category="${cat.id}" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                    </div>
-                `;
-            }
+                 container.className = 'input-group space-y-2';
+                 const options = priceListData.filter(p => p.Category === cat.id && !p.Item.toLowerCase().startsWith('no ') && p.Item !== 'None');
 
+                if (options.length <= 1) {
+                    const singleOption = options[0] || { Item: cat.label };
+                    container.innerHTML = `
+                        <div class="component-label">
+                             <label class="flex items-center cursor-pointer">
+                                 <input type="checkbox" id="checkbox-${catId}" data-item-name="${singleOption.Item}" class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                                 <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
+                             </label>
+                             <span id="price-${catId}" class="component-price"></span>
+                        </div>
+                        <div class="flex space-x-1">
+                            <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                            <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                            <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        </div>
+                    `;
+                } else {
+                    const allOptions = [priceListData.find(p => p.Item === 'None'), ...options];
+                    container.innerHTML = `
+                        <div class="component-label">
+                            <label for="select-${catId}" class="font-medium text-gray-700">${cat.label}</label>
+                            <span id="price-${catId}" class="component-price"></span>
+                        </div>
+                        <select id="select-${catId}" data-category="${cat.id}" class="config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                            ${allOptions.map(o => `<option value="${o.Item}">${o.Item}</option>`).join('')}
+                        </select>
+                        <div class="flex space-x-1">
+                            <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                            <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                            <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        </div>
+                    `;
+                }
+            }
+            
             optionsGrid.appendChild(container);
 
             if (cat.id === 'Rx') {
                 const vspCopayContainer = document.createElement('div');
                 vspCopayContainer.id = 'container-material-co-pay';
-                vspCopayContainer.className = 'space-y-1';
+                vspCopayContainer.className = 'input-group space-y-2'; 
                 vspCopayContainer.style.display = 'none'; 
                 vspCopayContainer.innerHTML = `
                     <div class="component-label">
@@ -315,14 +375,104 @@
             }
         });
 
+        document.getElementById('add-addon-btn').addEventListener('click', addAddonRow);
+        document.getElementById('close-error-modal-btn').addEventListener('click', () => {
+             document.getElementById('error-modal').classList.add('hidden');
+        });
+        attachEventListeners();
+    }
+
+    function addAddonRow() {
+        addonCounter++;
+        const repeaterContainer = document.getElementById('addons-repeater-container');
+        
+        const addonRow = document.createElement('div');
+        addonRow.id = `addon-row-${addonCounter}`;
+        addonRow.className = 'addon-row input-group space-y-2';
+
+        const allAddonItems = priceListData.filter(p => p.Category === 'Add-Ons');
+        const optionsHTML = allAddonItems.map(o => `<option value="${o.Item}">${o.Item}</option>`).join('');
+
+        addonRow.innerHTML = `
+            <div class="component-label">
+                 <select id="select-addon-${addonCounter}" class="addon-select config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                    ${optionsHTML}
+                </select>
+                <span id="price-addon-${addonCounter}" class="component-price ml-2"></span>
+            </div>
+            <div class="flex items-center space-x-2">
+                <div class="flex space-x-1 flex-grow">
+                    <input type="text" inputmode="decimal" id="allowance-addon-${addonCounter}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                    <input type="text" inputmode="decimal" id="discount-addon-${addonCounter}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                    <input type="text" inputmode="decimal" id="copay-addon-${addonCounter}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                </div>
+                <button type="button" class="btn-remove btn" data-row-id="${addonCounter}">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        repeaterContainer.appendChild(addonRow);
+        updateAddonDropdowns();
+        attachEventListeners();
+        updateCalculations();
+    }
+    
+    function updateAddonDropdowns() {
+        const allAddonItems = priceListData.filter(p => p.Category === 'Add-Ons' && p.Item !== 'No Extras');
+        const selectedAddons = Array.from(document.querySelectorAll('.addon-select')).map(select => select.value);
+        
+        document.querySelectorAll('.addon-select').forEach(select => {
+            const currentValue = select.value;
+            let optionsHTML = '<option value="No Extras">No Extras</option>';
+            allAddonItems.forEach(item => {
+                if (item.Item === currentValue || !selectedAddons.includes(item.Item)) {
+                    optionsHTML += `<option value="${item.Item}">${item.Item}</option>`;
+                }
+            });
+            select.innerHTML = optionsHTML;
+            select.value = currentValue;
+        });
+
+        const addButton = document.getElementById('add-addon-btn');
+        const availableAddons = allAddonItems.length - selectedAddons.filter(item => item !== 'No Extras').length;
+        addButton.disabled = availableAddons <= 0;
+
+    }
+
+    function attachEventListeners() {
         document.querySelectorAll('.config-option, .config-input').forEach(el => {
+            el.removeEventListener('input', updateCalculations);
             el.addEventListener('input', updateCalculations);
             if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
+                el.removeEventListener('focus', onFocus);
+                el.removeEventListener('blur', onBlur);
                 el.addEventListener('focus', onFocus);
                 el.addEventListener('blur', onBlur);
             }
         });
+
+        document.querySelectorAll('.btn-remove').forEach(button => {
+            button.removeEventListener('click', removeAddonRow);
+            button.addEventListener('click', removeAddonRow);
+        });
+
+         document.querySelectorAll('.addon-select').forEach(select => {
+            select.removeEventListener('change', updateAddonDropdowns);
+            select.addEventListener('change', updateAddonDropdowns);
+        });
     }
+
+    function removeAddonRow(event) {
+        const rowId = event.currentTarget.dataset.rowId;
+        document.getElementById(`addon-row-${rowId}`).remove();
+        updateAddonDropdowns();
+        updateCalculations();
+    }
+
 
     function getCleanValue(elementId) {
         const el = document.getElementById(elementId);
@@ -342,19 +492,66 @@
         const optionsToShow = (insuranceType === 'VSP') ? vspOptions : otherOptions;
 
         const currentRxValue = rxSelect.value;
-
         rxSelect.innerHTML = optionsToShow.map(opt => `<option value="${opt}">${opt}</option>`).join('');
-
         if (optionsToShow.includes(currentRxValue)) {
             rxSelect.value = currentRxValue;
         }
     }
 
-    function updateCalculations() {
+    function updateCoatingsDropdown() {
         const insuranceType = document.getElementById('insurance-type-select').value;
-        let totalRetail = 0, totalInsSvgs = 0, totalYourCost = 0, totalFinalCost = 0;
+        const coatingsSelect = document.getElementById('select-coatings');
+        if (!coatingsSelect) return;
+
+        const otherCoatingItems = ["None", "Std. A.R.", "Prem A.R.", "RayBan AR T3"];
+        const vspCoatingItems = ["None", "QT - Std. A.R. - C", "QV - Prem. A.R. - D"];
+        const coatingItemsToShow = (insuranceType === 'VSP') ? vspCoatingItems : otherCoatingItems;
+        const currentCoatingValue = coatingsSelect.value;
+
+        const availableOptions = priceListData.filter(p => (p.Category === 'Coatings' && coatingItemsToShow.includes(p.Item)) || (p.Item === 'None' && p.Category === 'All'));
+        availableOptions.sort((a, b) => (a.Item === 'None') ? -1 : (b.Item === 'None') ? 1 : 0);
+        const finalOptions = availableOptions.filter((option, index, self) => index === self.findIndex((o) => o.Item === option.Item));
+
+        coatingsSelect.innerHTML = finalOptions.map(opt => `<option value="${opt.Item}">${opt.Item}</option>`).join('');
+        if (coatingItemsToShow.includes(currentCoatingValue)) {
+            coatingsSelect.value = currentCoatingValue;
+        }
+    }
+
+    function calculateItem(retail, insAllow, discount, copay, isFrame = false) {
+        let finalCost, yourCost, insSvgs;
+
+        // Special case: If only a CoPay is entered, the final cost IS the CoPay.
+        if (insAllow === 0 && discount === 0 && copay > 0) {
+            finalCost = copay;
+            yourCost = 0; // The pre-copay cost is covered by insurance.
+            insSvgs = retail - finalCost;
+        } else { // Standard calculation for all other cases.
+            if (isFrame) {
+                 yourCost = (retail - insAllow) * (1 - (discount / 100));
+            } else {
+                 yourCost = retail * (1 - (discount / 100)) - insAllow;
+            }
+            yourCost = Math.max(0, yourCost);
+            finalCost = yourCost + copay;
+            insSvgs = retail - finalCost;
+        }
+        
+        const isError = retail > 0 && finalCost > retail;
+        return { yourCost, finalCost, insSvgs, isError };
+    }
+
+
+    function updateCalculations() {
+        // Clear previous errors
+        document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+        let errorFound = false;
+
+        const insuranceType = document.getElementById('insurance-type-select').value;
+        let totalRetail = 0, totalInsSvgs = 0, totalFinalCost = 0;
 
         updateRxDropdown(); 
+        updateCoatingsDropdown();
 
         summaryItemsEl.innerHTML = '<p class="text-gray-500 initial-text">Your selections will appear here.</p>'; 
         let summaryContent = '';
@@ -363,24 +560,23 @@
             retail: getCleanValue('frame-retail-price'),
             insAllow: getCleanValue('allowance-frame'),
             discount: getCleanValue('discount-frame'),
-            copay: getCleanValue('copay-frame')
+            copay: 0 // Frame copay is removed
         };
-        let frameFinalCost = 0;
         if (frameInputs.retail > 0) {
-            let frameYourCost = (frameInputs.retail - frameInputs.insAllow) * (1 - (frameInputs.discount / 100));
-            frameYourCost = Math.max(0, frameYourCost);
-            frameFinalCost = frameYourCost + frameInputs.copay;
-            let frameInsSvgs = frameInputs.retail - frameFinalCost;
-
+            const frameCalc = calculateItem(frameInputs.retail, frameInputs.insAllow, frameInputs.discount, frameInputs.copay, true);
+            if (frameCalc.isError && !errorFound) {
+                errorFound = true;
+                showErrorModal("The final price for the Frame cannot exceed its retail price.");
+                document.getElementById('frame-group').classList.add('error');
+            }
             totalRetail += frameInputs.retail;
-            totalInsSvgs += frameInsSvgs;
-            totalYourCost += frameYourCost;
-            totalFinalCost += frameFinalCost;
-
-            summaryContent += createSummaryItemHTML('frame', 'Frame', frameInputs, {yourCost: frameYourCost, insSvgs: frameInsSvgs, finalCost: frameFinalCost});
+            totalInsSvgs += frameCalc.insSvgs;
+            totalFinalCost += frameCalc.finalCost;
+            summaryContent += createSummaryItemHTML('frame', 'Frame', frameInputs, frameCalc);
+            document.getElementById('price-frame').textContent = formatCurrency(frameCalc.finalCost);
+        } else {
+            document.getElementById('price-frame').textContent = '';
         }
-         document.getElementById('price-frame').textContent = frameFinalCost > 0 ? formatCurrency(frameFinalCost) : '';
-
 
         const rxSelect = document.getElementById('select-rx');
         const lensTypeSelect = document.getElementById('select-lens-type');
@@ -409,27 +605,22 @@
         }
 
         categories.forEach(cat => {
-            const catId = cat.id.replace(/\s+/g, '-').toLowerCase();
+            if (cat.id === 'Add-Ons') return;
+            const catId = toId(cat.id);
             const priceEl = document.getElementById(`price-${catId}`);
 
             let selectedValue;
             const checkbox = document.getElementById(`checkbox-${catId}`);
             if (checkbox) {
-                if(checkbox.checked) {
-                    selectedValue = checkbox.dataset.itemName;
-                } else {
-                    if(priceEl) priceEl.textContent = '';
-                    return;
-                }
+                if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
+                else { if(priceEl) priceEl.textContent = ''; return; }
             } else {
-                 selectedValue = document.getElementById(`select-${catId}`).value;
+                 const select = document.getElementById(`select-${catId}`);
+                 if (select) selectedValue = select.value;
             }
 
-            if (selectedValue === "None") {
-                 if(priceEl) priceEl.textContent = '';
-                 return;
-            }
-
+            if (!selectedValue || selectedValue === "None") { if(priceEl) priceEl.textContent = ''; return; }
+            
             const selectedItem = priceListData.find(p => p.Item === selectedValue);
             if (!selectedItem) return;
 
@@ -440,32 +631,62 @@
                 copay: getCleanValue(`copay-${catId}`),
             };
 
-            let costAfterDiscount = inputs.retail * (1 - (inputs.discount / 100));
-            let yourCost = costAfterDiscount - inputs.insAllow;
-
-            yourCost = Math.max(0, yourCost);
-            const finalCost = yourCost + inputs.copay;
-            const insSvgs = inputs.retail - finalCost;
-
+            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
+            if (calc.isError && !errorFound) {
+                errorFound = true;
+                showErrorModal(`The final price for ${cat.label} cannot exceed its retail price.`);
+                document.getElementById(`container-${catId}`).classList.add('error');
+            }
             totalRetail += inputs.retail;
-            totalInsSvgs += insSvgs;
-            totalYourCost += yourCost;
-            totalFinalCost += finalCost;
-
-            summaryContent += createSummaryItemHTML(catId, `${cat.label}`, inputs, {yourCost, insSvgs, finalCost});
-            if (priceEl) priceEl.textContent = formatCurrency(finalCost);
+            totalInsSvgs += calc.insSvgs;
+            totalFinalCost += calc.finalCost;
+            summaryContent += createSummaryItemHTML(catId, cat.label, inputs, calc);
+            if (priceEl) priceEl.textContent = formatCurrency(calc.finalCost);
         });
+        
+        document.querySelectorAll('.addon-row').forEach(row => {
+            const rowId = row.id.split('-').pop();
+            const select = document.getElementById(`select-addon-${rowId}`);
+            const itemName = select.value;
+            const priceEl = document.getElementById(`price-addon-${rowId}`);
+
+            if (itemName === 'No Extras') {
+                if(priceEl) priceEl.textContent = '';
+                return;
+            }
+
+            const selectedItem = priceListData.find(p => p.Item === itemName);
+            if (!selectedItem) return;
+
+            const inputs = {
+                retail: selectedItem.Retail,
+                insAllow: getCleanValue(`allowance-addon-${rowId}`),
+                discount: getCleanValue(`discount-addon-${rowId}`),
+                copay: getCleanValue(`copay-addon-${rowId}`),
+            };
+
+            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
+            if (calc.isError && !errorFound) {
+                errorFound = true;
+                showErrorModal(`The final price for ${itemName} cannot exceed its retail price.`);
+                row.classList.add('error');
+            }
+            totalRetail += inputs.retail;
+            totalInsSvgs += calc.insSvgs;
+            totalFinalCost += calc.finalCost;
+            summaryContent += createSummaryItemHTML(`addon-${rowId}`, itemName, inputs, calc);
+            if(priceEl) priceEl.textContent = formatCurrency(calc.finalCost);
+        });
+
 
         const vspCopayValue = getCleanValue('copay-material-co-pay');
         const vspCopayPriceEl = document.getElementById('price-material-co-pay');
         if (insuranceType === 'VSP' && vspCopayValue > 0) {
-            const finalCost = vspCopayValue;
-            totalFinalCost += finalCost; 
-
+            totalFinalCost += vspCopayValue; 
             const vspInputs = { retail: 0, insAllow: 0, discount: 0, copay: vspCopayValue };
             const vspOutputs = { yourCost: 0, insSvgs: -vspCopayValue, finalCost: vspCopayValue };
             summaryContent += createSummaryItemHTML('material-co-pay', 'VSP Material Co-Pay', vspInputs, vspOutputs);
-            vspCopayPriceEl.textContent = formatCurrency(finalCost);
+            vspCopayPriceEl.textContent = formatCurrency(vspCopayValue);
         } else if (vspCopayPriceEl) {
             vspCopayPriceEl.textContent = '';
         }
@@ -476,7 +697,6 @@
 
         document.getElementById('summary-retail').textContent = formatCurrency(totalRetail);
         document.getElementById('summary-ins-svgs').textContent = formatCurrency(totalInsSvgs);
-        document.getElementById('summary-your-cost').textContent = formatCurrency(totalYourCost);
         document.getElementById('summary-final-cost').textContent = formatCurrency(totalFinalCost);
     }
 
@@ -486,6 +706,11 @@
             discountCalc = (inputs.retail - inputs.insAllow) * (inputs.discount / 100);
         } else {
             discountCalc = inputs.retail * (inputs.discount / 100);
+        }
+        
+        let copayHTML = '';
+        if (inputs.copay > 0) {
+             copayHTML = `<div class="flex justify-between text-xs pt-1"><span>Co-Pay</span><span>+${formatCurrency(inputs.copay)}</span></div>`;
         }
 
         return `
@@ -497,8 +722,8 @@
                 <div id="details-${id}" class="summary-item-details bg-gray-50 rounded px-3 text-gray-600">
                     <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Retail</span><span>${formatCurrency(inputs.retail)}</span></div>
                     <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Ins. Allowance</span><span>-${formatCurrency(inputs.insAllow)}</span></div>
-                    <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Discount (${inputs.discount}%)</span><span>-${formatCurrency(discountCalc)}</span></div>
-                    <div class="flex justify-between text-xs pt-1"><span>Co-Pay</span><span>+${formatCurrency(inputs.copay)}</span></div>
+                    <div class="flex justify-between text-xs ${inputs.copay > 0 ? 'border-b border-gray-200 py-1' : 'pt-1'}"><span>Discount (${inputs.discount}%)</span><span>-${formatCurrency(discountCalc)}</span></div>
+                    ${copayHTML}
                 </div>
             </div>
         `;
@@ -512,15 +737,13 @@
     }
 
     function resetCalculator() {
-        document.querySelectorAll('input[type="text"], input[type="number"], select').forEach(el => {
-            if (el.type === 'checkbox') {
-                 el.checked = false;
-            } else if (el.tagName === 'INPUT') {
-                el.value = '';
-            } else if (el.tagName === 'SELECT') {
-                el.selectedIndex = 0;
-            }
+        document.querySelectorAll('.config-input, #customer-name').forEach(el => el.value = '');
+        document.querySelectorAll('.config-option').forEach(el => {
+            if (el.tagName === 'SELECT') el.selectedIndex = 0;
+            else if (el.type === 'checkbox') el.checked = false;
         });
+        document.getElementById('addons-repeater-container').innerHTML = '';
+        addonCounter = 0;
         updateCalculations();
     }
 
@@ -529,11 +752,11 @@
         document.getElementById('reset-button').addEventListener('click', resetCalculator);
         document.getElementById('save-quote-button').addEventListener('click', () => {
             console.log("Quote saved (placeholder).");
-            alert("Quote saved (placeholder)!");
+            // A more user-friendly notification can be implemented here later
         });
 
-        document.querySelectorAll('input[type="text"], input[type="number"], select').forEach(el => {
-             el.addEventListener('input', updateCalculations);
+         document.querySelectorAll('#customer-name, #insurance-type-select, #frame-retail-price, #allowance-frame, #discount-frame').forEach(el => {
+            el.addEventListener('input', updateCalculations);
              if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
                 el.addEventListener('focus', onFocus);
                 el.addEventListener('blur', onBlur);
