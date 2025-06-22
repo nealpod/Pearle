@@ -219,10 +219,14 @@
             window.location.href = './index.html';
             return false;
         }
+    
         document.getElementById('user-display').textContent = `Welcome, ${user.email}`;
+        return true;
     }
 
-    checkUser();
+    const allowed = await checkUser();
+    if (!allowed) return; // Stop anything else from running
+
     
     // Data store for all pricing information.
     const priceListData = [
