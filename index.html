@@ -9,30 +9,52 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
+        /* Define custom CSS variables for consistent theming */
         :root {
             --pearl-green: #007a33;
             --pearl-dark-green: #005c24;
             --light-gray: #f0f2f5;
         }
+        /* Apply Roboto font and light gray background to the body */
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--light-gray);
         }
+        /* Style the login container for responsiveness and centering */
         .login-container {
-            max-width: 400px;
+            max-width: 400px; /* Limit maximum width for larger screens */
+            width: 90%; /* Responsive width */
+            padding: 2rem; /* Add padding inside the container */
+            border-radius: 0.5rem; /* Rounded corners */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
         }
+        /* Style for the primary button, including hover effect */
         .btn-primary {
             background-color: var(--pearl-green);
-            transition: background-color 0.3s;
+            transition: background-color 0.3s; /* Smooth transition for hover effect */
+            border-radius: 0.375rem; /* Match other rounded elements */
+            padding: 0.75rem 1rem; /* Adjust padding for better button size */
+            font-weight: 700; /* Bold font */
+            color: white; /* White text */
+            width: 100%; /* Full width button */
         }
         .btn-primary:hover {
             background-color: var(--pearl-dark-green);
         }
+        /* Style for input fields to ensure consistent appearance */
+        input[type="email"],
+        input[type="password"] {
+            border: 1px solid #e2e8f0; /* Light border */
+            border-radius: 0.25rem; /* Rounded corners */
+            padding: 0.5rem 0.75rem; /* Adequate padding */
+            width: 100%; /* Full width */
+            line-height: 1.25; /* Line height for text */
+        }
     </style>
 </head>
-<body class="flex items-center justify-center h-screen">
+<body class="flex items-center justify-center h-screen bg-light-gray">
 
-    <div class="login-container bg-white p-8 rounded-lg shadow-lg w-full">
+    <div class="login-container bg-white">
         <div class="text-center mb-8">
             <img src="https://i.imgur.com/8nC06jU.png" alt="Pearle Vision Logo" class="mx-auto mb-4" width="200">
             <h1 class="text-2xl font-bold text-gray-800">Store Portal Login</h1>
@@ -41,14 +63,14 @@
         <form id="login-form">
             <div class="mb-4">
                 <label for="email" class="block text-gray-700 text-sm font-bold mb-2">Email Address</label>
-                <input type="email" id="email" name="email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required placeholder="you@example.com">
+                <input type="email" id="email" name="email" class="focus:outline-none focus:ring-2 focus:ring-pearl-green focus:border-transparent" required placeholder="you@example.com">
             </div>
             <div class="mb-6">
                 <label for="password" class="block text-gray-700 text-sm font-bold mb-2">Password</label>
-                <input type="password" id="password" name="password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" required placeholder="******************">
+                <input type="password" id="password" name="password" class="focus:outline-none focus:ring-2 focus:ring-pearl-green focus:border-transparent mb-3" required placeholder="******************">
             </div>
             <div class="flex items-center justify-between">
-                <button class="btn-primary text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full" type="submit">
+                <button class="btn-primary" type="submit">
                     Sign In
                 </button>
             </div>
@@ -58,49 +80,60 @@
     </div>
 
     <script type="module">
+        // Import the Supabase client instance from your separate file.
+        // Ensure 'supabase-client.js' correctly initializes and exports the Supabase client.
         import { supabase } from './supabase-client.js';
 
+        // Get references to the login form and status message elements.
         const loginForm = document.getElementById('login-form');
         const statusMessage = document.getElementById('status-message');
 
+        // Add an event listener for the form submission.
         loginForm.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            statusMessage.innerText = 'Signing in...';
+            event.preventDefault(); // Prevent the default form submission behavior.
+            statusMessage.innerText = 'Signing in...'; // Display a signing in message.
             
+            // Get email and password from the form input fields.
             const email = loginForm.email.value;
             const password = loginForm.password.value;
 
+            // Attempt to sign in the user with email and password using Supabase Auth.
             const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
+            // Handle authentication errors.
             if (authError) {
-                statusMessage.innerText = authError.message;
-                return;
+                statusMessage.innerText = authError.message; // Display the error message to the user.
+                console.error('Authentication error:', authError); // Log the error for debugging.
+                return; // Stop further execution.
             }
 
+            // If authentication is successful, proceed to check the user's role.
             if (authData.user) {
+                // Access the user's role directly from the app_metadata in the user object.
+                // This data is included in the JWT after successful authentication,
+                // eliminating the need for an additional database query to 'users_roles'.
+                const userRole = authData.user.app_metadata?.user_role;
 
-                const { data: roleData, error: roleError } = await supabase
-                    .from('users_roles')
-                    .select('role')
-                    .eq('id', authData.user.id)
-                    .single();
+                // Log the user's role for debugging purposes.
+                console.log('Logged in user role:', userRole);
 
-                if (roleError) {
-                    statusMessage.innerText = "Couldn't verify user role. Please contact support.";
-                    return;
-                }
-
-                if (roleData.role === 'owner') {
+                // Redirect based on the user's role.
+                if (userRole === 'owner') {
                     window.location.href = './admin.html';
-                } 
-                /* else if (roleData.role === 'optician') {
+                } else if (userRole === 'optician') {
                     window.location.href = './calculator.html';
-                } */
-                else {
-                    // statusMessage.innerText = 'Unknown user role.';
+                } else {
+                    // Handle cases where the role is not recognized or is missing.
+                    // It's generally safer to default to a less privileged page or show an error.
+                    statusMessage.innerText = 'Unknown user role. Redirecting to default.';
+                    console.warn('Unknown user role:', userRole, 'Redirecting to calculator.html');
                     window.location.href = './calculator.html';
-                } 
-                    
+                }
+            } else {
+                // This block should theoretically not be hit if authError is null and authData.user is null,
+                // but it's a good fallback for unexpected Supabase responses.
+                statusMessage.innerText = 'Authentication failed. No user data.';
+                console.error('Authentication failed: No user data returned.');
             }
         });
     </script>
