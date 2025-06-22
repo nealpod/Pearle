@@ -349,6 +349,12 @@
             
             optionsGrid.appendChild(container);
 
+            const selectEl = document.getElementById(`select-${catId}`);
+            if (selectEl && selectEl.options.length > 0 && selectEl.querySelector('option[value="None"]')) {
+                selectEl.value = 'None';
+            }
+
+
             if (cat.id === 'Rx') {
                 const vspCopayContainer = document.createElement('div');
                 vspCopayContainer.id = 'container-material-co-pay';
