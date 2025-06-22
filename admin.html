@@ -187,6 +187,12 @@
     }
     
     // --- EVENT LISTENERS ---
+    // --- INITIALIZATION ---
+    (async () => {
+        await checkUser();  // Ensure user is validated first
+        await fetchData();  // Then fetch data
+    })();
+
     addNewBtn.addEventListener('click', () => openItemModal());
     cancelBtn.addEventListener('click', closeItemModal);
     itemModal.addEventListener('click', (e) => { if (e.target === itemModal) closeItemModal(); });
@@ -254,9 +260,6 @@
         }
     });
 
-    // --- INITIALIZATION ---
-    checkUser();
-    fetchData();
 </script>
 </body>
 </html>
