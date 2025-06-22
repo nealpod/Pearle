@@ -478,17 +478,18 @@ s<!DOCTYPE html>
         const insuranceType = document.getElementById('insurance-type-select').value;
         const rxSelect = document.getElementById('select-rx');
         if (!rxSelect) return;
-
-        // VSP lenses have "VSP" in the name, others are generic Tiers
-        const vspItems = priceListData.filter(p => p.Category === 'Rx' && (p.Item.includes('VSP') || p.Item === 'S.V.' || p.Item === 'BiFocal' || p.Item === 'None'));
-        const otherItems = priceListData.filter(p => p.Category === 'Rx' && (!p.Item.includes('VSP') || p.Item === 'S.V.' || p.Item === 'BiFocal' || p.Item === 'None'));
         
-        const optionsToShow = (insuranceType === 'VSP') ? vspItems : otherItems;
+        const baseRxItems = priceListData.filter(p => p.Category === 'Rx' && p.Item !== 'None');
+    
+        const vspItems = baseRxItems.filter(p => p.Item.includes('VSP') || p.Item === 'S.V.' || p.Item === 'BiFocal');
+        const otherItems = baseRxItems.filter(p => !p.Item.includes('VSP') || p.Item === 'S.V.' || p.Item === 'BiFocal');
+    
+        const optionsToShow = [{ Item: 'None' }, ...(insuranceType === 'VSP' ? vspItems : otherItems)];
         const optionValuesToShow = optionsToShow.map(o => o.Item);
-
+    
         const currentRxValue = rxSelect.value;
         rxSelect.innerHTML = optionsToShow.map(opt => `<option value="${opt.Item}">${opt.Item}</option>`).join('');
-        
+
         if (optionValuesToShow.includes(currentRxValue)) {
             rxSelect.value = currentRxValue;
         } else {
@@ -496,25 +497,27 @@ s<!DOCTYPE html>
         }
     }
 
+
     function updateCoatingsDropdown() {
         const insuranceType = document.getElementById('insurance-type-select').value;
         const coatingsSelect = document.getElementById('select-coatings');
         if (!coatingsSelect) return;
-
-        // VSP coatings have a letter suffix like "- C" or "- D"
-        const vspItems = priceListData.filter(p => p.Category === 'Coatings' && (p.Item.match(/- [A-Z]$/) || p.Item === 'None'));
-        const otherItems = priceListData.filter(p => p.Category === 'Coatings' && (!p.Item.match(/- [A-Z]$/) || p.Item === 'None'));
-
-        const optionsToShow = (insuranceType === 'VSP') ? vspItems : otherItems;
+    
+        const baseCoatingItems = priceListData.filter(p => p.Category === 'Coatings' && p.Item !== 'None');
+    
+        const vspItems = baseCoatingItems.filter(p => p.Item.match(/- [A-Z]$/));
+        const otherItems = baseCoatingItems.filter(p => !p.Item.match(/- [A-Z]$/));
+    
+        const optionsToShow = [{ Item: 'None' }, ...(insuranceType === 'VSP' ? vspItems : otherItems)];
         const optionValuesToShow = optionsToShow.map(o => o.Item);
-        
+    
         const currentCoatingValue = coatingsSelect.value;
         coatingsSelect.innerHTML = optionsToShow.map(opt => `<option value="${opt.Item}">${opt.Item}</option>`).join('');
-        
+    
         if (optionValuesToShow.includes(currentCoatingValue)) {
             coatingsSelect.value = currentCoatingValue;
         } else {
-            coatingsSelect.value = None;
+            coatingsSelect.value = 'None';
         }
     }
 
