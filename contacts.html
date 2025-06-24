@@ -81,8 +81,8 @@
             height: 2.5rem;
         }
         .select2-dropdown {
-             border-radius: 0.375rem;
-             border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            border: 1px solid #d1d5db;
         }
 
         /* Wearer Type Toggle */
@@ -114,10 +114,10 @@
             color: var(--pearl-dark-green);
         }
         .results-table .savings {
-             color: var(--pearl-green);
+            color: var(--pearl-green);
         }
         .results-table thead th {
-             text-align: center;
+            text-align: center;
         }
         .results-table .annual-col {
             background-color: var(--pearl-light-green);
@@ -156,7 +156,7 @@
                     <div class="bg-white p-6 rounded-lg shadow h-full">
                         <h2 class="text-2xl font-bold text-gray-800 mb-4">Contact Lens Savings Plan</h2>
                         <div class="space-y-6">
-                             <div>
+                            <div>
                                 <label for="contact-lens-select" class="block text-sm font-medium text-gray-700 mb-1">CL Brand & Type</label>
                                 <select id="contact-lens-select" class="w-full">
                                     <option></option>
@@ -186,27 +186,27 @@
 
                 <!-- Right Column: Quote Summary -->
                 <div class="lg:col-span-3">
-                     <div class="bg-white p-6 rounded-lg shadow h-full">
+                    <div class="bg-white p-6 rounded-lg shadow h-full">
                         <div id="summary-container" class="opacity-25 transition-opacity duration-300">
                              <table class="w-full results-table text-sm">
-                                 <thead>
-                                     <tr class="border-b">
-                                         <th></th>
-                                         <th class="font-semibold">3 MONTH</th>
-                                         <th class="font-semibold">6 MONTH</th>
-                                         <th class="font-bold text-green-700 annual-col rounded-t-lg">ANNUAL</th>
-                                     </tr>
-                                 </thead>
-                                 <tbody>
-                                     <tr class="border-b"><th scope="row">No. of Boxes</th><td id="boxes-3m">0</td><td id="boxes-6m">0</td><td id="boxes-annual" class="annual-col">0</td></tr>
-                                     <tr class="border-b"><th scope="row">Price / Box</th><td colspan="3" id="price-per-box" class="text-center font-semibold text-gray-700"></td></tr>
-                                     <tr class="border-b"><th scope="row">Total Cost</th><td id="total-3m">$0.00</td><td id="total-6m">$0.00</td><td id="total-annual" class="annual-col">$0.00</td></tr>
-                                     <tr class="border-b"><th scope="row" class="savings">Mfr. Mail in Rebate</th><td id="rebate-3m" class="savings">-$0.00</td><td id="rebate-6m" class="savings">-$0.00</td><td id="rebate-annual" class="annual-col savings">-$0.00</td></tr>
-                                     <tr class="border-b"><th scope="row" class="savings">Store Discount (5%)</th><td id="discount-3m" class="savings">-$0.00</td><td id="discount-6m" class="savings">-$0.00</td><td id="discount-annual" class="annual-col savings">-$0.00</td></tr>
-                                      <tr class="border-b"><th scope="row">Sales Tax (6%)</th><td id="tax-3m">$0.00</td><td id="tax-6m">$0.00</td><td id="tax-annual" class="annual-col">$0.00</td></tr>
-                                      <tr class="border-b"><th scope="row" class="highlight">Cost / Box</th><td id="cost-per-box-3m" class="highlight">$0.00</td><td id="cost-per-box-6m" class="highlight">$0.00</td><td id="cost-per-box-annual" class="annual-col highlight">$0.00</td></tr>
+                                <thead>
+                                    <tr class="border-b">
+                                        <th></th>
+                                        <th class="font-semibold">3 MONTH</th>
+                                        <th class="font-semibold">6 MONTH</th>
+                                        <th class="font-bold text-green-700 annual-col rounded-t-lg">ANNUAL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-b"><th scope="row">No. of Boxes</th><td id="boxes-3m">0</td><td id="boxes-6m">0</td><td id="boxes-annual" class="annual-col">0</td></tr>
+                                    <tr class="border-b"><th scope="row">Price / Box</th><td colspan="3" id="price-per-box" class="text-center font-semibold text-gray-700"></td></tr>
+                                    <tr class="border-b"><th scope="row">Total Cost</th><td id="total-3m">$0.00</td><td id="total-6m">$0.00</td><td id="total-annual" class="annual-col">$0.00</td></tr>
+                                    <tr class="border-b"><th scope="row" class="savings">Mfr. Mail in Rebate</th><td id="rebate-3m" class="savings">-$0.00</td><td id="rebate-6m" class="savings">-$0.00</td><td id="rebate-annual" class="annual-col savings">-$0.00</td></tr>
+                                    <tr class="border-b"><th scope="row" class="savings">Store Discount (5%)</th><td id="discount-3m" class="savings">-$0.00</td><td id="discount-6m" class="savings">-$0.00</td><td id="discount-annual" class="annual-col savings">-$0.00</td></tr>
+                                     <tr class="border-b"><th scope="row">Sales Tax (6%)</th><td id="tax-3m">$0.00</td><td id="tax-6m">$0.00</td><td id="tax-annual" class="annual-col">$0.00</td></tr>
+                                     <tr class="border-b"><th scope="row" class="highlight">Cost / Box</th><td id="cost-per-box-3m" class="highlight">$0.00</td><td id="cost-per-box-6m" class="highlight">$0.00</td><td id="cost-per-box-annual" class="annual-col highlight">$0.00</td></tr>
                                      <tr><th scope="row" class="highlight pt-4">Today's Total</th><td id="final-3m" class="highlight final-total pt-4">$0.00</td><td id="final-6m" class="highlight final-total pt-4">$0.00</td><td id="final-annual" class="highlight final-total annual-col rounded-b-lg pt-4 text-xl">$0.00</td></tr>
-                                 </tbody>
+                                </tbody>
                              </table>
                          </div>
                     </div>
@@ -223,33 +223,41 @@
         </div>
     </main>
 
+    <!-- Error Modal (reused from calculator.html structure) -->
+    <div id="error-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <svg class="h-6 w-6 text-red-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Data Error</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p id="error-modal-message" class="text-sm text-gray-500"></p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-error-modal-btn" class="px-4 py-2 bg-red-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script type="module">
     import { supabase } from './supabase-client.js';
 
-    let contactLensDatabase = [
-        { id: 1, name: 'Acuvue Oasys Max 1-Day 90pk', price_per_box: 145.99, is_daily: true, type: 'Daily',
-          rebate_3m: 15.00, rebate_6m: 100.00, 
-          rebate_annual_new: 300.00,
-          rebate_annual_current: 150.00,
-          store_discount_percentage: 0.05
-        },
-        { id: 2, name: 'Biofinity 6pk', price_per_box: 45.00, is_daily: false, type: 'Monthly',
-          rebate_3m: 0, rebate_6m: 20.00, 
-          rebate_annual_new: 50.00,
-          rebate_annual_current: 30.00,
-          store_discount_percentage: 0.05
-        },
-        { id: 3, name: 'Dailies Total1 90pk', price_per_box: 105.00, is_daily: true, type: 'Daily',
-          rebate_3m: 25.00, rebate_6m: 75.00, 
-          rebate_annual_new: 200.00,
-          rebate_annual_current: 100.00,
-          store_discount_percentage: 0.05
-        },
-    ];
+    // This will be populated from Supabase
+    let contactLensDatabase = [];
     let select2Data = [];
     
+    // Constants for calculations
+    const STORE_DISCOUNT_PERCENTAGE = 0.05; // Assuming fixed 5% store discount as per original code
+    const TAX_RATE = 0.06; // Assuming fixed 6% sales tax
+
     const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
     
     function getCleanNumber(selector) {
@@ -258,6 +266,13 @@
             return parseFloat(value.replace(/[^0-9.]/g, '')) || 0;
         }
         return value || 0;
+    }
+
+    function showErrorModal(message) {
+        const modal = document.getElementById('error-modal');
+        const modalMessage = document.getElementById('error-modal-message');
+        modalMessage.textContent = message;
+        modal.classList.remove('hidden');
     }
 
     function calculate() {
@@ -279,24 +294,33 @@
 
         const wearerType = $('input[name="wearer-type"]:checked').val();
         const visionBenefit = getCleanNumber('#vision-plan-benefit');
-        const taxRate = 0.06;
 
+        // Update basic lens info display
         $('#price-per-box').text(formatCurrency(lens.price_per_box));
-        $('#lens-type-display').text(lens.type || 'N/A'); // Update lens type display
-        const boxes_3m = lens.is_daily ? 2 : 1;
-        const boxes_6m = boxes_3m * 2;
-        const boxes_annual = boxes_6m * 2;
+        $('#lens-type-display').text(lens.type || 'N/A');
+
+        // Use box counts directly from fetched data
+        const boxes_3m = lens.number_of_contacts_three_months;
+        const boxes_6m = lens.number_of_contacts_six_months;
+        const boxes_annual = lens.number_of_contacts_one_year;
+        
         $('#boxes-3m').text(boxes_3m);
         $('#boxes-6m').text(boxes_6m);
         $('#boxes-annual').text(boxes_annual);
 
+        // --- Calculate for 3 Months ---
         const total3m = lens.price_per_box * boxes_3m;
-        const rebate3m = lens.rebate_3m || 0;
-        const discount3m = 0;
-        const subtotal3m = total3m - visionBenefit - rebate3m - discount3m;
-        const tax3m = subtotal3m > 0 ? subtotal3m * taxRate : 0;
+        const rebate3m = lens.new_wearer_rebate_three || 0; // Assuming this is the general 3m rebate
+        const discount3m = total3m * STORE_DISCOUNT_PERCENTAGE; // Applying store discount
+        
+        // Subtract benefit and rebates/discounts before tax
+        let subtotal3m = total3m - visionBenefit - rebate3m - discount3m;
+        subtotal3m = Math.max(0, subtotal3m); // Ensure subtotal doesn't go below zero
+        
+        const tax3m = subtotal3m * TAX_RATE;
         const final3m = subtotal3m + tax3m;
         const costPerBox3m = boxes_3m > 0 ? final3m / boxes_3m : 0;
+
         $('#total-3m').text(formatCurrency(total3m));
         $('#rebate-3m').text(`-${formatCurrency(rebate3m)}`);
         $('#discount-3m').text(`-${formatCurrency(discount3m)}`);
@@ -304,13 +328,19 @@
         $('#cost-per-box-3m').text(formatCurrency(costPerBox3m));
         $('#final-3m').text(formatCurrency(final3m));
 
+        // --- Calculate for 6 Months ---
         const total6m = lens.price_per_box * boxes_6m;
-        const rebate6m = lens.rebate_6m || 0;
-        const discount6m = 0;
-        const subtotal6m = total6m - visionBenefit - rebate6m - discount6m;
-        const tax6m = subtotal6m > 0 ? subtotal6m * taxRate : 0;
+        const rebate6m = lens.new_wearer_rebate_six || 0; // Assuming this is the general 6m rebate
+        const discount6m = total6m * STORE_DISCOUNT_PERCENTAGE; // Applying store discount
+
+        // Subtract benefit and rebates/discounts before tax
+        let subtotal6m = total6m - visionBenefit - rebate6m - discount6m;
+        subtotal6m = Math.max(0, subtotal6m); // Ensure subtotal doesn't go below zero
+
+        const tax6m = subtotal6m * TAX_RATE;
         const final6m = subtotal6m + tax6m;
         const costPerBox6m = boxes_6m > 0 ? final6m / boxes_6m : 0;
+
         $('#total-6m').text(formatCurrency(total6m));
         $('#rebate-6m').text(`-${formatCurrency(rebate6m)}`);
         $('#discount-6m').text(`-${formatCurrency(discount6m)}`);
@@ -318,14 +348,22 @@
         $('#cost-per-box-6m').text(formatCurrency(costPerBox6m));
         $('#final-6m').text(formatCurrency(final6m));
         
+        // --- Calculate for Annual ---
         const totalAnnual = lens.price_per_box * boxes_annual;
-        const rebateAnnual = wearerType === 'current' ? (lens.rebate_annual_current || 0) : (lens.rebate_annual_new || 0);
-        const preDiscountTotal = totalAnnual - visionBenefit - rebateAnnual;
-        const discountAnnual = preDiscountTotal > 0 ? preDiscountTotal * (lens.store_discount_percentage || 0) : 0;
-        const subtotalAnnual = totalAnnual - visionBenefit - rebateAnnual - discountAnnual;
-        const taxAnnual = subtotalAnnual > 0 ? subtotalAnnual * taxRate : 0;
+        const rebateAnnual = wearerType === 'current' ? (lens.old_wearer_rebate_annual || 0) : (lens.new_wearer_rebate_annual || 0);
+        
+        // Calculate discount based on total after vision benefit and manufacturer rebate
+        const preDiscountTotalAnnual = totalAnnual - visionBenefit - rebateAnnual;
+        const discountAnnual = preDiscountTotalAnnual > 0 ? preDiscountTotalAnnual * STORE_DISCOUNT_PERCENTAGE : 0;
+        
+        // Subtract benefit and rebates/discounts before tax
+        let subtotalAnnual = totalAnnual - visionBenefit - rebateAnnual - discountAnnual;
+        subtotalAnnual = Math.max(0, subtotalAnnual); // Ensure subtotal doesn't go below zero
+
+        const taxAnnual = subtotalAnnual * TAX_RATE;
         const finalAnnual = subtotalAnnual + taxAnnual;
         const costPerBoxAnnual = boxes_annual > 0 ? finalAnnual / boxes_annual : 0;
+
         $('#total-annual').text(formatCurrency(totalAnnual));
         $('#rebate-annual').text(`-${formatCurrency(rebateAnnual)}`);
         $('#discount-annual').text(`-${formatCurrency(discountAnnual)}`);
@@ -356,22 +394,56 @@
     }
 
     async function fetchData() {
+        const { data, error } = await supabase
+            .from('contacts') // Table name: 'contacts'
+            .select('id, contact_name, price, number_of_contacts_three_months, number_of_contacts_six_months, number_of_contacts_one_year, new_wearer_rebate_three, new_wearer_rebate_six, new_wearer_rebate_annual, old_wearer_rebate_annual, contact_type');
+
+        if (error) {
+            console.error("Error fetching contact lens data:", error);
+            showErrorModal("Could not load contact lens data. Please contact support. Error: " + error.message);
+            return;
+        }
+        
+        // Map fetched data to the expected structure
+        contactLensDatabase = data.map(item => ({
+            id: item.id, // Assuming 'id' is present in your Supabase table
+            name: item.contact_name,
+            price_per_box: item.price,
+            number_of_contacts_three_months: item.number_of_contacts_three_months,
+            number_of_contacts_six_months: item.number_of_contacts_six_months,
+            number_of_contacts_one_year: item.number_of_contacts_one_year,
+            new_wearer_rebate_three: item.new_wearer_rebate_three,
+            new_wearer_rebate_six: item.new_wearer_rebate_six,
+            new_wearer_rebate_annual: item.new_wearer_rebate_annual,
+            old_wearer_rebate_annual: item.old_wearer_rebate_annual,
+            type: item.contact_type,
+            // Assuming store_discount_percentage is fixed for now
+            store_discount_percentage: STORE_DISCOUNT_PERCENTAGE 
+        }));
+
+        // Prepare data for Select2
         select2Data = contactLensDatabase.map(lens => ({ id: lens.id, text: lens.name }));
         
+        // Initialize Select2 dropdown
         $('#contact-lens-select').select2({
             placeholder: 'Type to search for a lens...',
             data: select2Data,
-            allowClear: true
+            allowClear: true // Allows clearing the selection
         });
+
+        // Trigger initial calculation after data is loaded and Select2 is initialized
+        calculate();
     }
 
     async function checkUser() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            window.location.href = './index.html';
+            window.location.href = './index.html'; // Redirect to login if not authenticated
             return;
         }
         document.getElementById('user-display').textContent = `Welcome, ${user.email}`;
+        // Fetch pricing data only after user is confirmed authenticated
+        fetchData(); 
     }
 
     function onFocusCurrency(event) {
@@ -392,8 +464,7 @@
 
 
     $(document).ready(function() {
-        checkUser();
-        fetchData();
+        checkUser(); // This now initiates fetchData() after auth check
         
         $('#logout-btn').on('click', async () => {
             await supabase.auth.signOut();
@@ -401,16 +472,21 @@
         });
 
         $('#reset-button').on('click', resetCalculator);
+        $('#close-error-modal-btn').on('click', () => {
+             document.getElementById('error-modal').classList.add('hidden');
+        });
 
-        $('#contact-lens-select, #vision-plan-benefit').on('input change', calculate);
+        // Event listeners for calculation triggers
+        $('#contact-lens-select').on('change', calculate); // Use 'change' for select2
+        $('#vision-plan-benefit').on('input', calculate);
         $('input[name="wearer-type"]').on('change', calculate);
 
+        // Event listeners for currency formatting
         $('#vision-plan-benefit').on('focus', onFocusCurrency);
         $('#vision-plan-benefit').on('blur', onBlurCurrency);
         
+        // Apply initial formatting if there's a default value
         $('#vision-plan-benefit').trigger('blur');
-
-        calculate();
     });
 </script>
 </body>
