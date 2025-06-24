@@ -324,7 +324,7 @@
         subtotal3m = Math.max(0, subtotal3m); // Ensure subtotal doesn't go below zero
         
         const final3m = subtotal3m + tax3m;
-        const costPerBox3m = boxes_3m > 0 ? final3m / boxes_3m : 0; // Re-added this line
+        const costPerBox3m = boxes_3m > 0 ? (total3m - rebate3m - discount3m) / boxes_3m : 0; // Corrected calculation
 
         $('#total-3m').text(formatCurrency(total3m));
         $('#rebate-3m').text(`-${formatCurrency(rebate3m)}`);
@@ -349,10 +349,10 @@
         subtotal6m = Math.max(0, subtotal6m); // Ensure subtotal doesn't go below zero
 
         const final6m = subtotal6m + tax6m;
-        const costPerBox6m = boxes_6m > 0 ? final6m / boxes_6m : 0; // Re-added this line
+        const costPerBox6m = boxes_6m > 0 ? (total6m - rebate6m - discount6m) / boxes_6m : 0; // Corrected calculation
 
         $('#total-6m').text(formatCurrency(total6m));
-        $('#rebate-6m').text(`-${formatCurrency(rebate6m)}`); // Fixed typo: changed reb6m to rebate6m
+        $('#rebate-6m').text(`-${formatCurrency(rebate6m)}`); 
         $('#discount-6m').text(`-${formatCurrency(discount6m)}`); // This will now show -$0.00
         $('#tax-6m').text(formatCurrency(tax6m));
         $('#cost-per-box-6m').text(formatCurrency(costPerBox6m));
@@ -376,7 +376,7 @@
         subtotalAnnual = Math.max(0, subtotalAnnual); // Ensure subtotal doesn't go below zero
 
         const finalAnnual = subtotalAnnual + taxAnnual;
-        const costPerBoxAnnual = boxes_annual > 0 ? finalAnnual / boxes_annual : 0; // Re-added this line
+        const costPerBoxAnnual = boxes_annual > 0 ? (totalAnnual - rebateAnnual - discountAnnual) / boxes_annual : 0; // Corrected calculation
 
         $('#total-annual').text(formatCurrency(totalAnnual));
         $('#rebate-annual').text(`-${formatCurrency(rebateAnnual)}`);
