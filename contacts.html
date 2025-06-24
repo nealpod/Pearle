@@ -205,7 +205,7 @@
                                     <tr class="border-b"><th scope="row" class="savings">Store Discount (5%)</th><td id="discount-3m" class="savings">-$0.00</td><td id="discount-6m" class="savings">-$0.00</td><td id="discount-annual" class="annual-col savings">-$0.00</td></tr>
                                      <tr class="border-b"><th scope="row">Sales Tax (6%)</th><td id="tax-3m">$0.00</td><td id="tax-6m">$0.00</td><td id="tax-annual" class="annual-col">$0.00</td></tr>
                                      <tr class="border-b"><th scope="row" class="highlight">Cost / Box</th><td id="cost-per-box-3m" class="highlight">$0.00</td><td id="cost-per-box-6m" class="highlight">$0.00</td><td id="cost-per-box-annual" class="annual-col highlight">$0.00</td></tr>
-                                     <tr><th scope="row" class="highlight pt-4">Today's Total</th><td id="final-3m" class="highlight final-total pt-4">$0.00</td><td id="final-6m" class="highlight final-total pt-4">$0.00</td><td id="final-annual" class="highlight final-total annual-col rounded-b-lg pt-4 text-xl">$0.00</td></tr>
+                                     <tr><th scope="row" class="highlight pt-4">Today's Total (w/ Tax)</th><td id="final-3m" class="highlight final-total pt-4">$0.00</td><td id="final-6m" class="highlight final-total pt-4">$0.00</td><td id="final-annual" class="highlight final-total annual-col rounded-b-lg pt-4 text-xl">$0.00</td></tr>
                                 </tbody>
                              </table>
                          </div>
@@ -313,15 +313,13 @@
         const rebate3m = lens.new_wearer_rebate_three || 0; 
         const discount3m = 0; // No store discount for 3-month
         
-        // Sales tax is now calculated on the total cost only
+        // Sales tax is calculated on the total cost only
         const tax3m = total3m * TAX_RATE; 
 
-        // Calculate amount before tax and after all other deductions (including discount for annual only)
-        // This is the value that "Today's Total" should reflect before adding tax
-        const amountBeforeTax3m = total3m - visionBenefit - rebate3m - discount3m;
-        const final3m = Math.max(0, amountBeforeTax3m) + tax3m; // Ensure non-negative before adding tax
+        // Today's Total: Total Cost - Vision Plan Benefit - Store Discount + Sales Tax
+        const final3m = Math.max(0, total3m - visionBenefit - discount3m) + tax3m; 
 
-        // Cost per box is now (Total cost - Mfr. Mail in Rebate - Store Discount) / No. of Boxes
+        // Cost per box: (Total cost - Vision Plan Benefit - Mfr. Mail in Rebate - Store Discount) / No. of Boxes
         const costPerBox3m = boxes_3m > 0 ? (total3m - visionBenefit - rebate3m - discount3m) / boxes_3m : 0; 
 
         $('#total-3m').text(formatCurrency(total3m));
@@ -336,14 +334,13 @@
         const rebate6m = lens.new_wearer_rebate_six || 0; 
         const discount6m = 0; // No store discount for 6-month
 
-        // Sales tax is now calculated on the total cost only
+        // Sales tax is calculated on the total cost only
         const tax6m = total6m * TAX_RATE; 
 
-        // Calculate amount before tax and after all other deductions (including discount for annual only)
-        const amountBeforeTax6m = total6m - visionBenefit - rebate6m - discount6m;
-        const final6m = Math.max(0, amountBeforeTax6m) + tax6m; // Ensure non-negative before adding tax
+        // Today's Total: Total Cost - Vision Plan Benefit - Store Discount + Sales Tax
+        const final6m = Math.max(0, total6m - visionBenefit - discount6m) + tax6m; 
 
-        // Cost per box is now (Total cost - Mfr. Mail in Rebate - Store Discount) / No. of Boxes
+        // Cost per box: (Total cost - Vision Plan Benefit - Mfr. Mail in Rebate - Store Discount) / No. of Boxes
         const costPerBox6m = boxes_6m > 0 ? (total6m - visionBenefit - rebate6m - discount6m) / boxes_6m : 0; 
 
         $('#total-6m').text(formatCurrency(total6m));
@@ -361,14 +358,13 @@
         const amountForStoreDiscountAnnual = totalAnnual - visionBenefit - rebateAnnual;
         const discountAnnual = amountForStoreDiscountAnnual > 0 ? amountForStoreDiscountAnnual * STORE_DISCOUNT_PERCENTAGE : 0;
         
-        // Sales tax is now calculated on the total cost only
+        // Sales tax is calculated on the total cost only
         const taxAnnual = totalAnnual * TAX_RATE; 
 
-        // Calculate amount before tax and after all other deductions (including discount)
-        const amountBeforeTaxAnnual = totalAnnual - visionBenefit - rebateAnnual - discountAnnual;
-        const finalAnnual = Math.max(0, amountBeforeTaxAnnual) + taxAnnual; // Ensure non-negative before adding tax
+        // Today's Total: Total Cost - Vision Plan Benefit - Store Discount + Sales Tax
+        const finalAnnual = Math.max(0, totalAnnual - visionBenefit - discountAnnual) + taxAnnual; 
 
-        // Cost per box is now (Total cost - Vision Plan Benefit - Mfr. Mail in Rebate - Store Discount) / No. of Boxes
+        // Cost per box: (Total cost - Vision Plan Benefit - Mfr. Mail in Rebate - Store Discount) / No. of Boxes
         const costPerBoxAnnual = boxes_annual > 0 ? (totalAnnual - visionBenefit - rebateAnnual - discountAnnual) / boxes_annual : 0; 
 
         $('#total-annual').text(formatCurrency(totalAnnual));
