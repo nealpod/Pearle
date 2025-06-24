@@ -255,8 +255,8 @@
     let select2Data = [];
     
     // Constants for calculations
-    const STORE_DISCOUNT_PERCENTAGE = 0.05; // Assuming fixed 5% store discount as per original code
-    const TAX_RATE = 0.06; // Assuming fixed 6% sales tax
+    const STORE_DISCOUNT_PERCENTAGE = 0.05; // Fixed 5% store discount
+    const TAX_RATE = 0.06; // Fixed 6% sales tax
 
     const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
     
@@ -310,40 +310,48 @@
 
         // --- Calculate for 3 Months ---
         const total3m = lens.price_per_box * boxes_3m;
-        const rebate3m = lens.new_wearer_rebate_three || 0; // Assuming this is the general 3m rebate
-        const discount3m = total3m * STORE_DISCOUNT_PERCENTAGE; // Applying store discount
+        const rebate3m = lens.new_wearer_rebate_three || 0; 
+        const discount3m = 0; // No store discount for 3-month
         
-        // Subtract benefit and rebates/discounts before tax
+        // Calculate amount subject to tax *before* any store discount
+        let taxableAmount3m = total3m - visionBenefit - rebate3m;
+        taxableAmount3m = Math.max(0, taxableAmount3m); // Ensure non-negative taxable amount
+        
+        const tax3m = taxableAmount3m * TAX_RATE; // Tax based on pre-discount amount
+
+        // Calculate subtotal after all deductions including discount
         let subtotal3m = total3m - visionBenefit - rebate3m - discount3m;
         subtotal3m = Math.max(0, subtotal3m); // Ensure subtotal doesn't go below zero
         
-        const tax3m = subtotal3m * TAX_RATE;
         const final3m = subtotal3m + tax3m;
-        const costPerBox3m = boxes_3m > 0 ? final3m / boxes_3m : 0;
 
         $('#total-3m').text(formatCurrency(total3m));
         $('#rebate-3m').text(`-${formatCurrency(rebate3m)}`);
-        $('#discount-3m').text(`-${formatCurrency(discount3m)}`);
+        $('#discount-3m').text(`-${formatCurrency(discount3m)}`); // This will now show -$0.00
         $('#tax-3m').text(formatCurrency(tax3m));
         $('#cost-per-box-3m').text(formatCurrency(costPerBox3m));
         $('#final-3m').text(formatCurrency(final3m));
 
         // --- Calculate for 6 Months ---
         const total6m = lens.price_per_box * boxes_6m;
-        const rebate6m = lens.new_wearer_rebate_six || 0; // Assuming this is the general 6m rebate
-        const discount6m = total6m * STORE_DISCOUNT_PERCENTAGE; // Applying store discount
+        const rebate6m = lens.new_wearer_rebate_six || 0; 
+        const discount6m = 0; // No store discount for 6-month
 
-        // Subtract benefit and rebates/discounts before tax
+        // Calculate amount subject to tax *before* any store discount
+        let taxableAmount6m = total6m - visionBenefit - rebate6m;
+        taxableAmount6m = Math.max(0, taxableAmount6m); // Ensure non-negative taxable amount
+
+        const tax6m = taxableAmount6m * TAX_RATE; // Tax based on pre-discount amount
+
+        // Calculate subtotal after all deductions including discount
         let subtotal6m = total6m - visionBenefit - rebate6m - discount6m;
         subtotal6m = Math.max(0, subtotal6m); // Ensure subtotal doesn't go below zero
 
-        const tax6m = subtotal6m * TAX_RATE;
         const final6m = subtotal6m + tax6m;
-        const costPerBox6m = boxes_6m > 0 ? final6m / boxes_6m : 0;
 
         $('#total-6m').text(formatCurrency(total6m));
-        $('#rebate-6m').text(`-${formatCurrency(rebate6m)}`);
-        $('#discount-6m').text(`-${formatCurrency(discount6m)}`);
+        $('#rebate-6m').text(`-${formatCurrency(reb6m)}`);
+        $('#discount-6m').text(`-${formatCurrency(discount6m)}`); // This will now show -$0.00
         $('#tax-6m').text(formatCurrency(tax6m));
         $('#cost-per-box-6m').text(formatCurrency(costPerBox6m));
         $('#final-6m').text(formatCurrency(final6m));
@@ -352,17 +360,20 @@
         const totalAnnual = lens.price_per_box * boxes_annual;
         const rebateAnnual = wearerType === 'current' ? (lens.old_wearer_rebate_annual || 0) : (lens.new_wearer_rebate_annual || 0);
         
-        // Calculate discount based on total after vision benefit and manufacturer rebate
-        const preDiscountTotalAnnual = totalAnnual - visionBenefit - rebateAnnual;
-        const discountAnnual = preDiscountTotalAnnual > 0 ? preDiscountTotalAnnual * STORE_DISCOUNT_PERCENTAGE : 0;
+        // Calculate amount subject to tax *before* store discount
+        let taxableAmountAnnual = totalAnnual - visionBenefit - rebateAnnual;
+        taxableAmountAnnual = Math.max(0, taxableAmountAnnual); // Ensure non-negative taxable amount
+
+        const taxAnnual = taxableAmountAnnual * TAX_RATE; // Tax based on pre-discount amount
         
-        // Subtract benefit and rebates/discounts before tax
+        // Calculate discount based on total after vision benefit and manufacturer rebate
+        const discountAnnual = taxableAmountAnnual > 0 ? taxableAmountAnnual * STORE_DISCOUNT_PERCENTAGE : 0;
+        
+        // Calculate subtotal after all deductions including discount
         let subtotalAnnual = totalAnnual - visionBenefit - rebateAnnual - discountAnnual;
         subtotalAnnual = Math.max(0, subtotalAnnual); // Ensure subtotal doesn't go below zero
 
-        const taxAnnual = subtotalAnnual * TAX_RATE;
         const finalAnnual = subtotalAnnual + taxAnnual;
-        const costPerBoxAnnual = boxes_annual > 0 ? finalAnnual / boxes_annual : 0;
 
         $('#total-annual').text(formatCurrency(totalAnnual));
         $('#rebate-annual').text(`-${formatCurrency(rebateAnnual)}`);
@@ -417,8 +428,6 @@
             new_wearer_rebate_annual: item.new_wearer_rebate_annual,
             old_wearer_rebate_annual: item.old_wearer_rebate_annual,
             type: item.contact_type,
-            // Assuming store_discount_percentage is fixed for now
-            store_discount_percentage: STORE_DISCOUNT_PERCENTAGE 
         }));
 
         // Prepare data for Select2
