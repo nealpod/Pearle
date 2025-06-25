@@ -173,8 +173,8 @@
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow">
-                       <h3 class="text-xl font-semibold mb-4 border-b pb-2">Lens & Add-On Configuration</h3>
-                       <div id="dynamic-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Lens & Add-On Configuration</h3>
+                    <div id="dynamic-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                                </div>
                 </div>
 
@@ -292,10 +292,11 @@
         { id: 'Rx', label: 'Rx' },
         { id: 'Lens Type', label: 'Lens Design' }, 
         { id: 'Material', label: 'Material' },
+        { id: 'Color', label: 'Color' }, 
         { id: 'Coatings', label: 'Coatings' },
-        { id: 'Edge Polish', label: 'Edge Polish' },
+        { id: 'Backside UV', label: 'Backside UV' }, // Added new category here
         { id: 'Blue Light', label: 'Blue Light Filter' },
-        { id: 'Color', label: 'Color' },   
+        { id: 'Edge Polish', label: 'Edge Polish' }, 
         { id: "Custom Measurements", label: "Custom Measurements" },
         { id: 'Protection', label: '1Yr. Protection' },
         { id: 'Add-Ons', label: 'Add-Ons' }
@@ -340,15 +341,17 @@
                     <button id="add-addon-btn" type="button" class="btn btn-primary text-sm px-3 py-1">+ Add Add-On</button>
                 `;
             } else {
-                 container.className = 'input-group space-y-2';
-                 const options = priceListData.filter(p => p.Category === cat.id && !p.Item.toLowerCase().startsWith('no ') && p.Item !== 'None');
+                container.className = 'input-group space-y-2';
+                const options = priceListData.filter(p => p.Category === cat.id && !p.Item.toLowerCase().startsWith('no ') && p.Item !== 'None');
 
                 if (options.length <= 1 && cat.id !== 'Rx' && cat.id !== 'Coatings' && cat.id !== 'Color' && cat.id !== 'Material' && cat.id !== 'Lens Type') {
                     const singleOption = options[0] || { Item: cat.label };
+                    // Determine if the checkbox should be initially checked (only Edge Polish by default)
+                    const isCheckedDefault = (cat.id === 'Edge Polish') ? 'checked' : ''; // Original logic for Edge Polish
                     container.innerHTML = `
                         <div class="component-label">
                              <label class="flex items-center cursor-pointer">
-                                 <input type="checkbox" id="checkbox-${catId}" data-item-name="${singleOption.Item}" ${cat.id === 'Edge Polish' ? 'checked' : ''} class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                                 <input type="checkbox" id="checkbox-${catId}" data-item-name="${singleOption.Item}" ${isCheckedDefault} class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
                                  <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
                              </label>
                              <span id="price-${catId}" class="component-price"></span>
@@ -418,7 +421,7 @@
 
         addonRow.innerHTML = `
             <div class="component-label">
-                 <select id="select-addon-${addonCounter}" class="addon-select config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                   <select id="select-addon-${addonCounter}" class="addon-select config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
                     ${optionsHTML}
                 </select>
                 <span id="price-addon-${addonCounter}" class="component-price ml-2"></span>
@@ -511,13 +514,13 @@
         if (!rxSelect) return;
         
         const baseRxItems = priceListData.filter(p => p.Category === 'Rx' && p.Item !== 'None');
-    
+        
         const vspItems = baseRxItems.filter(p => p.Item.includes('VSP') || p.Item === 'S.V.' || p.Item === 'BiFocal');
         const otherItems = baseRxItems.filter(p => !p.Item.includes('VSP') || p.Item === 'S.V.' || p.Item === 'BiFocal');
-    
+        
         const optionsToShow = [{ Item: 'None' }, ...(insuranceType === 'VSP' ? vspItems : otherItems)];
         const optionValuesToShow = optionsToShow.map(o => o.Item);
-    
+        
         const currentRxValue = rxSelect.value;
         rxSelect.innerHTML = optionsToShow.map(opt => `<option value="${opt.Item}">${opt.Item}</option>`).join('');
 
@@ -533,18 +536,18 @@
         const insuranceType = document.getElementById('insurance-type-select').value;
         const coatingsSelect = document.getElementById('select-coatings');
         if (!coatingsSelect) return;
-    
+        
         const baseCoatingItems = priceListData.filter(p => p.Category === 'Coatings' && p.Item !== 'None');
-    
+        
         const vspItems = baseCoatingItems.filter(p => p.Item.match(/- [A-Z]$/));
         const otherItems = baseCoatingItems.filter(p => !p.Item.match(/- [A-Z]$/));
-    
+        
         const optionsToShow = [{ Item: 'None' }, ...(insuranceType === 'VSP' ? vspItems : otherItems)];
         const optionValuesToShow = optionsToShow.map(o => o.Item);
-    
+        
         const currentCoatingValue = coatingsSelect.value;
         coatingsSelect.innerHTML = optionsToShow.map(opt => `<option value="${opt.Item}">${opt.Item}</option>`).join('');
-    
+        
         if (optionValuesToShow.includes(currentCoatingValue)) {
             coatingsSelect.value = currentCoatingValue;
         } else {
@@ -584,6 +587,18 @@
 
         updateRxDropdown(); 
         updateCoatingsDropdown();
+
+        // New logic for Backside UV auto-checking based on Coatings selection
+        const coatingsSelect = document.getElementById('select-coatings');
+        const backsideUVCheckbox = document.getElementById('checkbox-backside-uv'); // This is the ID for the Backside UV checkbox
+
+        if (coatingsSelect && backsideUVCheckbox) { // Check if both elements exist on the page
+            if (coatingsSelect.value === 'Premium Plus A.R.') { // If "Premium Plus A.R." is selected for Coatings
+                backsideUVCheckbox.checked = true; // Auto-check the Backside UV box
+            } else {
+                backsideUVCheckbox.checked = false; // Otherwise, uncheck it
+            }
+        }
 
         summaryItemsEl.innerHTML = '<p class="text-gray-500 initial-text">Your selections will appear here.</p>'; 
         let summaryContent = '';
@@ -805,4 +820,4 @@
     // fetchData() is now called inside checkUser() after user is confirmed authenticated
 </script>
 </body>
-</ht
+</html>
