@@ -348,7 +348,7 @@
                     container.innerHTML = `
                         <div class="component-label">
                              <label class="flex items-center cursor-pointer">
-                                 <input type="checkbox" id="checkbox-${catId}" data-item-name="${singleOption.Item}" class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                                 <input type="checkbox" id="checkbox-${catId}" data-item-name="${singleOption.Item}" ${cat.id === 'Edge Polish' ? 'checked' : ''} class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
                                  <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
                              </label>
                              <span id="price-${catId}" class="component-price"></span>
