@@ -159,8 +159,8 @@
                                 <option>Declining Balance</option> <!-- ADDED: New insurance option -->
                             </select>
                         </div>
-                        <!-- ADDED: New Global Allowance/Discount/CoPay Fields (initially hidden) -->
-                        <div id="declining-balance-inputs" class="md:col-span-2 grid grid-cols-3 gap-2 input-group" style="display: none;">
+                        <!-- UPDATED: Global Allowance/Discount Fields (CoPay removed) -->
+                        <div id="declining-balance-inputs" class="md:col-span-2 grid grid-cols-2 gap-2 input-group" style="display: none;">
                             <div class="space-y-1">
                                 <label for="global-allowance" class="block text-sm font-medium text-gray-700">Global Allowance</label>
                                 <input type="text" inputmode="decimal" id="global-allowance" placeholder="Allowance" class="config-input dollar-format w-full border-gray-300 rounded-md shadow-sm text-sm">
@@ -169,10 +169,7 @@
                                 <label for="global-discount" class="block text-sm font-medium text-gray-700">Global Discount</label>
                                 <input type="text" inputmode="decimal" id="global-discount" placeholder="Discount" class="config-input percent-format w-full border-gray-300 rounded-md shadow-sm text-sm">
                             </div>
-                            <div class="space-y-1">
-                                <label for="global-copay" class="block text-sm font-medium text-gray-700">Global CoPay</label>
-                                <input type="text" inputmode="decimal" id="global-copay" placeholder="CoPay" class="config-input dollar-format w-full border-gray-300 rounded-md shadow-sm text-sm">
-                            </div>
+                            <!-- Global CoPay input removed here -->
                         </div>
 
                         <div id="frame-group" class="md:col-span-2 input-group space-y-2">
@@ -309,12 +306,12 @@
         { id: 'Rx', label: 'Rx' },
         { id: 'Lens Type', label: 'Lens Design' }, 
         { id: 'Material', label: 'Material' },
-        { id: 'Color', label: 'Color' }, 
         { id: 'Coatings', label: 'Coatings' },
         { id: 'Backside UV', label: 'Backside UV' },
-        { id: 'Blue Light', label: 'Blue Light Filter' },
         { id: 'Edge Polish', label: 'Edge Polish' }, 
+        { id: 'Color', label: 'Color' }, 
         { id: "Custom Measurements", label: "Custom Measurements" },
+        { id: 'Blue Light', label: 'Blue Light Filter' },
         { id: 'Protection', label: '1Yr. Protection' },
         { id: 'Add-Ons', label: 'Add-Ons' }
     ];
@@ -688,9 +685,8 @@
             // Skip 'Add-Ons' as it's handled in a separate loop below
             if (cat.id === 'Add-Ons') return;
             
-            // Skip if Backside UV is not checked, or if it's the category used for the VSP Copay container (Protection)
-            if (cat.id === 'Backside UV' && !document.getElementById('checkbox-backside-uv').checked) return; 
-            if (cat.id === 'Protection' && insuranceType === 'VSP') return; // Avoid processing Protection if VSP is selected as it's housing VSP Copay
+            // Skip the category that houses the VSP Copay container if VSP is selected (to avoid double processing)
+            if (cat.id === 'Protection' && insuranceType === 'VSP') return; 
 
             const catId = toId(cat.id);
             const priceEl = document.getElementById(`price-${catId}`);
@@ -709,6 +705,15 @@
                     discountInput.value = '';
                     copayInput.value = '';
                 }
+            }
+
+            // Only proceed with calculation if Declining Balance is NOT selected,
+            // or if it's Declining Balance and the item is "Backside UV" and is checked.
+            // This ensures prices for other items don't accumulate in totalRetail during Declining Balance
+            // and only Backside UV's retail (if checked) is included in totalRetail.
+            if (isDecliningBalance && (cat.id !== 'Backside UV' || !document.getElementById('checkbox-backside-uv').checked)) {
+                if(priceEl) priceEl.textContent = ''; // Clear individual prices if not relevant
+                return; 
             }
 
             let selectedValue;
@@ -778,6 +783,12 @@
                 }
             }
 
+            // If Declining Balance, don't process add-on's individual price contribution
+            if (isDecliningBalance) {
+                if(priceEl) priceEl.textContent = '';
+                return;
+            }
+
             if (itemName === 'No Extras') {
                 if(priceEl) priceEl.textContent = '';
                 return;
@@ -814,23 +825,19 @@
         if (isDecliningBalance) {
             const globalAllowance = getCleanValue('global-allowance');
             const globalDiscount = getCleanValue('global-discount');
-            const globalCopay = getCleanValue('global-copay');
+            // globalCopay is now explicitly removed from HTML and logic
 
             let subtotal = totalRetail - globalAllowance;
-            totalFinalCost = (subtotal * (1 - (globalDiscount / 100))) + globalCopay;
+            // Updated formula: (Retail Total - Allowance) * (1 - Discount)
+            totalFinalCost = subtotal * (1 - (globalDiscount / 100));
             totalFinalCost = Math.max(0, totalFinalCost); // Ensure final cost doesn't go below zero
 
             totalInsSvgs = totalRetail - totalFinalCost; // Savings based on new final cost
 
-            // For declining balance, individual item summaries might be misleading if they show non-zero final costs,
-            // so we should clear them or indicate the global calculation
-            // This loop ensures that the price displayed next to each item is based on no individual impact.
-            // If the goal is for them to show the retail price still, this part can be removed.
+            // Clear individual component prices if Declining Balance is active
             document.querySelectorAll('.component-price').forEach(el => {
-                // Only clear if it's not the frame price (which still shows its direct retail calc)
-                // And not the total prices
                 if (el.id !== 'price-frame' && el.id !== 'summary-retail' && el.id !== 'summary-ins-svgs' && el.id !== 'summary-final-cost') {
-                    el.textContent = ''; // Clear individual component prices
+                    el.textContent = ''; 
                 }
             });
 
@@ -853,20 +860,18 @@
             if (isDecliningBalance) {
                 const globalAllowance = getCleanValue('global-allowance');
                 const globalDiscount = getCleanValue('global-discount');
-                const globalCopay = getCleanValue('global-copay');
                 
                 // Add a summary line for the global calculation, showing inputs and resulting final cost
                 summaryContent += `
                     <div class="border-b border-gray-200 pb-1">
                         <div class="summary-item-header flex justify-between items-center" onclick="toggleDetails('declining-balance-global')">
-                            <span class="font-medium">Declining Balance Adjustment</span>
+                            <span class="font-medium">Declining Balance Net</span>
                             <span class="font-semibold">${formatCurrency(totalFinalCost)}</span>
                         </div>
                         <div id="details-declining-balance-global" class="summary-item-details bg-gray-50 rounded px-3 text-gray-600">
                             <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Total Retail</span><span>${formatCurrency(totalRetail)}</span></div>
                             <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Global Allowance</span><span>-${formatCurrency(globalAllowance)}</span></div>
-                            <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Global Discount (${globalDiscount}%)</span><span>-${formatCurrency(totalRetail * (globalDiscount / 100))}</span></div>
-                            <div class="flex justify-between text-xs pt-1"><span>Global Co-Pay</span><span>+${formatCurrency(globalCopay)}</span></div>
+                            <div class="flex justify-between text-xs pt-1"><span>Global Discount (${globalDiscount}%)</span><span>-${formatCurrency(totalRetail * (globalDiscount / 100))}</span></div>
                         </div>
                     </div>
                 `;
@@ -880,15 +885,13 @@
     }
 
     function createSummaryItemHTML(id, title, inputs, outputs) {
-        let discountCalcAmount; // Renamed to avoid confusion with percentage
+        let discountCalcAmount; 
         const insuranceType = document.getElementById('insurance-type-select').value;
         const isDecliningBalance = (insuranceType === 'Declining Balance');
 
         if (id === 'frame') {
             discountCalcAmount = (inputs.retail - inputs.insAllow) * (inputs.discount / 100);
         } else {
-            // For individual items, if not Declining Balance, calculate actual discount amount
-            // If Declining Balance, inputs.discount will be 0, so discountCalcAmount will be 0.
             discountCalcAmount = inputs.retail * (inputs.discount / 100);
         }
         
@@ -921,26 +924,23 @@
     }
 
     function resetCalculator() {
-        document.querySelectorAll('.config-input, #customer-name, #global-allowance, #global-discount, #global-copay').forEach(el => el.value = ''); // Added global inputs to reset
+        document.querySelectorAll('.config-input, #customer-name, #global-allowance, #global-discount').forEach(el => el.value = ''); // global-copay removed from reset
         document.querySelectorAll('.config-option').forEach(el => {
             if (el.tagName === 'SELECT') {
-                el.selectedIndex = 0; // Reset dropdowns to the first option (usually "None")
+                el.selectedIndex = 0; 
             } else if (el.type === 'checkbox') {
-                el.checked = false; // Uncheck all checkboxes
+                el.checked = false; 
             }
         });
 
-        // Clear any dynamically added add-on rows
         document.getElementById('addons-repeater-container').innerHTML = '';
-        addonCounter = 0; // Reset the addon counter
+        addonCounter = 0; 
 
-        // Explicitly re-check the Edge Polish checkbox
         const edgePolishCheckbox = document.getElementById('checkbox-edge-polish');
         if (edgePolishCheckbox) { 
             edgePolishCheckbox.checked = true;
         }
 
-        // Trigger a re-calculation to update the summary and prices
         updateCalculations();
     }
 
@@ -951,7 +951,7 @@
             console.log("Quote saved (placeholder).");
         });
 
-         document.querySelectorAll('#customer-name, #insurance-type-select, #frame-retail-price, #allowance-frame, #discount-frame, #global-allowance, #global-discount, #global-copay').forEach(el => {
+         document.querySelectorAll('#customer-name, #insurance-type-select, #frame-retail-price, #allowance-frame, #discount-frame, #global-allowance, #global-discount').forEach(el => { // global-copay removed from event listeners
             el.addEventListener('input', updateCalculations);
              if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
                 el.addEventListener('focus', onFocus);
@@ -959,7 +959,6 @@
             }
         });
 
-        // Add event listener to the insurance type select to trigger update calculations
         document.getElementById('insurance-type-select').addEventListener('change', updateCalculations);
 
         updateCalculations();
