@@ -293,10 +293,11 @@
         { id: 'Lens Type', label: 'Lens Design' }, 
         { id: 'Material', label: 'Material' },
         { id: 'Coatings', label: 'Coatings' },
+        { id: 'Backside UV', label: 'Backside UV' },
         { id: 'Edge Polish', label: 'Edge Polish' },
-        { id: 'Blue Light', label: 'Blue Light Filter' },
         { id: 'Color', label: 'Color' },   
         { id: "Custom Measurements", label: "Custom Measurements" },
+        { id: 'Blue Light', label: 'Blue Light Filter' },
         { id: 'Protection', label: '1Yr. Protection' },
         { id: 'Add-Ons', label: 'Add-Ons' }
     ];
@@ -584,6 +585,13 @@
 
         updateRxDropdown(); 
         updateCoatingsDropdown();
+         if (coatingsSelect && backsideUVCheckbox) { // Check if both elements exist on the page
+        if (coatingsSelect.value === 'Premium Plus A.R.') { // If "Premium Plus A.R." is selected for Coatings
+            backsideUVCheckbox.checked = true; // Auto-check the Backside UV box
+        } else {
+            backsideUVCheckbox.checked = false; // Otherwise, uncheck it
+        }
+    }
 
         summaryItemsEl.innerHTML = '<p class="text-gray-500 initial-text">Your selections will appear here.</p>'; 
         let summaryContent = '';
