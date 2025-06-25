@@ -786,13 +786,28 @@
     }
 
     function resetCalculator() {
+        // Reset all input fields and dropdowns
         document.querySelectorAll('.config-input, #customer-name').forEach(el => el.value = '');
         document.querySelectorAll('.config-option').forEach(el => {
-            if (el.tagName === 'SELECT') el.selectedIndex = 0;
-            else if (el.type === 'checkbox') el.checked = false;
+            if (el.tagName === 'SELECT') {
+                el.selectedIndex = 0; // Reset dropdowns to the first option (usually "None")
+            } else if (el.type === 'checkbox') {
+                el.checked = false; // Uncheck all checkboxes
+            }
         });
+
+        // Clear any dynamically added add-on rows
         document.getElementById('addons-repeater-container').innerHTML = '';
-        addonCounter = 0;
+        addonCounter = 0; // Reset the addon counter
+
+        // Explicitly re-check the Edge Polish checkbox
+        // The ID for Edge Polish checkbox is 'checkbox-edge-polish'
+        const edgePolishCheckbox = document.getElementById('checkbox-edge-polish');
+        if (edgePolishCheckbox) { // Check if the element exists before trying to check it
+            edgePolishCheckbox.checked = true;
+        }
+
+        // Trigger a re-calculation to update the summary and prices
         updateCalculations();
     }
 
