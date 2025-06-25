@@ -156,8 +156,25 @@
                             <select id="insurance-type-select" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
                                 <option>Other Insurance</option>
                                 <option>VSP</option>
+                                <option>Declining Balance</option> <!-- ADDED: New insurance option -->
                             </select>
                         </div>
+                        <!-- ADDED: New Global Allowance/Discount/CoPay Fields (initially hidden) -->
+                        <div id="declining-balance-inputs" class="md:col-span-2 grid grid-cols-3 gap-2 input-group" style="display: none;">
+                            <div class="space-y-1">
+                                <label for="global-allowance" class="block text-sm font-medium text-gray-700">Global Allowance</label>
+                                <input type="text" inputmode="decimal" id="global-allowance" placeholder="Allowance" class="config-input dollar-format w-full border-gray-300 rounded-md shadow-sm text-sm">
+                            </div>
+                            <div class="space-y-1">
+                                <label for="global-discount" class="block text-sm font-medium text-gray-700">Global Discount</label>
+                                <input type="text" inputmode="decimal" id="global-discount" placeholder="Discount" class="config-input percent-format w-full border-gray-300 rounded-md shadow-sm text-sm">
+                            </div>
+                            <div class="space-y-1">
+                                <label for="global-copay" class="block text-sm font-medium text-gray-700">Global CoPay</label>
+                                <input type="text" inputmode="decimal" id="global-copay" placeholder="CoPay" class="config-input dollar-format w-full border-gray-300 rounded-md shadow-sm text-sm">
+                            </div>
+                        </div>
+
                         <div id="frame-group" class="md:col-span-2 input-group space-y-2">
                             <div class="component-label">
                                 <label for="frame-retail-price" class="block font-medium text-gray-700">Frame Details</label>
@@ -292,12 +309,12 @@
         { id: 'Rx', label: 'Rx' },
         { id: 'Lens Type', label: 'Lens Design' }, 
         { id: 'Material', label: 'Material' },
+        { id: 'Color', label: 'Color' }, 
         { id: 'Coatings', label: 'Coatings' },
         { id: 'Backside UV', label: 'Backside UV' },
-        { id: 'Edge Polish', label: 'Edge Polish' },
-        { id: 'Color', label: 'Color' }, 
+        { id: 'Blue Light', label: 'Blue Light Filter' },
+        { id: 'Edge Polish', label: 'Edge Polish' }, 
         { id: "Custom Measurements", label: "Custom Measurements" },
-        { id: 'Blue Light', label: 'Blue Light Filter' }, 
         { id: 'Protection', label: '1Yr. Protection' },
         { id: 'Add-Ons', label: 'Add-Ons' }
     ];
@@ -347,7 +364,7 @@
                 if (options.length <= 1 && cat.id !== 'Rx' && cat.id !== 'Coatings' && cat.id !== 'Color' && cat.id !== 'Material' && cat.id !== 'Lens Type') {
                     const singleOption = options[0] || { Item: cat.label };
                     // Determine if the checkbox should be initially checked (only Edge Polish by default)
-                    const isCheckedDefault = (cat.id === 'Edge Polish') ? 'checked' : ''; // Original logic for Edge Polish
+                    const isCheckedDefault = (cat.id === 'Edge Polish') ? 'checked' : ''; 
                     container.innerHTML = `
                         <div class="component-label">
                              <label class="flex items-center cursor-pointer">
@@ -383,11 +400,12 @@
             
             optionsGrid.appendChild(container);
 
-            if (cat.id === 'Protection') {
+            // Conditional VSP Material Co-Pay container placement
+            if (cat.id === 'Protection') { // Current placement for VSP Material Co-Pay after Protection
                 const vspCopayContainer = document.createElement('div');
                 vspCopayContainer.id = 'container-material-co-pay';
                 vspCopayContainer.className = 'input-group space-y-2'; 
-                vspCopayContainer.style.display = 'none'; 
+                vspCopayContainer.style.display = 'none'; // Initially hidden
                 vspCopayContainer.innerHTML = `
                     <div class="component-label">
                         <label class="font-medium text-gray-700">VSP Material Co-Pay</label>
@@ -435,7 +453,8 @@
                 <button type="button" class="btn-remove btn" data-row-id="${addonCounter}">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                         <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0
+                                0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                     </svg>
                 </button>
             </div>
@@ -583,69 +602,49 @@
         let errorFound = false;
 
         const insuranceType = document.getElementById('insurance-type-select').value;
+        const isDecliningBalance = (insuranceType === 'Declining Balance');
+
         let totalRetail = 0, totalInsSvgs = 0, totalFinalCost = 0;
 
+        // Ensure dropdowns are updated first based on insurance type
         updateRxDropdown(); 
         updateCoatingsDropdown();
 
-        // New logic for Backside UV auto-checking based on Coatings selection
+        // Logic for Backside UV auto-checking based on Coatings selection
         const coatingsSelect = document.getElementById('select-coatings');
-        const backsideUVCheckbox = document.getElementById('checkbox-backside-uv'); // This is the ID for the Backside UV checkbox
+        const backsideUVCheckbox = document.getElementById('checkbox-backside-uv');
 
-        if (coatingsSelect && backsideUVCheckbox) { // Check if both elements exist on the page
-            if (coatingsSelect.value === 'Premium Plus A.R.') { // If "Premium Plus A.R." is selected for Coatings
-                backsideUVCheckbox.checked = true; // Auto-check the Backside UV box
+        if (coatingsSelect && backsideUVCheckbox) {
+            if (coatingsSelect.value === 'Premium Plus A.R.') {
+                backsideUVCheckbox.checked = true;
             } else {
-                backsideUVCheckbox.checked = false; // Otherwise, uncheck it
+                backsideUVCheckbox.checked = false;
             }
         }
 
-        summaryItemsEl.innerHTML = '<p class="text-gray-500 initial-text">Your selections will appear here.</p>'; 
-        let summaryContent = '';
-
-        const frameInputs = {
-            retail: getCleanValue('frame-retail-price'),
-            insAllow: getCleanValue('allowance-frame'),
-            discount: getCleanValue('discount-frame'),
-            copay: 0 
-        };
-        if (frameInputs.retail > 0) {
-            const frameCalc = calculateItem(frameInputs.retail, frameInputs.insAllow, frameInputs.discount, frameInputs.copay, true);
-            if (frameCalc.isError && !errorFound) {
-                errorFound = true;
-                showErrorModal("The final price for the Frame cannot exceed its retail price.");
-                document.getElementById('frame-group').classList.add('error');
-            }
-            totalRetail += frameInputs.retail;
-            totalInsSvgs += frameCalc.insSvgs;
-            totalFinalCost += frameCalc.finalCost;
-            summaryContent += createSummaryItemHTML('frame', 'Frame', frameInputs, frameCalc);
-            document.getElementById('price-frame').textContent = formatCurrency(frameCalc.finalCost);
-        } else {
-            document.getElementById('price-frame').textContent = '';
+        // --- Handle visibility of global vs. individual inputs ---
+        const decliningBalanceInputsContainer = document.getElementById('declining-balance-inputs');
+        if (decliningBalanceInputsContainer) {
+            decliningBalanceInputsContainer.style.display = isDecliningBalance ? 'grid' : 'none'; // Use 'grid' for the new layout
         }
 
-        const rxSelect = document.getElementById('select-rx');
-        const lensTypeSelect = document.getElementById('select-lens-type');
-        if (rxSelect && lensTypeSelect) {
-            const rxValue = rxSelect.value;
-            let targetLensType = 'None';
-            // Logic to auto-select lens type based on Rx
-            if (rxValue.includes('S.V.')) targetLensType = 'S.V. Digital Aspheric';
-            else if (rxValue.includes('BiFocal')) targetLensType = 'BiFocal Digital Aspheric';
-            else if (rxValue.startsWith('PG')) targetLensType = 'Prog. Digital Aspheric';
-            
-            if (priceListData.some(p => p.Item === targetLensType)) {
-                 lensTypeSelect.value = targetLensType;
-            } else {
-                lensTypeSelect.value = "None"; // Fallback if the item doesn't exist
+        // Hide/show individual allowance/discount inputs for Frame Details
+        const frameAllowanceInput = document.getElementById('allowance-frame');
+        const frameDiscountInput = document.getElementById('discount-frame');
+        if (frameAllowanceInput && frameDiscountInput) {
+            frameAllowanceInput.style.display = isDecliningBalance ? 'none' : 'block';
+            frameDiscountInput.style.display = isDecliningBalance ? 'none' : 'block';
+            // Clear values if hidden (important for calculation)
+            if (isDecliningBalance) {
+                frameAllowanceInput.value = '';
+                frameDiscountInput.value = '';
             }
-            lensTypeSelect.disabled = (targetLensType !== 'None');
         }
 
+        // Hide VSP Material Co-Pay if Declining Balance is selected or if insurance is not VSP
         const vspCopayContainer = document.getElementById('container-material-co-pay');
         if (vspCopayContainer) {
-            if (insuranceType === 'VSP') {
+            if (insuranceType === 'VSP' && !isDecliningBalance) { // Only show for VSP AND not Declining Balance
                 vspCopayContainer.style.display = 'block';
             } else {
                 vspCopayContainer.style.display = 'none';
@@ -653,10 +652,63 @@
             }
         }
 
+
+        summaryItemsEl.innerHTML = '<p class="text-gray-500 initial-text">Your selections will appear here.</p>'; 
+        let summaryContent = '';
+
+        // --- Process Frame Details ---
+        const frameRetail = getCleanValue('frame-retail-price');
+        // For frame, if Declining Balance, individual allowance/discount are ignored for calculation
+        const frameInsAllow = isDecliningBalance ? 0 : getCleanValue('allowance-frame');
+        const frameDiscount = isDecliningBalance ? 0 : getCleanValue('discount-frame');
+        const frameCopay = 0; // Frame never has an individual copay in your current setup
+
+        if (frameRetail > 0) {
+            const frameCalc = calculateItem(frameRetail, frameInsAllow, frameDiscount, frameCopay, true);
+            if (frameCalc.isError && !errorFound) {
+                errorFound = true;
+                showErrorModal("The final price for the Frame cannot exceed its retail price.");
+                document.getElementById('frame-group').classList.add('error');
+            }
+            totalRetail += frameRetail;
+            // Only add individual savings/costs to totals if NOT Declining Balance
+            if (!isDecliningBalance) {
+                totalInsSvgs += frameCalc.insSvgs;
+                totalFinalCost += frameCalc.finalCost;
+            }
+            summaryContent += createSummaryItemHTML('frame', 'Frame', {retail: frameRetail, insAllow: frameInsAllow, discount: frameDiscount, copay: frameCopay}, frameCalc);
+            document.getElementById('price-frame').textContent = formatCurrency(frameCalc.finalCost);
+        } else {
+            document.getElementById('price-frame').textContent = '';
+        }
+
+        // --- Process Lens & Add-On Configuration categories ---
         categories.forEach(cat => {
+            // Skip 'Add-Ons' as it's handled in a separate loop below
             if (cat.id === 'Add-Ons') return;
+            
+            // Skip if Backside UV is not checked, or if it's the category used for the VSP Copay container (Protection)
+            if (cat.id === 'Backside UV' && !document.getElementById('checkbox-backside-uv').checked) return; 
+            if (cat.id === 'Protection' && insuranceType === 'VSP') return; // Avoid processing Protection if VSP is selected as it's housing VSP Copay
+
             const catId = toId(cat.id);
             const priceEl = document.getElementById(`price-${catId}`);
+            const allowanceInput = document.getElementById(`allowance-${catId}`);
+            const discountInput = document.getElementById(`discount-${catId}`);
+            const copayInput = document.getElementById(`copay-${catId}`);
+
+            // Hide/show individual inputs for current category
+            if (allowanceInput && discountInput && copayInput) {
+                allowanceInput.style.display = isDecliningBalance ? 'none' : 'block';
+                discountInput.style.display = isDecliningBalance ? 'none' : 'block';
+                copayInput.style.display = isDecliningBalance ? 'none' : 'block';
+                // Clear values if hidden
+                if (isDecliningBalance) {
+                    allowanceInput.value = '';
+                    discountInput.value = '';
+                    copayInput.value = '';
+                }
+            }
 
             let selectedValue;
             const checkbox = document.getElementById(`checkbox-${catId}`);
@@ -668,16 +720,21 @@
                  if (select) selectedValue = select.value;
             }
 
-            if (!selectedValue || selectedValue === "None") { if(priceEl) priceEl.textContent = ''; return; }
+            // Only proceed if a value is selected and it's not "None"
+            if (!selectedValue || selectedValue === "None") { 
+                if(priceEl) priceEl.textContent = ''; 
+                return; 
+            }
             
             const selectedItem = priceListData.find(p => p.Item === selectedValue);
             if (!selectedItem) return;
 
             const inputs = {
                 retail: selectedItem.Retail,
-                insAllow: getCleanValue(`allowance-${catId}`),
-                discount: getCleanValue(`discount-${catId}`),
-                copay: getCleanValue(`copay-${catId}`),
+                // Use 0 for individual allowances/discounts/copays if Declining Balance is selected
+                insAllow: isDecliningBalance ? 0 : getCleanValue(`allowance-${catId}`),
+                discount: isDecliningBalance ? 0 : getCleanValue(`discount-${catId}`),
+                copay: isDecliningBalance ? 0 : getCleanValue(`copay-${catId}`),
             };
 
             const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
@@ -687,17 +744,38 @@
                 document.getElementById(`container-${catId}`).classList.add('error');
             }
             totalRetail += inputs.retail;
-            totalInsSvgs += calc.insSvgs;
-            totalFinalCost += calc.finalCost;
+            // Only add individual savings/costs to totals if NOT Declining Balance
+            if (!isDecliningBalance) {
+                totalInsSvgs += calc.insSvgs;
+                totalFinalCost += calc.finalCost;
+            }
             summaryContent += createSummaryItemHTML(catId, cat.label, inputs, calc);
             if (priceEl) priceEl.textContent = formatCurrency(calc.finalCost);
         });
         
+        // --- Process Add-On rows ---
         document.querySelectorAll('.addon-row').forEach(row => {
             const rowId = row.id.split('-').pop();
             const select = document.getElementById(`select-addon-${rowId}`);
             const itemName = select.value;
             const priceEl = document.getElementById(`price-addon-${rowId}`);
+
+            const allowanceInput = document.getElementById(`allowance-addon-${rowId}`);
+            const discountInput = document.getElementById(`discount-addon-${rowId}`);
+            const copayInput = document.getElementById(`copay-addon-${rowId}`);
+
+            // Hide/show individual inputs for current add-on row
+            if (allowanceInput && discountInput && copayInput) {
+                allowanceInput.style.display = isDecliningBalance ? 'none' : 'block';
+                discountInput.style.display = isDecliningBalance ? 'none' : 'block';
+                copayInput.style.display = isDecliningBalance ? 'none' : 'block';
+                // Clear values if hidden
+                if (isDecliningBalance) {
+                    allowanceInput.value = '';
+                    discountInput.value = '';
+                    copayInput.value = '';
+                }
+            }
 
             if (itemName === 'No Extras') {
                 if(priceEl) priceEl.textContent = '';
@@ -709,9 +787,10 @@
 
             const inputs = {
                 retail: selectedItem.Retail,
-                insAllow: getCleanValue(`allowance-addon-${rowId}`),
-                discount: getCleanValue(`discount-addon-${rowId}`),
-                copay: getCleanValue(`copay-addon-${rowId}`),
+                // Use 0 for individual allowances/discounts/copays if Declining Balance is selected
+                insAllow: isDecliningBalance ? 0 : getCleanValue(`allowance-addon-${rowId}`),
+                discount: isDecliningBalance ? 0 : getCleanValue(`discount-addon-${rowId}`),
+                copay: isDecliningBalance ? 0 : getCleanValue(`copay-addon-${rowId}`),
             };
 
             const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
@@ -721,26 +800,76 @@
                 row.classList.add('error');
             }
             totalRetail += inputs.retail;
-            totalInsSvgs += calc.insSvgs;
-            totalFinalCost += calc.finalCost;
+            // Only add individual savings/costs to totals if NOT Declining Balance
+            if (!isDecliningBalance) {
+                totalInsSvgs += calc.insSvgs;
+                totalFinalCost += calc.finalCost;
+            }
             summaryContent += createSummaryItemHTML(`addon-${rowId}`, itemName, inputs, calc);
             if(priceEl) priceEl.textContent = formatCurrency(calc.finalCost);
         });
 
+        // --- Final Calculation based on insurance type ---
+        if (isDecliningBalance) {
+            const globalAllowance = getCleanValue('global-allowance');
+            const globalDiscount = getCleanValue('global-discount');
+            const globalCopay = getCleanValue('global-copay');
 
-        const vspCopayValue = getCleanValue('copay-material-co-pay');
-        const vspCopayPriceEl = document.getElementById('price-material-co-pay');
-        if (insuranceType === 'VSP' && vspCopayValue > 0) {
-            totalFinalCost += vspCopayValue; 
-            const vspInputs = { retail: 0, insAllow: 0, discount: 0, copay: vspCopayValue };
-            const vspOutputs = { yourCost: 0, insSvgs: -vspCopayValue, finalCost: vspCopayValue };
-            summaryContent += createSummaryItemHTML('material-co-pay', 'VSP Material Co-Pay', vspInputs, vspOutputs);
-            vspCopayPriceEl.textContent = formatCurrency(vspCopayValue);
-        } else if (vspCopayPriceEl) {
-            vspCopayPriceEl.textContent = '';
+            let subtotal = totalRetail - globalAllowance;
+            totalFinalCost = (subtotal * (1 - (globalDiscount / 100))) + globalCopay;
+            totalFinalCost = Math.max(0, totalFinalCost); // Ensure final cost doesn't go below zero
+
+            totalInsSvgs = totalRetail - totalFinalCost; // Savings based on new final cost
+
+            // For declining balance, individual item summaries might be misleading if they show non-zero final costs,
+            // so we should clear them or indicate the global calculation
+            // This loop ensures that the price displayed next to each item is based on no individual impact.
+            // If the goal is for them to show the retail price still, this part can be removed.
+            document.querySelectorAll('.component-price').forEach(el => {
+                // Only clear if it's not the frame price (which still shows its direct retail calc)
+                // And not the total prices
+                if (el.id !== 'price-frame' && el.id !== 'summary-retail' && el.id !== 'summary-ins-svgs' && el.id !== 'summary-final-cost') {
+                    el.textContent = ''; // Clear individual component prices
+                }
+            });
+
+        } else { // Existing logic for Other Insurance and VSP
+            const vspCopayValue = getCleanValue('copay-material-co-pay');
+            const vspCopayPriceEl = document.getElementById('price-material-co-pay');
+            if (insuranceType === 'VSP' && vspCopayValue > 0) {
+                totalFinalCost += vspCopayValue; 
+                const vspInputs = { retail: 0, insAllow: 0, discount: 0, copay: vspCopayValue };
+                const vspOutputs = { yourCost: 0, insSvgs: -vspCopayValue, finalCost: vspCopayValue };
+                summaryContent += createSummaryItemHTML('material-co-pay', 'VSP Material Co-Pay', vspInputs, vspOutputs);
+                vspCopayPriceEl.textContent = formatCurrency(vspCopayValue);
+            } else if (vspCopayPriceEl) {
+                vspCopayPriceEl.textContent = '';
+            }
         }
 
         if(summaryContent) {
+            // For Declining Balance, we want to add a single summary line for the Global calculation
+            if (isDecliningBalance) {
+                const globalAllowance = getCleanValue('global-allowance');
+                const globalDiscount = getCleanValue('global-discount');
+                const globalCopay = getCleanValue('global-copay');
+                
+                // Add a summary line for the global calculation, showing inputs and resulting final cost
+                summaryContent += `
+                    <div class="border-b border-gray-200 pb-1">
+                        <div class="summary-item-header flex justify-between items-center" onclick="toggleDetails('declining-balance-global')">
+                            <span class="font-medium">Declining Balance Adjustment</span>
+                            <span class="font-semibold">${formatCurrency(totalFinalCost)}</span>
+                        </div>
+                        <div id="details-declining-balance-global" class="summary-item-details bg-gray-50 rounded px-3 text-gray-600">
+                            <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Total Retail</span><span>${formatCurrency(totalRetail)}</span></div>
+                            <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Global Allowance</span><span>-${formatCurrency(globalAllowance)}</span></div>
+                            <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Global Discount (${globalDiscount}%)</span><span>-${formatCurrency(totalRetail * (globalDiscount / 100))}</span></div>
+                            <div class="flex justify-between text-xs pt-1"><span>Global Co-Pay</span><span>+${formatCurrency(globalCopay)}</span></div>
+                        </div>
+                    </div>
+                `;
+            }
             summaryItemsEl.innerHTML = summaryContent;
         }
 
@@ -750,15 +879,20 @@
     }
 
     function createSummaryItemHTML(id, title, inputs, outputs) {
-        let discountCalc;
+        let discountCalcAmount; // Renamed to avoid confusion with percentage
+        const insuranceType = document.getElementById('insurance-type-select').value;
+        const isDecliningBalance = (insuranceType === 'Declining Balance');
+
         if (id === 'frame') {
-            discountCalc = (inputs.retail - inputs.insAllow) * (inputs.discount / 100);
+            discountCalcAmount = (inputs.retail - inputs.insAllow) * (inputs.discount / 100);
         } else {
-            discountCalc = inputs.retail * (inputs.discount / 100);
+            // For individual items, if not Declining Balance, calculate actual discount amount
+            // If Declining Balance, inputs.discount will be 0, so discountCalcAmount will be 0.
+            discountCalcAmount = inputs.retail * (inputs.discount / 100);
         }
         
         let copayHTML = '';
-        if (inputs.copay > 0) {
+        if (inputs.copay > 0) { 
              copayHTML = `<div class="flex justify-between text-xs pt-1"><span>Co-Pay</span><span>+${formatCurrency(inputs.copay)}</span></div>`;
         }
 
@@ -766,13 +900,13 @@
             <div class="border-b border-gray-200 pb-1">
                 <div class="summary-item-header flex justify-between items-center" onclick="toggleDetails('${id}')">
                     <span class="font-medium">${title}</span>
-                    <span class="font-semibold">${formatCurrency(outputs.finalCost)}</span>
+                    <span class="font-semibold">${formatCurrency(isDecliningBalance ? inputs.retail : outputs.finalCost)}</span>
                 </div>
                 <div id="details-${id}" class="summary-item-details bg-gray-50 rounded px-3 text-gray-600">
                     <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Retail</span><span>${formatCurrency(inputs.retail)}</span></div>
-                    <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Ins. Allowance</span><span>-${formatCurrency(inputs.insAllow)}</span></div>
-                    <div class="flex justify-between text-xs ${inputs.copay > 0 ? 'border-b border-gray-200 py-1' : 'pt-1'}"><span>Discount (${inputs.discount}%)</span><span>-${formatCurrency(discountCalc)}</span></div>
-                    ${copayHTML}
+                    ${!isDecliningBalance ? `<div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Ins. Allowance</span><span>-${formatCurrency(inputs.insAllow)}</span></div>` : ''}
+                    ${!isDecliningBalance ? `<div class="flex justify-between text-xs ${inputs.copay > 0 ? 'border-b border-gray-200 py-1' : 'pt-1'}"><span>Discount (${inputs.discount}%)</span><span>-${formatCurrency(discountCalcAmount)}</span></div>` : ''}
+                    ${!isDecliningBalance ? copayHTML : ''}
                 </div>
             </div>
         `;
@@ -786,8 +920,7 @@
     }
 
     function resetCalculator() {
-        // Reset all input fields and dropdowns
-        document.querySelectorAll('.config-input, #customer-name').forEach(el => el.value = '');
+        document.querySelectorAll('.config-input, #customer-name, #global-allowance, #global-discount, #global-copay').forEach(el => el.value = ''); // Added global inputs to reset
         document.querySelectorAll('.config-option').forEach(el => {
             if (el.tagName === 'SELECT') {
                 el.selectedIndex = 0; // Reset dropdowns to the first option (usually "None")
@@ -801,9 +934,8 @@
         addonCounter = 0; // Reset the addon counter
 
         // Explicitly re-check the Edge Polish checkbox
-        // The ID for Edge Polish checkbox is 'checkbox-edge-polish'
         const edgePolishCheckbox = document.getElementById('checkbox-edge-polish');
-        if (edgePolishCheckbox) { // Check if the element exists before trying to check it
+        if (edgePolishCheckbox) { 
             edgePolishCheckbox.checked = true;
         }
 
@@ -816,16 +948,18 @@
         document.getElementById('reset-button').addEventListener('click', resetCalculator);
         document.getElementById('save-quote-button').addEventListener('click', () => {
             console.log("Quote saved (placeholder).");
-            // A more user-friendly notification can be implemented here later
         });
 
-         document.querySelectorAll('#customer-name, #insurance-type-select, #frame-retail-price, #allowance-frame, #discount-frame').forEach(el => {
+         document.querySelectorAll('#customer-name, #insurance-type-select, #frame-retail-price, #allowance-frame, #discount-frame, #global-allowance, #global-discount, #global-copay').forEach(el => {
             el.addEventListener('input', updateCalculations);
              if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
                 el.addEventListener('focus', onFocus);
                 el.addEventListener('blur', onBlur);
             }
         });
+
+        // Add event listener to the insurance type select to trigger update calculations
+        document.getElementById('insurance-type-select').addEventListener('change', updateCalculations);
 
         updateCalculations();
     }
