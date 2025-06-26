@@ -708,28 +708,15 @@
                 }
             }
 
-            // If Declining Balance, only include Backside UV's retail if it's checked.
-            // Other individual component retail values are still summed to totalRetail.
-            // Their individual calculated prices (finalCost) are NOT added to totalFinalCost or totalInsSvgs here.
-            if (isDecliningBalance && (cat.id !== 'Backside UV' || !document.getElementById('checkbox-backside-uv').checked)) {
-                // Do not return here. We still want to add their retail price to totalRetail
-                // and potentially show their retail price in the summary.
-            }
-
             let selectedValue;
             const checkbox = document.getElementById(`checkbox-${catId}`);
             if (checkbox) {
                 if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
                 else { 
                     if(priceEl) priceEl.textContent = ''; 
-                    // When Declining Balance is active and checkbox is unchecked, we still want to skip adding to totalRetail
-                    // but the totalRetail is accumulated from ALL selected items earlier in the loop, regardless of price calculation.
-                    if (!isDecliningBalance) return; // Only return if not declining balance and unchecked
-                    else {
-                        // If declining balance and unchecked, ensure retail is not added.
-                        // This relies on initial totalRetail accumulation being correct.
-                        return; // Still skip processing for this individual component
-                    }
+                    // When a checkbox is unchecked, regardless of insurance, we don't want its retail
+                    // to contribute to totalRetail, and we stop processing for this item.
+                    return; 
                 }
             } else {
                  const select = document.getElementById(`select-${catId}`);
@@ -794,17 +781,9 @@
                 }
             }
 
-            // If Declining Balance, don't process add-on's individual price contribution to totalFinalCost/totalInsSvgs.
-            // Still add to totalRetail and show retail price.
-            if (isDecliningBalance) {
-                // Do not return here. We still want to add their retail price to totalRetail
-                // and potentially show their retail price in the summary.
-            }
-
             if (itemName === 'No Extras') {
                 if(priceEl) priceEl.textContent = '';
-                if (!isDecliningBalance) return; // Only return if not declining balance and "No Extras"
-                else return; // Also return if declining balance and "No Extras"
+                return; // Return if "No Extras" is selected, regardless of insurance type
             }
 
             const selectedItem = priceListData.find(p => p.Item === itemName);
