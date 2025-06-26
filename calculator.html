@@ -608,6 +608,32 @@
         updateRxDropdown(); 
         updateCoatingsDropdown();
 
+        // Rx -> Lens Type auto-selection logic
+        const rxSelect = document.getElementById('select-rx');
+        const lensTypeSelect = document.getElementById('select-lens-type');
+        if (rxSelect && lensTypeSelect) {
+            const rxValue = rxSelect.value;
+            let targetLensType = 'None';
+            // Logic to auto-select lens type based on Rx
+            if (rxValue.includes('S.V.')) targetLensType = 'S.V. Digital Aspheric';
+            else if (rxValue.includes('BiFocal')) targetLensType = 'BiFocal Digital Aspheric';
+            else if (rxValue.startsWith('PG')) targetLensType = 'Prog. Digital Aspheric';
+            
+            // Check if the target option actually exists in the lensTypeSelect dropdown
+            const optionExists = Array.from(lensTypeSelect.options).some(option => option.value === targetLensType);
+
+            if (optionExists) {
+                lensTypeSelect.value = targetLensType;
+                lensTypeSelect.disabled = (targetLensType !== 'None'); // Disable if auto-selected
+            } else {
+                // If the target option is not available, ensure Lens Type is "None" and remains enabled
+                lensTypeSelect.value = 'None';
+                lensTypeSelect.disabled = false; // Keep it enabled if auto-selection failed
+                // console.warn('Target lens type not found in dropdown options:', targetLensType); // For debugging
+            }
+        }
+
+
         // Logic for Backside UV auto-checking based on Coatings selection
         const coatingsSelect = document.getElementById('select-coatings');
         const backsideUVCheckbox = document.getElementById('checkbox-backside-uv');
