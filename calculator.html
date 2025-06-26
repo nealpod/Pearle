@@ -886,9 +886,12 @@
             if (isDecliningBalance) {
                 const globalAllowance = getCleanValue('global-allowance');
                 const globalDiscount = getCleanValue('global-discount');
+                // Calculate the discount amount based on (Retail Total - Global Allowance) * (Global Discount / 100)
+                const calculatedDiscountAmount = (totalRetail - globalAllowance) * (globalDiscount / 100);
+
                 insSavingsDetailsEl.innerHTML = `
                     <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Global Allowance</span><span>-${formatCurrency(globalAllowance)}</span></div>
-                    <div class="flex justify-between text-xs pt-1"><span>Global Discount (${globalDiscount}%)</span><span>-${formatCurrency(totalRetail * (globalDiscount / 100))}</span></div>
+                    <div class="flex justify-between text-xs pt-1"><span>Global Discount (${globalDiscount}%)</span><span>-${formatCurrency(calculatedDiscountAmount)}</span></div>
                 `;
                 insSavingsDetailsEl.classList.add('open'); // Auto-open for Declining Balance
             } else {
