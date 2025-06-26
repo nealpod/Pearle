@@ -206,9 +206,15 @@
                             <span class="text-gray-600">Retail Total</span>
                             <span id="summary-retail" class="summary-value">$0.00</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-gray-600">Insurance Savings</span>
-                            <span id="summary-ins-svgs" class="summary-value">$0.00</span>
+                        <!-- MODIFIED: Insurance Savings block to include details -->
+                        <div class="border-b border-gray-200 pb-1">
+                            <div class="summary-item-header flex justify-between items-center" onclick="toggleDetails('summary-ins-svgs-details')">
+                                <span class="text-gray-600">Insurance Savings</span>
+                                <span id="summary-ins-svgs" class="summary-value">$0.00</span>
+                            </div>
+                            <div id="summary-ins-svgs-details" class="summary-item-details bg-gray-50 rounded px-3 text-gray-600">
+                                <!-- Content for breakdown will be injected here by JS -->
+                            </div>
                         </div>
                     </div>
                     <div class="border-t my-4"></div>
@@ -441,21 +447,18 @@
                 </select>
                 <span id="price-addon-${addonCounter}" class="component-price ml-2"></span>
             </div>
-            <div class="flex items-center space-x-2">
-                <div class="flex space-x-1 flex-grow">
-                    <input type="text" inputmode="decimal" id="allowance-addon-${addonCounter}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                    <input type="text" inputmode="decimal" id="discount-addon-${addonCounter}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                    <input type="text" inputmode="decimal" id="copay-addon-${addonCounter}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                </div>
-                <button type="button" class="btn-remove btn" data-row-id="${addonCounter}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
-                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0
-                                0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0
-                                0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
-                    </svg>
-                </button>
+            <div class="flex space-x-1">
+                <input type="text" inputmode="decimal" id="allowance-addon-${addonCounter}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                <input type="text" inputmode="decimal" id="discount-addon-${addonCounter}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                <input type="text" inputmode="decimal" id="copay-addon-${addonCounter}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
             </div>
+            <button type="button" class="btn-remove btn" data-row-id="${addonCounter}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
+                    <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0
+                            0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                </svg>
+            </button>
         `;
 
         repeaterContainer.appendChild(addonRow);
@@ -872,27 +875,26 @@
 
         // Summary content generation
         if(summaryContent) {
-            // For Declining Balance, we want to add a single summary line for the Global calculation
+            // No need to add a separate "Declining Balance Net" summary item here.
+            // The breakdown will be shown under "Insurance Savings" directly.
+            summaryItemsEl.innerHTML = summaryContent;
+        }
+
+        // Update the content of the Insurance Savings details section
+        const insSavingsDetailsEl = document.getElementById('summary-ins-svgs-details');
+        if (insSavingsDetailsEl) {
             if (isDecliningBalance) {
                 const globalAllowance = getCleanValue('global-allowance');
                 const globalDiscount = getCleanValue('global-discount');
-                
-                // Add a summary line for the global calculation, showing inputs and resulting final cost
-                summaryContent += `
-                    <div class="border-b border-gray-200 pb-1">
-                        <div class="summary-item-header flex justify-between items-center" onclick="toggleDetails('declining-balance-global')">
-                            <span class="font-medium">Declining Balance Net</span>
-                            <span class="font-semibold">${formatCurrency(totalFinalCost)}</span>
-                        </div>
-                        <div id="details-declining-balance-global" class="summary-item-details bg-gray-50 rounded px-3 text-gray-600">
-                            <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Total Retail</span><span>${formatCurrency(totalRetail)}</span></div>
-                            <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Global Allowance</span><span>-${formatCurrency(globalAllowance)}</span></div>
-                            <div class="flex justify-between text-xs pt-1"><span>Global Discount (${globalDiscount}%)</span><span>-${formatCurrency(totalRetail * (globalDiscount / 100))}</span></div>
-                        </div>
-                    </div>
+                insSavingsDetailsEl.innerHTML = `
+                    <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Global Allowance</span><span>-${formatCurrency(globalAllowance)}</span></div>
+                    <div class="flex justify-between text-xs pt-1"><span>Global Discount (${globalDiscount}%)</span><span>-${formatCurrency(totalRetail * (globalDiscount / 100))}</span></div>
                 `;
+                insSavingsDetailsEl.classList.add('open'); // Auto-open for Declining Balance
+            } else {
+                insSavingsDetailsEl.innerHTML = ''; // Clear content for other insurance types
+                insSavingsDetailsEl.classList.remove('open'); // Ensure it's closed
             }
-            summaryItemsEl.innerHTML = summaryContent;
         }
 
         document.getElementById('summary-retail').textContent = formatCurrency(totalRetail);
