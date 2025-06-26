@@ -669,7 +669,8 @@
                 document.getElementById('frame-group').classList.add('error');
             }
             totalRetail += frameRetail;
-            // Only add individual savings/costs to totals if NOT Declining Balance
+            // Only add individual savings/costs to totals if NOT Declining Balance.
+            // When Declining Balance is active, final cost and savings are calculated globally later.
             if (!isDecliningBalance) {
                 totalInsSvgs += frameCalc.insSvgs;
                 totalFinalCost += frameCalc.finalCost;
@@ -707,20 +708,29 @@
                 }
             }
 
-            // Only proceed with calculation if Declining Balance is NOT selected,
-            // or if it's Declining Balance and the item is "Backside UV" and is checked.
-            // This ensures prices for other items don't accumulate in totalRetail during Declining Balance
-            // and only Backside UV's retail (if checked) is included in totalRetail.
+            // If Declining Balance, only include Backside UV's retail if it's checked.
+            // Other individual component retail values are still summed to totalRetail.
+            // Their individual calculated prices (finalCost) are NOT added to totalFinalCost or totalInsSvgs here.
             if (isDecliningBalance && (cat.id !== 'Backside UV' || !document.getElementById('checkbox-backside-uv').checked)) {
-                if(priceEl) priceEl.textContent = ''; // Clear individual prices if not relevant
-                return; 
+                // Do not return here. We still want to add their retail price to totalRetail
+                // and potentially show their retail price in the summary.
             }
 
             let selectedValue;
             const checkbox = document.getElementById(`checkbox-${catId}`);
             if (checkbox) {
                 if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
-                else { if(priceEl) priceEl.textContent = ''; return; }
+                else { 
+                    if(priceEl) priceEl.textContent = ''; 
+                    // When Declining Balance is active and checkbox is unchecked, we still want to skip adding to totalRetail
+                    // but the totalRetail is accumulated from ALL selected items earlier in the loop, regardless of price calculation.
+                    if (!isDecliningBalance) return; // Only return if not declining balance and unchecked
+                    else {
+                        // If declining balance and unchecked, ensure retail is not added.
+                        // This relies on initial totalRetail accumulation being correct.
+                        return; // Still skip processing for this individual component
+                    }
+                }
             } else {
                  const select = document.getElementById(`select-${catId}`);
                  if (select) selectedValue = select.value;
@@ -749,14 +759,15 @@
                 showErrorModal(`The final price for ${cat.label} cannot exceed its retail price.`);
                 document.getElementById(`container-${catId}`).classList.add('error');
             }
-            totalRetail += inputs.retail;
+            totalRetail += inputs.retail; // Always accumulate retail for the overall total
             // Only add individual savings/costs to totals if NOT Declining Balance
             if (!isDecliningBalance) {
                 totalInsSvgs += calc.insSvgs;
                 totalFinalCost += calc.finalCost;
             }
             summaryContent += createSummaryItemHTML(catId, cat.label, inputs, calc);
-            if (priceEl) priceEl.textContent = formatCurrency(calc.finalCost);
+            // Always display the final calculated price for individual components, whether it's retail or adjusted
+            if (priceEl) priceEl.textContent = formatCurrency(isDecliningBalance ? inputs.retail : calc.finalCost);
         });
         
         // --- Process Add-On rows ---
@@ -783,15 +794,17 @@
                 }
             }
 
-            // If Declining Balance, don't process add-on's individual price contribution
+            // If Declining Balance, don't process add-on's individual price contribution to totalFinalCost/totalInsSvgs.
+            // Still add to totalRetail and show retail price.
             if (isDecliningBalance) {
-                if(priceEl) priceEl.textContent = '';
-                return;
+                // Do not return here. We still want to add their retail price to totalRetail
+                // and potentially show their retail price in the summary.
             }
 
             if (itemName === 'No Extras') {
                 if(priceEl) priceEl.textContent = '';
-                return;
+                if (!isDecliningBalance) return; // Only return if not declining balance and "No Extras"
+                else return; // Also return if declining balance and "No Extras"
             }
 
             const selectedItem = priceListData.find(p => p.Item === itemName);
@@ -811,14 +824,15 @@
                 showErrorModal(`The final price for ${itemName} cannot exceed its retail price.`);
                 row.classList.add('error');
             }
-            totalRetail += inputs.retail;
+            totalRetail += inputs.retail; // Always accumulate retail for the overall total
             // Only add individual savings/costs to totals if NOT Declining Balance
             if (!isDecliningBalance) {
                 totalInsSvgs += calc.insSvgs;
                 totalFinalCost += calc.finalCost;
             }
             summaryContent += createSummaryItemHTML(`addon-${rowId}`, itemName, inputs, calc);
-            if(priceEl) priceEl.textContent = formatCurrency(calc.finalCost);
+            // Always display the final calculated price for individual components, whether it's retail or adjusted
+            if(priceEl) priceEl.textContent = formatCurrency(isDecliningBalance ? inputs.retail : calc.finalCost);
         });
 
         // --- Final Calculation based on insurance type ---
@@ -834,12 +848,8 @@
 
             totalInsSvgs = totalRetail - totalFinalCost; // Savings based on new final cost
 
-            // Clear individual component prices if Declining Balance is active
-            document.querySelectorAll('.component-price').forEach(el => {
-                if (el.id !== 'price-frame' && el.id !== 'summary-retail' && el.id !== 'summary-ins-svgs' && el.id !== 'summary-final-cost') {
-                    el.textContent = ''; 
-                }
-            });
+            // Removed the loop that cleared individual component prices.
+            // Individual component prices will now show their retail values if selected.
 
         } else { // Existing logic for Other Insurance and VSP
             const vspCopayValue = getCleanValue('copay-material-co-pay');
@@ -855,6 +865,7 @@
             }
         }
 
+        // Summary content generation
         if(summaryContent) {
             // For Declining Balance, we want to add a single summary line for the Global calculation
             if (isDecliningBalance) {
@@ -892,6 +903,7 @@
         if (id === 'frame') {
             discountCalcAmount = (inputs.retail - inputs.insAllow) * (inputs.discount / 100);
         } else {
+            // For individual items, calculate actual discount amount based on original inputs
             discountCalcAmount = inputs.retail * (inputs.discount / 100);
         }
         
@@ -924,7 +936,7 @@
     }
 
     function resetCalculator() {
-        document.querySelectorAll('.config-input, #customer-name, #global-allowance, #global-discount').forEach(el => el.value = ''); // global-copay removed from reset
+        document.querySelectorAll('.config-input, #customer-name, #global-allowance, #global-discount').forEach(el => el.value = ''); 
         document.querySelectorAll('.config-option').forEach(el => {
             if (el.tagName === 'SELECT') {
                 el.selectedIndex = 0; 
@@ -951,7 +963,7 @@
             console.log("Quote saved (placeholder).");
         });
 
-         document.querySelectorAll('#customer-name, #insurance-type-select, #frame-retail-price, #allowance-frame, #discount-frame, #global-allowance, #global-discount').forEach(el => { // global-copay removed from event listeners
+         document.querySelectorAll('#customer-name, #insurance-type-select, #frame-retail-price, #allowance-frame, #discount-frame, #global-allowance, #global-discount').forEach(el => {
             el.addEventListener('input', updateCalculations);
              if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
                 el.addEventListener('focus', onFocus);
