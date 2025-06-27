@@ -145,7 +145,8 @@
             <div class="lg:col-span-2 space-y-6">
 
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Customer & Exam</h3>
+                    <!-- MODIFIED: Title changed -->
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Customer Information</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="input-group space-y-2">
                             <label for="customer-name" class="block text-sm font-medium text-gray-700">Customer Name</label>
@@ -169,10 +170,14 @@
                                 <input type="text" inputmode="decimal" id="global-discount" placeholder="Discount" class="config-input percent-format w-full border-gray-300 rounded-md shadow-sm text-sm">
                             </div>
                         </div>
-                        <!-- ADDED: Container for the new exam options -->
-                        <div id="exam-options-grid" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 border-t pt-4 mt-4">
-                            <!-- Exam inputs will be dynamically inserted here -->
-                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <!-- MODIFIED: Title changed -->
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Exam</h3>
+                    <div id="exam-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <!-- Exam inputs will be dynamically inserted here -->
                     </div>
                 </div>
 
@@ -260,11 +265,11 @@
 
     // Data will be populated from Supabase
     let priceListData = [];
-    let examListData = []; // ADDED: For exam data
+    let examListData = [];
 
     // Element references
     const optionsGrid = document.getElementById('dynamic-options-grid');
-    const examOptionsGrid = document.getElementById('exam-options-grid'); // ADDED: Exam grid reference
+    const examOptionsGrid = document.getElementById('exam-options-grid');
     const summaryItemsEl = document.getElementById('summary-items');
     const logoutBtn = document.getElementById('logout-btn');
     let addonCounter = 0;
@@ -281,7 +286,6 @@
         }
     }
 
-    // MODIFIED: Fetch data from both 'components' and 'exams' tables
     async function fetchData() {
         const componentsPromise = supabase.from('components').select('*').eq('is_active', true);
         const examsPromise = supabase.from('exams').select('*').eq('is_active', true);
@@ -296,7 +300,6 @@
         }
         
         priceListData = [{ "Item": "None", "Category": "All", "Retail": 0 }, ...componentsResult.data];
-        // Note: The column names from your Supabase table should match what's used here (exam_type, price_retail)
         examListData = [{ "exam_type": "None", "Category": "All", "price_retail": 0 }, ...examsResult.data];
         
         initializeCalculator();
@@ -325,7 +328,6 @@
         { id: 'Add-Ons', label: 'Add-Ons' }
     ];
     
-    // MODIFIED: Reordered Exam categories
     const examCategories = [
         { id: 'eye-exam', label: 'Eye Exam', type: 'select' },
         { id: 'contacts-exam', label: 'Contacts Exam', type: 'select' },
@@ -357,7 +359,6 @@
         modal.classList.remove('hidden');
     }
     
-    // ADDED: New function to build exam inputs
     function buildExamInputs() {
         examOptionsGrid.innerHTML = '';
         examCategories.forEach(cat => {
@@ -379,7 +380,7 @@
                 `;
             } else { // Checkbox
                 const singleOption = examListData.find(e => e.Category === cat.label);
-                if (!singleOption) return; // Don't build if data not found
+                if (!singleOption) return;
                 container.innerHTML = `
                     <div class="component-label">
                          <label class="flex items-center cursor-pointer">
@@ -391,7 +392,6 @@
                 `;
             }
 
-            // Add allowance/discount/copay inputs to all exam items
             container.innerHTML += `
                 <div class="flex space-x-1">
                     <input type="text" inputmode="decimal" id="allowance-${cat.id}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
@@ -402,7 +402,6 @@
             examOptionsGrid.appendChild(container);
         });
 
-        // Add special event listener for Eye Exam -> Refraction rule
         const eyeExamSelect = document.getElementById('select-eye-exam');
         const refractionCheckbox = document.getElementById('checkbox-refraction');
         if (eyeExamSelect && refractionCheckbox) {
@@ -410,7 +409,7 @@
                 if (eyeExamSelect.value !== 'None') {
                     refractionCheckbox.checked = true;
                 }
-                updateCalculations(); // Trigger recalculation
+                updateCalculations();
             });
         }
     }
@@ -494,7 +493,6 @@
         document.getElementById('close-error-modal-btn').addEventListener('click', () => {
              document.getElementById('error-modal').classList.add('hidden');
         });
-        // Note: attachEventListeners() is now called once in initializeCalculator()
     }
 
     function addAddonRow() {
@@ -530,7 +528,7 @@
 
         repeaterContainer.appendChild(addonRow);
         updateAddonDropdowns();
-        attachEventListeners(); // Re-attach for new row
+        attachEventListeners();
         updateCalculations();
     }
     
@@ -556,7 +554,6 @@
     }
 
     function attachEventListeners() {
-        // This function now attaches listeners to ALL relevant inputs on the page
         document.querySelectorAll('.config-option, .config-input').forEach(el => {
             el.removeEventListener('input', updateCalculations);
             el.addEventListener('input', updateCalculations);
@@ -703,20 +700,16 @@
             backsideUVCheckbox.checked = (coatingsSelect.value === 'Premium Plus A.R.');
         }
 
-        // --- Handle visibility of global vs. individual inputs ---
         document.getElementById('declining-balance-inputs').style.display = isDecliningBalance ? 'grid' : 'none';
         
-        // This selector now targets ALL allowance/discount/copay inputs across the page
         document.querySelectorAll('[id^="allowance-"], [id^="discount-"], [id^="copay-"]').forEach(input => {
-            // Exclude the global inputs
             if (input.id.startsWith('global-')) return;
 
-            // VSP Material Co-Pay has only a copay field
             if (input.id === 'copay-material-co-pay') {
                 const container = document.getElementById('container-material-co-pay');
                 if (container) container.style.display = (insuranceType === 'VSP' && !isDecliningBalance) ? 'block' : 'none';
                 if (container && container.style.display === 'none') input.value = '';
-                return; // Skip to next input
+                return;
             }
             
             input.style.display = isDecliningBalance ? 'none' : 'block';
@@ -746,12 +739,11 @@
                 return; 
             }
             
-            // Use examListData here
             const selectedItem = examListData.find(p => p.exam_type === selectedValue);
             if (!selectedItem) return;
 
             const inputs = {
-                retail: selectedItem.price_retail, // Use correct price column
+                retail: selectedItem.price_retail,
                 insAllow: isDecliningBalance ? 0 : getCleanValue(`allowance-${catId}`),
                 discount: isDecliningBalance ? 0 : getCleanValue(`discount-${catId}`),
                 copay: isDecliningBalance ? 0 : getCleanValue(`copay-${catId}`),
@@ -960,7 +952,6 @@
     }
 
     function resetCalculator() {
-        // This selector now clears all inputs across all sections
         document.querySelectorAll('.config-input, #customer-name').forEach(el => el.value = ''); 
         document.querySelectorAll('.config-option').forEach(el => {
             if (el.tagName === 'SELECT') {
@@ -982,18 +973,16 @@
     }
 
     function initializeCalculator() {
-        buildExamInputs(); // Build exam inputs first
-        buildInputs(); // Then build lens/frame inputs
+        buildExamInputs();
+        buildInputs();
         
         document.getElementById('reset-button').addEventListener('click', resetCalculator);
         document.getElementById('save-quote-button').addEventListener('click', () => {
             console.log("Quote saved (placeholder).");
         });
 
-        // This single call now handles all event listeners
         attachEventListeners();
         
-        // Add listener for insurance type change
         document.getElementById('insurance-type-select').addEventListener('change', updateCalculations);
 
         updateCalculations();
