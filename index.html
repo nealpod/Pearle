@@ -9,46 +9,41 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
-        /* Define custom CSS variables for consistent theming */
         :root {
             --pearl-green: #007a33;
             --pearl-dark-green: #005c24;
             --light-gray: #f0f2f5;
         }
-        /* Apply Roboto font and light gray background to the body */
         body {
             font-family: 'Roboto', sans-serif;
             background-color: var(--light-gray);
         }
-        /* Style the login container for responsiveness and centering */
         .login-container {
-            max-width: 400px; /* Limit maximum width for larger screens */
-            width: 90%; /* Responsive width */
-            padding: 2rem; /* Add padding inside the container */
-            border-radius: 0.5rem; /* Rounded corners */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            max-width: 400px;
+            width: 90%;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
-        /* Style for the primary button, including hover effect */
         .btn-primary {
             background-color: var(--pearl-green);
-            transition: background-color 0.3s; /* Smooth transition for hover effect */
-            border-radius: 0.375rem; /* Match other rounded elements */
-            padding: 0.75rem 1rem; /* Adjust padding for better button size */
-            font-weight: 700; /* Bold font */
-            color: white; /* White text */
-            width: 100%; /* Full width button */
+            transition: background-color 0.3s;
+            border-radius: 0.375rem;
+            padding: 0.75rem 1rem;
+            font-weight: 700;
+            color: white;
+            width: 100%;
         }
         .btn-primary:hover {
             background-color: var(--pearl-dark-green);
         }
-        /* Style for input fields to ensure consistent appearance */
         input[type="email"],
         input[type="password"] {
-            border: 1px solid #e2e8f0; /* Light border */
-            border-radius: 0.25rem; /* Rounded corners */
-            padding: 0.5rem 0.75rem; /* Adequate padding */
-            width: 100%; /* Full width */
-            line-height: 1.25; /* Line height for text */
+            border: 1px solid #e2e8f0;
+            border-radius: 0.25rem;
+            padding: 0.5rem 0.75rem;
+            width: 100%;
+            line-height: 1.25;
         }
     </style>
 </head>
@@ -56,7 +51,7 @@
 
     <div class="login-container bg-white">
         <div class="text-center mb-8">
-            <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" class="mx-auto mb-4" width="200">
+            <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" class="mx-auto mb-4" width="200" alt="Pearle Vision Logo">
             <h1 class="text-2xl font-bold text-gray-800">Store Portal Login</h1>
         </div>
 
@@ -80,59 +75,61 @@
     </div>
 
     <script type="module">
-        // Import the Supabase client instance from your separate file.
-        // Ensure 'supabase-client.js' correctly initializes and exports the Supabase client.
         import { supabase } from './supabase-client.js';
 
-        // Get references to the login form and status message elements.
         const loginForm = document.getElementById('login-form');
         const statusMessage = document.getElementById('status-message');
 
-        // Add an event listener for the form submission.
         loginForm.addEventListener('submit', async (event) => {
-            event.preventDefault(); // Prevent the default form submission behavior.
-            statusMessage.innerText = 'Signing in...'; // Display a signing in message.
+            event.preventDefault();
+            statusMessage.innerText = 'Signing in...';
             
-            // Get email and password from the form input fields.
             const email = loginForm.email.value;
             const password = loginForm.password.value;
 
-            // Attempt to sign in the user with email and password using Supabase Auth.
+            // Step 1: Authenticate the user
             const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
 
-            // Handle authentication errors.
             if (authError) {
-                statusMessage.innerText = authError.message; // Display the error message to the user.
-                console.error('Authentication error:', authError); // Log the error for debugging.
-                return; // Stop further execution.
+                statusMessage.innerText = authError.message;
+                console.error('Authentication error:', authError);
+                return;
             }
 
-            // If authentication is successful, proceed to check the user's role.
+            // Step 2: Fetch the user's profile and role from the 'profiles' table
             if (authData.user) {
-                // Access the user's role directly from the app_metadata in the user object.
-                // This data is included in the JWT after successful authentication,
-                // eliminating the need for an additional database query to 'users_roles'.
-                const userRole = authData.user.app_metadata?.user_role;
+                const { data: profile, error: profileError } = await supabase
+                    .from('profiles')
+                    .select('role') // We only need the role for redirection
+                    .eq('id', authData.user.id)
+                    .single();
 
-                // Log the user's role for debugging purposes.
-                console.log('Logged in user role:', userRole);
+                if (profileError) {
+                    statusMessage.innerText = 'Could not retrieve user profile. Please contact an administrator.';
+                    console.error('Profile fetch error:', profileError);
+                    await supabase.auth.signOut(); 
+                    return;
+                }
 
-                // Redirect based on the user's role.
-                if (userRole === 'owner') {
-                    window.location.href = './admin.html';
-                } else if (userRole === 'optician') {
-                    window.location.href = './calculator.html';
+                // Step 3: Redirect based on the role found in the profile
+                if (profile) {
+                    const userRole = profile.role;
+                    console.log('Logged in user role:', userRole);
+
+                    if (userRole === 'owner') {
+                        window.location.href = './admin.html';
+                    } else if (userRole === 'optician') {
+                        window.location.href = './calculator.html';
+                    } else {
+                        statusMessage.innerText = 'Unknown user role. Access denied.';
+                        await supabase.auth.signOut();
+                    }
                 } else {
-                    // Handle cases where the role is not recognized or is missing.
-                    // It's generally safer to default to a less privileged page or show an error.
-                    statusMessage.innerText = 'Unknown user role. Redirecting to default.';
-                    console.warn('Unknown user role:', userRole, 'Redirecting to calculator.html');
-                    window.location.href = './calculator.html';
+                    statusMessage.innerText = 'No profile found for this user. Access denied.';
+                    await supabase.auth.signOut();
                 }
             } else {
-                // This block should theoretically not be hit if authError is null and authData.user is null,
-                // but it's a good fallback for unexpected Supabase responses.
-                statusMessage.innerText = 'Authentication failed. No user data.';
+                statusMessage.innerText = 'Authentication failed. Please try again.';
                 console.error('Authentication failed: No user data returned.');
             }
         });
