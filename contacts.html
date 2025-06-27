@@ -168,7 +168,6 @@
     <!-- Main Content Area -->
     <main class="p-4 sm:p-6 lg:p-8">
         <div class="max-w-7xl mx-auto">
-            <!-- MODIFIED: Changed layout to a single column stack -->
             <div class="space-y-8 mb-8">
                 <!-- Customer Information Card -->
                 <div class="bg-white p-6 rounded-lg shadow">
@@ -333,12 +332,27 @@
         document.getElementById('error-modal').classList.remove('hidden');
     }
     
-    // Function to calculate a single item's cost (from glasses calculator)
-    function calculateItem(retail, insAllow, discount, copay) {
-        let yourCost = retail * (1 - (discount / 100)) - insAllow;
-        yourCost = Math.max(0, yourCost);
-        const finalCost = yourCost + copay;
-        return { finalCost };
+    // MODIFIED: Replaced with the more detailed function from the glasses calculator
+    function calculateItem(retail, insAllow, discount, copay, isFrame = false) {
+        let finalCost, yourCost, insSvgs;
+
+        if (insAllow === 0 && discount === 0 && copay > 0) {
+            finalCost = copay;
+            yourCost = 0; 
+            insSvgs = retail - finalCost;
+        } else { 
+            if (isFrame) { // This part is not used for exams, but kept for consistency
+                 yourCost = (retail - insAllow) * (1 - (discount / 100));
+            } else {
+                 yourCost = retail * (1 - (discount / 100)) - insAllow;
+            }
+            yourCost = Math.max(0, yourCost);
+            finalCost = yourCost + copay;
+            insSvgs = retail - finalCost;
+        }
+        
+        const isError = retail > 0 && finalCost > retail;
+        return { yourCost, finalCost, insSvgs, isError };
     }
 
     // Function to build exam inputs (from glasses calculator, adapted)
