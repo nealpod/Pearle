@@ -132,13 +132,11 @@
         
         document.getElementById('user-display').textContent = `Welcome, ${profile.full_name || user.email}`;
         
-        // If user is authorized, fetch all necessary data
         await fetchData();
     }
 
     async function fetchData() {
-        console.log("Fetching data for dashboard...");
-        const salesPromise = supabase.from('sales').select('*');
+        const salesPromise = supabase.from('sales').select('*').order('created_at', { ascending: false });
         const profilesPromise = supabase.from('profiles').select('id, full_name');
         const storesPromise = supabase.from('stores').select('*');
 
@@ -153,8 +151,6 @@
         allSales = salesResult.data;
         allProfiles = profilesResult.data;
         allStores = storesResult.data;
-
-        console.log("Data fetched:", { sales: allSales.length, profiles: allProfiles.length, stores: allStores.length });
 
         populateStoreFilter();
         updateDashboard();
@@ -171,9 +167,166 @@
     }
 
     function updateDashboard() {
-        // This function will be expanded to filter data and render all components
-        console.log("Updating dashboard...");
-        // For now, it's a placeholder
+        const dateFilter = document.getElementById('date-range-filter').value;
+        const storeFilter = document.getElementById('store-filter').value;
+
+        // --- Filter Data ---
+        const now = new Date();
+        const filteredSales = allSales.filter(sale => {
+            const saleDate = new Date(sale.created_at);
+            let dateCondition = true;
+            if (dateFilter !== 'all') {
+                const days = parseInt(dateFilter);
+                const pastDate = new Date();
+                pastDate.setDate(now.getDate() - days);
+                dateCondition = saleDate >= pastDate;
+            }
+            const storeCondition = storeFilter === 'all' || sale.store_id === storeFilter;
+            return dateCondition && storeCondition;
+        });
+
+        // --- Render Components ---
+        renderKPIs(filteredSales);
+        renderSalesChart(filteredSales);
+        renderCategoryChart(filteredSales);
+        renderOpticianLeaderboard(filteredSales);
+        renderRecentSales(filteredSales);
+    }
+    
+    function renderKPIs(sales) {
+        const totalSales = sales.reduce((sum, sale) => sum + (sale.final_cost || 0), 0);
+        const numSales = sales.length;
+        const avgSale = numSales > 0 ? totalSales / numSales : 0;
+        const insSavings = sales.reduce((sum, sale) => sum + (sale.insurance_savings || 0), 0);
+
+        document.getElementById('kpi-total-sales').textContent = formatCurrency(totalSales);
+        document.getElementById('kpi-num-sales').textContent = numSales;
+        document.getElementById('kpi-avg-sale').textContent = formatCurrency(avgSale);
+        document.getElementById('kpi-ins-savings').textContent = formatCurrency(insSavings);
+    }
+
+    function renderSalesChart(sales) {
+        const ctx = document.getElementById('sales-over-time-chart').getContext('2d');
+        const salesByDate = {};
+
+        sales.forEach(sale => {
+            const date = new Date(sale.created_at).toLocaleDateString();
+            if (!salesByDate[date]) {
+                salesByDate[date] = 0;
+            }
+            salesByDate[date] += sale.final_cost;
+        });
+
+        const labels = Object.keys(salesByDate).reverse();
+        const data = Object.values(salesByDate).reverse();
+
+        if (salesChart) {
+            salesChart.destroy();
+        }
+        salesChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Daily Sales',
+                    data: data,
+                    borderColor: 'rgba(0, 122, 51, 1)',
+                    backgroundColor: 'rgba(0, 122, 51, 0.1)',
+                    fill: true,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false }, title: { display: true, text: 'Sales Over Time' } }
+            }
+        });
+    }
+
+    function renderCategoryChart(sales) {
+        const ctx = document.getElementById('sales-by-category-chart').getContext('2d');
+        const categorySales = { Exams: 0, Frames: 0, Lenses: 0, 'Add-Ons': 0 };
+
+        sales.forEach(sale => {
+            if (sale.quote_details) {
+                if (sale.quote_details.exams?.length > 0) categorySales.Exams += sale.quote_details.exams.reduce((sum, item) => sum + item.price, 0);
+                if (sale.quote_details.frame?.finalCost) categorySales.Frames += sale.quote_details.frame.finalCost;
+                if (sale.quote_details.lenses) {
+                    categorySales.Lenses += Object.values(sale.quote_details.lenses).reduce((sum, item) => sum + item.price, 0);
+                }
+                if (sale.quote_details.addOns?.length > 0) categorySales['Add-Ons'] += sale.quote_details.addOns.reduce((sum, item) => sum + item.price, 0);
+            }
+        });
+
+        if (categoryChart) {
+            categoryChart.destroy();
+        }
+        categoryChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: Object.keys(categorySales),
+                datasets: [{
+                    data: Object.values(categorySales),
+                    backgroundColor: ['#007a33', '#55a630', '#aacc00', '#e6f2e9']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'top' }, title: { display: true, text: 'Sales by Category' } }
+            }
+        });
+    }
+
+    function renderOpticianLeaderboard(sales) {
+        const opticianStats = {};
+        sales.forEach(sale => {
+            if (!opticianStats[sale.optician_id]) {
+                opticianStats[sale.optician_id] = { sales: 0, count: 0, store_id: sale.store_id };
+            }
+            opticianStats[sale.optician_id].sales += sale.final_cost;
+            opticianStats[sale.optician_id].count++;
+        });
+
+        const leaderboardData = Object.entries(opticianStats).map(([id, stats]) => {
+            const profile = allProfiles.find(p => p.id === id);
+            const store = allStores.find(s => s.id === stats.store_id);
+            return {
+                name: profile ? profile.full_name : 'Unknown User',
+                store: store ? store.name : 'Unknown Store',
+                totalSales: stats.sales,
+                numSales: stats.count
+            };
+        }).sort((a, b) => b.totalSales - a.totalSales);
+
+        const tableBody = document.getElementById('optician-leaderboard-body');
+        tableBody.innerHTML = '';
+        leaderboardData.forEach(data => {
+            const row = document.createElement('tr');
+            row.className = 'border-b';
+            row.innerHTML = `
+                <td class="p-2 font-medium">${data.name}</td>
+                <td class="p-2 text-gray-600">${data.store}</td>
+                <td class="p-2 text-right font-semibold">${formatCurrency(data.totalSales)}</td>
+                <td class="p-2 text-right">${data.numSales}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    function renderRecentSales(sales) {
+        const tableBody = document.getElementById('recent-sales-body');
+        tableBody.innerHTML = '';
+        sales.slice(0, 10).forEach(sale => {
+            const profile = allProfiles.find(p => p.id === sale.optician_id);
+            const row = document.createElement('tr');
+            row.className = 'border-b';
+            row.innerHTML = `
+                <td class="p-2 font-medium">${sale.customer_name}</td>
+                <td class="p-2 text-gray-600">${profile ? profile.full_name : 'N/A'}</td>
+                <td class="p-2 text-right font-semibold">${formatCurrency(sale.final_cost)}</td>
+            `;
+            tableBody.appendChild(row);
+        });
     }
 
     // --- EVENT LISTENERS ---
