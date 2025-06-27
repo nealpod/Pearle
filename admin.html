@@ -25,12 +25,20 @@
         .btn-primary:hover {
             background-color: var(--pearl-dark-green);
         }
+        .btn-primary:disabled {
+            background-color: #a0aec0;
+            cursor: not-allowed;
+        }
         .btn-danger {
             background-color: #dc2626; color: white;
             transition: background-color 0.3s;
         }
         .btn-danger:hover {
             background-color: #b91c1c;
+        }
+        .btn-danger:disabled {
+            background-color: #fca5a5;
+            cursor: not-allowed;
         }
         .card {
             background-color: white;
@@ -160,7 +168,6 @@
     };
     const closeUserModal = () => userModal.classList.add('hidden');
     
-    // MODIFIED: Corrected checkUser function
     async function checkUser() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -168,7 +175,6 @@
             return;
         }
         
-        // Fetch from the 'profiles' table instead of 'users_roles'
         const { data: profile, error } = await supabase
             .from('profiles')
             .select('role, full_name')
@@ -177,46 +183,35 @@
 
         if (error || !profile) {
             console.error('Error fetching profile or profile not found:', error);
-            window.location.href = './calculator.html'; // Redirect if no profile
+            window.location.href = './calculator.html';
             return;
         }
 
         if (profile.role !== 'owner') {
             console.warn('Access Denied: User is not an owner.');
-            window.location.href = './calculator.html'; // Redirect non-owners
+            window.location.href = './calculator.html';
         } else {
-            // Display full name if available, otherwise fall back to email
             document.getElementById('user-display').textContent = `Welcome, ${profile.full_name || user.email}`;
         }
     }
 
-    // MODIFIED: Corrected fetchData function
     async function fetchData() {
         const { data: componentsData, error: componentsError } = await supabase.from('components').select('*');
         if(componentsError) console.error("Error fetching components:", componentsError);
         else priceListData = componentsData;
         
-        // Fetch all profiles and join with auth.users to get email
         const { data: profilesData, error: profilesError } = await supabase
             .from('profiles')
-            .select(`
-                id,
-                full_name,
-                role,
-                users:id (
-                    email
-                )
-            `);
+            .select(`id, full_name, role, users:id(email)`);
             
         if(profilesError) {
             console.error("Error fetching users:", profilesError);
         } else {
-            // Map the data to a flat structure
             userData = profilesData.map(p => ({
                 id: p.id,
                 full_name: p.full_name,
                 role: p.role,
-                email: p.users ? p.users.email : 'N/A' // Handle case where user might not exist in auth
+                email: p.users ? p.users.email : 'N/A'
             }));
         }
 
@@ -261,37 +256,32 @@
         closeItemModal();
     });
 
+    // MODIFIED: Calls the 'create-user' Edge Function
     userForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const email = document.getElementById('user-email').value;
-        const password = document.getElementById('user-password').value;
-        const role = document.getElementById('user-role').value;
-        const full_name = document.getElementById('user-full-name').value;
+        const submitButton = userForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Creating...';
 
-        // Use Supabase admin client for user creation in a real-world scenario
-        // This requires a server-side function (Supabase Edge Function) for security.
-        // The front-end should call that function.
-        // For demonstration, we'll simulate the call.
-        
-        // This is the data you would pass to your Edge Function
-        const newUserPayload = {
-            email: email,
-            password: password,
-            options: {
-                data: {
-                    full_name: full_name,
-                    role: role
-                }
+        const { error } = await supabase.functions.invoke('create-user', {
+            body: {
+                email: document.getElementById('user-email').value,
+                password: document.getElementById('user-password').value,
+                full_name: document.getElementById('user-full-name').value,
+                role: document.getElementById('user-role').value
             }
-        };
+        });
 
-        console.log("User creation requires a secure server-side function.");
-        console.log("Payload to send to Edge Function:", newUserPayload);
-        alert("User creation simulated. Check the browser console for details. In a real app, this would call a secure backend function.");
+        submitButton.disabled = false;
+        submitButton.textContent = 'Create User';
 
-        // In a real app, after the Edge Function succeeds:
-        // await fetchData();
-        closeUserModal();
+        if (error) {
+            alert(`Error creating user: ${error.message}`);
+        } else {
+            alert('User created successfully!');
+            await fetchData(); // Refresh the user list
+            closeUserModal();
+        }
     });
 
     componentsTableBody.addEventListener('click', async (e) => {
@@ -308,16 +298,28 @@
         }
     });
     
+    // MODIFIED: Calls the 'delete-user' Edge Function
     usersTableBody.addEventListener('click', async (e) => {
         if (e.target.classList.contains('remove-user-btn')) {
             const id = e.target.dataset.id;
-            // Use a custom modal for confirmation in a real app
-            if (confirm(`Are you sure you want to remove this user? This action cannot be undone.`)) {
-                 console.log("User deletion requires a secure server-side function.");
-                 console.log(`Placeholder: Would remove user with ID: ${id}`);
-                 // In a real app, you would call your Edge Function here:
-                 // const { error } = await supabase.functions.invoke('delete-user', { body: { userId: id } });
-                 // if (!error) await fetchData();
+            const userEmail = userData.find(u => u.id === id)?.email || 'this user';
+            
+            if (confirm(`Are you sure you want to remove ${userEmail}? This action cannot be undone.`)) {
+                e.target.disabled = true;
+                e.target.textContent = 'Removing...';
+
+                const { error } = await supabase.functions.invoke('delete-user', {
+                    body: { userId: id }
+                });
+
+                if (error) {
+                    alert(`Error deleting user: ${error.message}`);
+                    e.target.disabled = false;
+                    e.target.textContent = 'Remove';
+                } else {
+                    alert('User deleted successfully.');
+                    await fetchData(); // Refresh the user list
+                }
             }
         }
     });
