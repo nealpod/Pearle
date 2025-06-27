@@ -274,13 +274,29 @@
     
     // --- AUTH & DATA FETCHING ---
 
+    // MODIFIED: Updated checkUser function to fetch and display full name
     async function checkUser() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             window.location.href = './index.html';
         } else {
-            document.getElementById('user-display').textContent = `Welcome, ${user.email}`;
-            fetchData(); 
+            // Fetch the user's profile to get their name
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', user.id)
+                .single();
+
+            if (error) {
+                console.error('Error fetching profile:', error);
+                // Fallback to email if profile fetch fails
+                document.getElementById('user-display').textContent = `Welcome, ${user.email}`;
+            } else {
+                // Display the full name if it exists, otherwise fall back to email
+                document.getElementById('user-display').textContent = `Welcome, ${profile.full_name || user.email}`;
+            }
+            
+            fetchData(); // Proceed to load calculator data
         }
     }
 
@@ -694,15 +710,12 @@
 
         const coatingsSelect = document.getElementById('select-coatings');
         const backsideUVCheckbox = document.getElementById('checkbox-backside-uv');
-        // MODIFIED: This logic now allows manual checking of Backside UV
         if (coatingsSelect && backsideUVCheckbox) {
-            // It only forces the check ON, it doesn't force it OFF.
             if (coatingsSelect.value === 'Premium Plus A.R.') {
                 backsideUVCheckbox.checked = true;
             }
         }
 
-        // --- Refined logic for showing/hiding inputs ---
         document.getElementById('declining-balance-inputs').style.display = isDecliningBalance ? 'grid' : 'none';
         
         const frameAndLensInputs = document.querySelectorAll(
@@ -799,9 +812,7 @@
         // --- Process Lens & Add-On Configuration categories ---
         categories.forEach(cat => {
             if (cat.id === 'Add-Ons') return;
-            // REMOVED: The problematic line that was skipping the 'Protection' category for VSP
-            // if (cat.id === 'Protection' && insuranceType === 'VSP') return; 
-
+            
             const catId = toId(cat.id);
             const priceEl = document.getElementById(`price-${catId}`);
             let selectedValue;
@@ -1035,4 +1046,4 @@
     checkUser();
 </script>
 </body>
-</html>
+</ht
