@@ -63,7 +63,7 @@
                     <button id="add-new-user-btn" class="btn-primary text-white font-bold py-2 px-4 rounded">+ Add User</button>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left"><thead class="bg-gray-100"><tr><th class="p-2">Email</th><th class="p-2">Role</th><th class="p-2 text-center">Actions</th></tr></thead><tbody id="users-table-body"></tbody></table>
+                    <table class="w-full text-sm text-left"><thead class="bg-gray-100"><tr><th class="p-2">Name</th><th class="p-2">Email</th><th class="p-2">Role</th><th class="p-2 text-center">Actions</th></tr></thead><tbody id="users-table-body"></tbody></table>
                 </div>
             </div>
             <div id="component-management" class="card">
@@ -79,10 +79,9 @@
     </main>
     
     <div id="item-modal" class="fixed inset-0 z-30 hidden items-center justify-center modal-overlay"><div class="card w-full max-w-md"><h3 id="modal-title" class="text-xl font-bold mb-4">Add New Item</h3><form id="item-form" class="space-y-4"><input type="hidden" id="item-id"><div><label for="item-name" class="block text-sm font-medium text-gray-700">Item Name</label><input type="text" id="item-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="item-category" class="block text-sm font-medium text-gray-700">Category</label><input type="text" id="item-category" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="item-price" class="block text-sm font-medium text-gray-700">Retail Price</label><input type="number" step="0.01" id="item-price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div class="flex justify-end space-x-2 pt-4"><button type="button" id="cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded">Cancel</button><button type="submit" class="btn-primary text-white font-bold py-2 px-4 rounded">Save</button></div></form></div></div>
-    <div id="user-modal" class="fixed inset-0 z-30 hidden items-center justify-center modal-overlay"><div class="card w-full max-w-md"><h3 class="text-xl font-bold mb-4">Add New User</h3><form id="user-form" class="space-y-4"><div><label for="user-email" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="user-email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="user-password" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="user-password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="user-role" class="block text-sm font-medium text-gray-700">Role</label><select id="user-role" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required><option value="optician">Optician</option><option value="owner">Owner (Admin)</option></select></div><div class="flex justify-end space-x-2 pt-4"><button type="button" id="cancel-user-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded">Cancel</button><button type="submit" class="btn-primary text-white font-bold py-2 px-4 rounded">Create User</button></div></form></div></div>
+    <div id="user-modal" class="fixed inset-0 z-30 hidden items-center justify-center modal-overlay"><div class="card w-full max-w-md"><h3 class="text-xl font-bold mb-4">Add New User</h3><form id="user-form" class="space-y-4"><div><label for="user-full-name" class="block text-sm font-medium text-gray-700">Full Name</label><input type="text" id="user-full-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="user-email" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="user-email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="user-password" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="user-password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="user-role" class="block text-sm font-medium text-gray-700">Role</label><select id="user-role" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required><option value="optician">Optician</option><option value="owner">Owner</option></select></div><div class="flex justify-end space-x-2 pt-4"><button type="button" id="cancel-user-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded">Cancel</button><button type="submit" class="btn-primary text-white font-bold py-2 px-4 rounded">Create User</button></div></form></div></div>
 
 <script type="module">
-    // Make sure 'supabase-client.js' is in the same directory or adjust the path.
     import { supabase } from './supabase-client.js';
 
     let priceListData = [];
@@ -128,8 +127,9 @@
             const row = document.createElement('tr');
             row.className = 'border-b hover:bg-gray-50';
             row.innerHTML = `
+                <td class="p-2">${user.full_name || 'N/A'}</td>
                 <td class="p-2">${user.email}</td>
-                <td class="p-2">${user.role.charAt(0).toUpperCase() + user.role.slice(1)}</td>
+                <td class="p-2">${user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A'}</td>
                 <td class="p-2 text-center">
                     <button data-id="${user.id}" class="remove-user-btn text-sm btn-danger px-2 py-1 rounded">Remove</button>
                 </td>
@@ -160,40 +160,74 @@
     };
     const closeUserModal = () => userModal.classList.add('hidden');
     
+    // MODIFIED: Corrected checkUser function
     async function checkUser() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            // Redirect to login.html if no user is authenticated
-            window.location.href = './index.html'; 
+            window.location.href = './index.html';
             return;
         }
-        const { data, error } = await supabase.from('users_roles').select('role').eq('id', user.id).single();
-        if (error || !data || data.role !== 'owner') {
-            // Redirect non-owners to the calculator page
-            window.location.href = './calculator.html'; 
+        
+        // Fetch from the 'profiles' table instead of 'users_roles'
+        const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('role, full_name')
+            .eq('id', user.id)
+            .single();
+
+        if (error || !profile) {
+            console.error('Error fetching profile or profile not found:', error);
+            window.location.href = './calculator.html'; // Redirect if no profile
+            return;
+        }
+
+        if (profile.role !== 'owner') {
+            console.warn('Access Denied: User is not an owner.');
+            window.location.href = './calculator.html'; // Redirect non-owners
         } else {
-            document.getElementById('user-display').textContent = `Welcome, ${user.email}`;
+            // Display full name if available, otherwise fall back to email
+            document.getElementById('user-display').textContent = `Welcome, ${profile.full_name || user.email}`;
         }
     }
 
+    // MODIFIED: Corrected fetchData function
     async function fetchData() {
         const { data: componentsData, error: componentsError } = await supabase.from('components').select('*');
         if(componentsError) console.error("Error fetching components:", componentsError);
         else priceListData = componentsData;
         
-        const { data: usersData, error: usersError } = await supabase.from('users_roles').select(`id, role, users:id(email)`);
-        if(usersError) console.error("Error fetching users:", usersError);
-        else userData = usersData.map(u => ({ id: u.id, email: u.users.email, role: u.role}));
+        // Fetch all profiles and join with auth.users to get email
+        const { data: profilesData, error: profilesError } = await supabase
+            .from('profiles')
+            .select(`
+                id,
+                full_name,
+                role,
+                users:id (
+                    email
+                )
+            `);
+            
+        if(profilesError) {
+            console.error("Error fetching users:", profilesError);
+        } else {
+            // Map the data to a flat structure
+            userData = profilesData.map(p => ({
+                id: p.id,
+                full_name: p.full_name,
+                role: p.role,
+                email: p.users ? p.users.email : 'N/A' // Handle case where user might not exist in auth
+            }));
+        }
 
         renderComponentsTable();
         renderUsersTable();
     }
     
-    // --- EVENT LISTENERS ---
-    // --- INITIALIZATION ---
+    // --- EVENT LISTENERS & INITIALIZATION ---
     (async () => {
-        await checkUser();  // Ensure user is validated first
-        await fetchData();  // Then fetch data
+        await checkUser();
+        await fetchData();
     })();
 
     addNewBtn.addEventListener('click', () => openItemModal());
@@ -204,16 +238,9 @@
     cancelUserBtn.addEventListener('click', closeUserModal);
     userModal.addEventListener('click', (e) => { if (e.target === userModal) closeUserModal(); });
 
-    // Modified logout button event listener
     logoutBtn.addEventListener('click', async () => { 
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            console.error("Error logging out:", error.message);
-            // In a real app, you might show a user-friendly error message here
-        } else {
-            // Redirect to the login page after successful logout
-            window.location.href = './index.html'; 
-        }
+        await supabase.auth.signOut();
+        window.location.href = './index.html'; 
     });
 
     itemForm.addEventListener('submit', async (e) => {
@@ -239,14 +266,31 @@
         const email = document.getElementById('user-email').value;
         const password = document.getElementById('user-password').value;
         const role = document.getElementById('user-role').value;
-        
-        // This is a more advanced operation for security. For a real app,
-        // you would use a Supabase Function to create users to avoid exposing service keys.
-        // For now, this placeholder illustrates the goal.
-        // Replaced alert with console.log as per instruction.
-        console.log("User creation via admin panel requires a secure server-side function. See console for placeholder data.");
-        console.log(`Placeholder: Would create user ${email} with role ${role}`);
+        const full_name = document.getElementById('user-full-name').value;
 
+        // Use Supabase admin client for user creation in a real-world scenario
+        // This requires a server-side function (Supabase Edge Function) for security.
+        // The front-end should call that function.
+        // For demonstration, we'll simulate the call.
+        
+        // This is the data you would pass to your Edge Function
+        const newUserPayload = {
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    full_name: full_name,
+                    role: role
+                }
+            }
+        };
+
+        console.log("User creation requires a secure server-side function.");
+        console.log("Payload to send to Edge Function:", newUserPayload);
+        alert("User creation simulated. Check the browser console for details. In a real app, this would call a secure backend function.");
+
+        // In a real app, after the Edge Function succeeds:
+        // await fetchData();
         closeUserModal();
     });
 
@@ -266,18 +310,18 @@
     
     usersTableBody.addEventListener('click', async (e) => {
         if (e.target.classList.contains('remove-user-btn')) {
-            // Replaced confirm with console.log as per instruction. In a real app, use a custom modal for confirmation.
-            console.log("User deletion via admin panel requires a secure server-side function. See console for placeholder data.");
-            console.log(`Placeholder: Would remove user ${e.target.dataset.id}`);
-            // If you implement a custom modal for confirmation, the following would be inside its confirmation handler:
-            // const id = e.target.dataset.id;
-            // // Call your server-side function here
-            // fetchData(); // Re-fetch data after successful deletion
+            const id = e.target.dataset.id;
+            // Use a custom modal for confirmation in a real app
+            if (confirm(`Are you sure you want to remove this user? This action cannot be undone.`)) {
+                 console.log("User deletion requires a secure server-side function.");
+                 console.log(`Placeholder: Would remove user with ID: ${id}`);
+                 // In a real app, you would call your Edge Function here:
+                 // const { error } = await supabase.functions.invoke('delete-user', { body: { userId: id } });
+                 // if (!error) await fetchData();
+            }
         }
     });
 
 </script>
 </body>
 </html>
-
-
