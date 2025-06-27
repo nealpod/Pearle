@@ -57,6 +57,11 @@
         <div>
             <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" alt="Pearle Vision Logo" class="h-8">
         </div>
+        <!-- MODIFIED: Added navigation -->
+        <nav class="flex items-center space-x-4">
+            <a href="./dashboard.html" class="text-sm font-medium text-gray-600 hover:text-pearl-green">Dashboard</a>
+            <a href="./admin.html" class="text-sm font-bold text-pearl-green border-b-2 border-pearl-green">Management</a>
+        </nav>
         <div class="flex items-center space-x-4">
             <span id="user-display" class="text-sm font-medium"></span>
             <button id="logout-btn" class="text-sm text-gray-600 hover:text-gray-900">Log Out</button>
@@ -196,12 +201,10 @@
     }
 
     async function fetchData() {
-        // Fetch components
         const { data: componentsData, error: componentsError } = await supabase.from('components').select('*');
         if(componentsError) console.error("Error fetching components:", componentsError);
         else priceListData = componentsData;
         
-        // MODIFIED: Fetch users by calling the Edge Function
         const { data: usersData, error: usersError } = await supabase.functions.invoke('get-all-users');
             
         if(usersError) {
