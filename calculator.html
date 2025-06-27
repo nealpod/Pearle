@@ -264,6 +264,7 @@
     // Data will be populated from Supabase
     let priceListData = [];
     let examListData = [];
+    let selectedStore = null; // To hold the selected store info
 
     // Element references
     const optionsGrid = document.getElementById('dynamic-options-grid');
@@ -274,13 +275,19 @@
     
     // --- AUTH & DATA FETCHING ---
 
-    // MODIFIED: Updated checkUser function to fetch and display full name
     async function checkUser() {
+        // First, check if a store has been selected for this session
+        const storeData = sessionStorage.getItem('selectedStore');
+        if (!storeData) {
+            window.location.href = './select-store.html'; // Redirect if no store is selected
+            return;
+        }
+        selectedStore = JSON.parse(storeData);
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             window.location.href = './index.html';
         } else {
-            // Fetch the user's profile to get their name
             const { data: profile, error } = await supabase
                 .from('profiles')
                 .select('full_name')
@@ -289,14 +296,12 @@
 
             if (error) {
                 console.error('Error fetching profile:', error);
-                // Fallback to email if profile fetch fails
                 document.getElementById('user-display').textContent = `Welcome, ${user.email}`;
             } else {
-                // Display the full name if it exists, otherwise fall back to email
                 document.getElementById('user-display').textContent = `Welcome, ${profile.full_name || user.email}`;
             }
             
-            fetchData(); // Proceed to load calculator data
+            fetchData();
         }
     }
 
@@ -320,6 +325,7 @@
     }
 
     logoutBtn.addEventListener('click', async () => {
+        sessionStorage.removeItem('selectedStore'); // Clear store selection on logout
         await supabase.auth.signOut();
         window.location.href = './index.html';
     });
@@ -753,7 +759,7 @@
             if (checkbox) {
                 if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
             } else {
-                 const select = document.getElementById(`select-${catId}`);
+                 const select = document.getElementById(`select-${cat.id}`);
                  if (select) selectedValue = select.value;
             }
 
@@ -1046,4 +1052,4 @@
     checkUser();
 </script>
 </body>
-</ht
+</html>
