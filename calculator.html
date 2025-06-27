@@ -276,10 +276,9 @@
     // --- AUTH & DATA FETCHING ---
 
     async function checkUser() {
-        // First, check if a store has been selected for this session
         const storeData = sessionStorage.getItem('selectedStore');
         if (!storeData) {
-            window.location.href = './select-store.html'; // Redirect if no store is selected
+            window.location.href = './select-store.html';
             return;
         }
         selectedStore = JSON.parse(storeData);
@@ -325,7 +324,7 @@
     }
 
     logoutBtn.addEventListener('click', async () => {
-        sessionStorage.removeItem('selectedStore'); // Clear store selection on logout
+        sessionStorage.removeItem('selectedStore');
         await supabase.auth.signOut();
         window.location.href = './index.html';
     });
@@ -333,7 +332,6 @@
 
     // --- CALCULATOR LOGIC ---
 
-    // Lens/Add-on categories
     const categories = [
         { id: 'Rx', label: 'Rx' },
         { id: 'Lens Type', label: 'Lens Design' }, 
@@ -1052,4 +1050,4 @@
     checkUser();
 </script>
 </body>
-</html>
+</ht
