@@ -168,11 +168,11 @@
                                 <input type="text" inputmode="decimal" id="global-discount" placeholder="Discount" class="config-input percent-format w-full border-gray-300 rounded-md shadow-sm text-sm">
                             </div>
                         </div>
-                        </div>
+                    </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Lens & Add-On Configuration</h3>
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Frame & Lens Configuration</h3>
                     
                     <div id="frame-group" class="md:col-span-2 input-group space-y-2 mb-4">
                         <div class="component-label">
@@ -902,7 +902,6 @@
     }
 
     window.toggleDetails = function(id) {
-        // Corrected the function to find the element by the passed id directly
         const detailsEl = document.getElementById(id);
         if(detailsEl) {
             detailsEl.classList.toggle('open');
