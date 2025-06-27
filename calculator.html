@@ -120,7 +120,7 @@
         }
     </style>
 </head>
-<body class="text-gray-800">
+<body>
 
     <header class="bg-white shadow-md p-4 flex justify-between items-center sticky top-0 z-20">
         <div>
@@ -319,7 +319,9 @@
     // This will be populated from Supabase
     let priceListData = [];
 
-    const optionsGrid = document.getElementById('dynamic-options-grid');
+    // Renamed optionsGrid to frameLensDynamicGrid for clarity in new structure
+    const frameLensDynamicGrid = document.getElementById('frame-lens-dynamic-grid'); 
+    const dynamicOptionsGrid = document.getElementById('dynamic-options-grid'); // This is the inner grid for lens options
     const summaryItemsEl = document.getElementById('summary-items');
     const logoutBtn = document.getElementById('logout-btn');
     let addonCounter = 0;
@@ -398,9 +400,6 @@
 
     // Updated categories array to reflect new structure and include exam types
     const categories = [
-        { id: 'Eye Exam Type', label: 'Eye Exam Type' }, // New: Mandatory Eye Exam
-        { id: 'Contact Lens Exam', label: 'Contact Lens Exam' }, // New: Optional Contact Lens Exam
-        { id: 'Retinal Fundus Photos', label: 'Retinal Fundus Photos' }, // New: Optional Retinal Fundus Photos
         { id: 'Rx', label: 'Rx' },
         { id: 'Lens Type', label: 'Lens Design' }, 
         { id: 'Material', label: 'Material' },
@@ -440,7 +439,7 @@
 
     function buildInputs() {
         // Clear the dynamic-options-grid only, as frame-group is now static in HTML
-        optionsGrid.innerHTML = ''; 
+        dynamicOptionsGrid.innerHTML = ''; // Changed from optionsGrid to dynamicOptionsGrid
 
         // Populate the new Eye Exam Type dropdown first, as it's mandatory
         const eyeExamTypeSelect = document.getElementById('select-eye-exam-type');
@@ -529,7 +528,7 @@
             }
             
             // Append to the dynamic-options-grid which is now inside Frame and Lens Configuration
-            document.getElementById('frame-lens-dynamic-grid').appendChild(container);
+            dynamicOptionsGrid.appendChild(container); // Changed from frameLensDynamicGrid to dynamicOptionsGrid
 
             // Conditional VSP Material Co-Pay container placement (still after Protection)
             if (cat.id === 'Protection') { 
@@ -546,7 +545,7 @@
                         <input type="text" inputmode="decimal" id="copay-material-co-pay" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
                     </div>
                 `;
-                document.getElementById('frame-lens-dynamic-grid').appendChild(vspCopayContainer); // Append to the main dynamic grid
+                dynamicOptionsGrid.appendChild(vspCopayContainer); // Changed from frameLensDynamicGrid to dynamicOptionsGrid
             }
         });
 
