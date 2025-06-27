@@ -168,38 +168,40 @@
     <!-- Main Content Area -->
     <main class="p-4 sm:p-6 lg:p-8">
         <div class="max-w-7xl mx-auto">
-             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+            <!-- MODIFIED: New top row for Customer and Exam info -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Customer Information Card -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Customer Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="input-group space-y-2">
+                            <label for="customer-name" class="block text-sm font-medium text-gray-700">Customer Name</label>
+                            <input type="text" id="customer-name" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                        </div>
+                        <div class="input-group space-y-2">
+                            <label for="insurance-type-select" class="block text-sm font-medium text-gray-700">Insurance</label>
+                            <select id="insurance-type-select" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                                <option>Other Insurance</option>
+                                <option>VSP</option>
+                                <option>Declining Balance</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Exams Card -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Exams</h3>
+                    <div id="exam-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <!-- Exam inputs will be dynamically inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- MODIFIED: Bottom row for Contacts and Summary -->
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 <!-- Left Column: Configuration Panel -->
-                <div class="lg:col-span-2 space-y-6">
-                    
-                    <!-- ADDED: Customer Information Card -->
-                    <div class="bg-white p-6 rounded-lg shadow">
-                        <h3 class="text-xl font-semibold mb-4 border-b pb-2">Customer Information</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="input-group space-y-2">
-                                <label for="customer-name" class="block text-sm font-medium text-gray-700">Customer Name</label>
-                                <input type="text" id="customer-name" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
-                            </div>
-                            <div class="input-group space-y-2">
-                                <label for="insurance-type-select" class="block text-sm font-medium text-gray-700">Insurance</label>
-                                <select id="insurance-type-select" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
-                                    <option>Other Insurance</option>
-                                    <option>VSP</option>
-                                    <option>Declining Balance</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ADDED: Exams Card -->
-                    <div class="bg-white p-6 rounded-lg shadow">
-                        <h3 class="text-xl font-semibold mb-4 border-b pb-2">Exams</h3>
-                        <div id="exam-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            <!-- Exam inputs will be dynamically inserted here -->
-                        </div>
-                    </div>
-
+                <div class="lg:col-span-2">
                     <!-- Original Contacts Configuration Card -->
                     <div class="bg-white p-6 rounded-lg shadow h-full">
                         <h2 class="text-xl font-semibold text-gray-800 mb-4 border-b pb-2">Contact Lens Savings Plan</h2>
@@ -402,6 +404,7 @@
         let totalExamCost = 0;
         examCategories.forEach(cat => {
             const catId = cat.id;
+            const priceEl = document.getElementById(`price-${catId}`);
             let selectedValue;
             const checkbox = document.getElementById(`checkbox-${catId}`);
             if (checkbox) {
@@ -411,7 +414,10 @@
                  if (select) selectedValue = select.value;
             }
 
-            if (!selectedValue || selectedValue === "None") return;
+            if (!selectedValue || selectedValue === "None") {
+                if(priceEl) priceEl.textContent = '';
+                return;
+            };
             
             const selectedItem = examListData.find(p => p.exam_type === selectedValue);
             if (!selectedItem) return;
@@ -427,7 +433,6 @@
             totalExamCost += calc.finalCost;
             
             // Update individual price display
-            const priceEl = document.getElementById(`price-${catId}`);
             if (priceEl) priceEl.textContent = formatCurrency(calc.finalCost);
         });
         return totalExamCost;
