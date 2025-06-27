@@ -757,7 +757,7 @@
             if (checkbox) {
                 if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
             } else {
-                 const select = document.getElementById(`select-${catId}`);
+                 const select = document.getElementById(`select-${cat.id}`);
                  if (select) selectedValue = select.value;
             }
 
@@ -1030,14 +1030,115 @@
         updateCalculations();
     }
 
+    // MODIFIED: Added saveQuote function
+    async function saveQuote() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !selectedStore) {
+            alert("Error: Not logged in or no store selected.");
+            return;
+        }
+
+        const customerName = document.getElementById('customer-name').value;
+        if (!customerName) {
+            alert("Please enter a customer name before saving.");
+            return;
+        }
+
+        // Gather all selected items for the detailed quote
+        const quoteDetails = {
+            exams: [],
+            frame: {},
+            lenses: {},
+            addOns: []
+        };
+
+        // Get exam details
+        examCategories.forEach(cat => {
+            const checkbox = document.getElementById(`checkbox-${cat.id}`);
+            const select = document.getElementById(`select-${cat.id}`);
+            let selectedValue = null;
+            if (checkbox && checkbox.checked) selectedValue = checkbox.dataset.itemName;
+            if (select && select.value !== 'None') selectedValue = select.value;
+            
+            if (selectedValue) {
+                quoteDetails.exams.push({
+                    name: cat.label,
+                    selection: selectedValue,
+                    price: getCleanValue(`price-${cat.id}`)
+                });
+            }
+        });
+
+        // Get frame details
+        const framePrice = getCleanValue('frame-retail-price');
+        if (framePrice > 0) {
+            quoteDetails.frame = {
+                price: framePrice,
+                finalCost: getCleanValue('price-frame')
+            };
+        }
+
+        // Get lens and add-on details
+        categories.forEach(cat => {
+            const catId = toId(cat.id);
+            const checkbox = document.getElementById(`checkbox-${catId}`);
+            const select = document.getElementById(`select-${catId}`);
+            let selectedValue = null;
+            if (checkbox && checkbox.checked) selectedValue = checkbox.dataset.itemName;
+            if (select && select.value !== 'None') selectedValue = select.value;
+            
+            if (selectedValue) {
+                if (cat.id !== 'Add-Ons') {
+                     quoteDetails.lenses[cat.label] = {
+                        selection: selectedValue,
+                        price: getCleanValue(`price-${catId}`)
+                    };
+                }
+            }
+        });
+
+        document.querySelectorAll('.addon-row').forEach(row => {
+            const rowId = row.id.split('-').pop();
+            const select = document.getElementById(`select-addon-${rowId}`);
+            if (select && select.value !== 'No Extras') {
+                quoteDetails.addOns.push({
+                    selection: select.value,
+                    price: getCleanValue(`price-addon-${rowId}`)
+                });
+            }
+        });
+
+
+        // Prepare the data for insertion
+        const saleData = {
+            optician_id: user.id,
+            store_id: selectedStore.id,
+            customer_name: customerName,
+            final_cost: getCleanValue('summary-final-cost'),
+            total_retail: getCleanValue('summary-retail'),
+            insurance_savings: getCleanValue('summary-ins-svgs'),
+            quote_details: quoteDetails
+        };
+
+        // Insert the data into the 'sales' table
+        const { error } = await supabase.from('sales').insert([saleData]);
+
+        if (error) {
+            console.error('Error saving quote:', error);
+            alert('There was an error saving the quote. Please try again.');
+        } else {
+            alert('Quote saved successfully!');
+            resetCalculator();
+        }
+    }
+
     function initializeCalculator() {
         buildExamInputs();
         buildInputs();
         
         document.getElementById('reset-button').addEventListener('click', resetCalculator);
-        document.getElementById('save-quote-button').addEventListener('click', () => {
-            console.log("Quote saved (placeholder).");
-        });
+        // MODIFIED: Updated event listener to call saveQuote
+        document.getElementById('save-quote-button').addEventListener('click', saveQuote);
 
         attachEventListeners();
         
@@ -1050,4 +1151,4 @@
     checkUser();
 </script>
 </body>
-</ht
+</html>
