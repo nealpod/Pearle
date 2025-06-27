@@ -124,9 +124,10 @@
 
     <header class="bg-white shadow-md p-4 flex justify-between items-center sticky top-0 z-20">
         <div>
-            <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" class="h-8">
+            <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" class="h-8" alt="Pearle Vision Logo">
         </div>
 
+        <!-- Calculator Toggle Button -->
         <div class="calculator-toggle">
             <button class="active" onclick="window.location.href='./calculator.html'">Glasses</button>
             <button onclick="window.location.href='./contacts.html'">Contacts</button>
@@ -167,6 +168,10 @@
                                 <label for="global-discount" class="block text-sm font-medium text-gray-700">Global Discount</label>
                                 <input type="text" inputmode="decimal" id="global-discount" placeholder="Discount" class="config-input percent-format w-full border-gray-300 rounded-md shadow-sm text-sm">
                             </div>
+                        </div>
+                        <!-- ADDED: Container for the new exam options -->
+                        <div id="exam-options-grid" class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 border-t pt-4 mt-4">
+                            <!-- Exam inputs will be dynamically inserted here -->
                         </div>
                     </div>
                 </div>
@@ -253,10 +258,13 @@
 <script type="module">
     import { supabase } from './supabase-client.js';
 
-    // This will be populated from Supabase
+    // Data will be populated from Supabase
     let priceListData = [];
+    let examListData = []; // ADDED: For exam data
 
+    // Element references
     const optionsGrid = document.getElementById('dynamic-options-grid');
+    const examOptionsGrid = document.getElementById('exam-options-grid'); // ADDED: Exam grid reference
     const summaryItemsEl = document.getElementById('summary-items');
     const logoutBtn = document.getElementById('logout-btn');
     let addonCounter = 0;
@@ -266,33 +274,31 @@
     async function checkUser() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
-            window.location.href = './index.html'; // Redirect to login if not authenticated
+            window.location.href = './index.html';
         } else {
-            // Display user's email or a friendly message
             document.getElementById('user-display').textContent = `Welcome, ${user.email}`;
-            // Fetch pricing data only after user is confirmed authenticated
             fetchData(); 
         }
     }
 
+    // MODIFIED: Fetch data from both 'components' and 'exams' tables
     async function fetchData() {
-        // Fetch only active components from the database
-        const { data, error } = await supabase
-            .from('components')
-            .select('*')
-            .eq('is_active', true);
+        const componentsPromise = supabase.from('components').select('*').eq('is_active', true);
+        const examsPromise = supabase.from('exams').select('*').eq('is_active', true);
 
-        if (error) {
-            console.error("Error fetching pricing data:", error);
-            // Changed alert to use your existing modal for better UX
-            showErrorModal("Could not load pricing data. Please contact support. Error: " + error.message);
+        const [componentsResult, examsResult] = await Promise.all([componentsPromise, examsPromise]);
+
+        if (componentsResult.error || examsResult.error) {
+            const errorMsg = componentsResult.error?.message || examsResult.error?.message;
+            console.error("Error fetching data:", errorMsg);
+            showErrorModal("Could not load pricing data. Please contact support. Error: " + errorMsg);
             return;
         }
         
-        // Add a "None" item for dropdown defaults
-        priceListData = [{ "Item": "None", "Category": "All", "Retail": 0 }, ...data];
+        priceListData = [{ "Item": "None", "Category": "All", "Retail": 0 }, ...componentsResult.data];
+        // Note: The column names from your Supabase table should match what's used here (exam_type, price_retail)
+        examListData = [{ "exam_type": "None", "Category": "All", "price_retail": 0 }, ...examsResult.data];
         
-        // Once data is loaded, build the UI
         initializeCalculator();
     }
 
@@ -304,6 +310,7 @@
 
     // --- CALCULATOR LOGIC ---
 
+    // Lens/Add-on categories
     const categories = [
         { id: 'Rx', label: 'Rx' },
         { id: 'Lens Type', label: 'Lens Design' }, 
@@ -317,9 +324,17 @@
         { id: 'Protection', label: '1Yr. Protection' },
         { id: 'Add-Ons', label: 'Add-Ons' }
     ];
+    
+    // ADDED: Exam categories
+    const examCategories = [
+        { id: 'eye-exam', label: 'Eye Exam', type: 'select' },
+        { id: 'refraction', label: 'Refraction', type: 'checkbox' },
+        { id: 'contacts-exam', label: 'Contacts Exam', type: 'select' },
+        { id: 'retinal-fundus-photos', label: 'Retinal Fundus Photos', type: 'checkbox' }
+    ];
 
     const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
-    const toId = (str) => str.replace(/\s+/g, '-').toLowerCase();
+    const toId = (str) => str.replace(/[\s./]+/g, '-').toLowerCase();
 
     const onFocus = (event) => {
         let value = event.target.value;
@@ -341,6 +356,65 @@
         modalMessage.textContent = message;
         modal.classList.remove('hidden');
     }
+    
+    // ADDED: New function to build exam inputs
+    function buildExamInputs() {
+        examOptionsGrid.innerHTML = '';
+        examCategories.forEach(cat => {
+            const container = document.createElement('div');
+            container.id = `container-${cat.id}`;
+            container.className = 'input-group space-y-2';
+
+            if (cat.type === 'select') {
+                const options = examListData.filter(e => e.Category === cat.label && e.exam_type !== 'None');
+                const allOptions = [examListData.find(e => e.exam_type === 'None'), ...options];
+                container.innerHTML = `
+                    <div class="component-label">
+                        <label for="select-${cat.id}" class="font-medium text-gray-700">${cat.label}</label>
+                        <span id="price-${cat.id}" class="component-price"></span>
+                    </div>
+                    <select id="select-${cat.id}" data-category="${cat.label}" class="config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                        ${allOptions.map(o => o && `<option value="${o.exam_type}">${o.exam_type}</option>`).join('')}
+                    </select>
+                `;
+            } else { // Checkbox
+                const singleOption = examListData.find(e => e.Category === cat.label);
+                if (!singleOption) return; // Don't build if data not found
+                container.innerHTML = `
+                    <div class="component-label">
+                         <label class="flex items-center cursor-pointer">
+                             <input type="checkbox" id="checkbox-${cat.id}" data-item-name="${singleOption.exam_type}" class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                             <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
+                         </label>
+                         <span id="price-${cat.id}" class="component-price"></span>
+                    </div>
+                `;
+            }
+
+            // Add allowance/discount/copay inputs to all exam items
+            container.innerHTML += `
+                <div class="flex space-x-1">
+                    <input type="text" inputmode="decimal" id="allowance-${cat.id}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                    <input type="text" inputmode="decimal" id="discount-${cat.id}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                    <input type="text" inputmode="decimal" id="copay-${cat.id}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                </div>
+            `;
+            examOptionsGrid.appendChild(container);
+        });
+
+        // Add special event listener for Eye Exam -> Refraction rule
+        const eyeExamSelect = document.getElementById('select-eye-exam');
+        const refractionCheckbox = document.getElementById('checkbox-refraction');
+        if (eyeExamSelect && refractionCheckbox) {
+            eyeExamSelect.addEventListener('change', () => {
+                if (eyeExamSelect.value !== 'None') {
+                    refractionCheckbox.checked = true;
+                }
+                updateCalculations(); // Trigger recalculation
+            });
+        }
+    }
+
 
     function buildInputs() {
         optionsGrid.innerHTML = '';
@@ -362,7 +436,6 @@
 
                 if (options.length <= 1 && cat.id !== 'Rx' && cat.id !== 'Coatings' && cat.id !== 'Color' && cat.id !== 'Material' && cat.id !== 'Lens Type') {
                     const singleOption = options[0] || { Item: cat.label };
-                    // Determine if the checkbox should be initially checked (only Edge Polish by default)
                     const isCheckedDefault = (cat.id === 'Edge Polish') ? 'checked' : ''; 
                     container.innerHTML = `
                         <div class="component-label">
@@ -399,12 +472,11 @@
             
             optionsGrid.appendChild(container);
 
-            // Conditional VSP Material Co-Pay container placement
-            if (cat.id === 'Protection') { // Current placement for VSP Material Co-Pay after Protection
+            if (cat.id === 'Protection') {
                 const vspCopayContainer = document.createElement('div');
                 vspCopayContainer.id = 'container-material-co-pay';
                 vspCopayContainer.className = 'input-group space-y-2'; 
-                vspCopayContainer.style.display = 'none'; // Initially hidden
+                vspCopayContainer.style.display = 'none';
                 vspCopayContainer.innerHTML = `
                     <div class="component-label">
                         <label class="font-medium text-gray-700">VSP Material Co-Pay</label>
@@ -422,7 +494,7 @@
         document.getElementById('close-error-modal-btn').addEventListener('click', () => {
              document.getElementById('error-modal').classList.add('hidden');
         });
-        attachEventListeners();
+        // Note: attachEventListeners() is now called once in initializeCalculator()
     }
 
     function addAddonRow() {
@@ -451,15 +523,14 @@
             <button type="button" class="btn-remove btn" data-row-id="${addonCounter}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
-                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0
-                            0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                    <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                 </svg>
             </button>
         `;
 
         repeaterContainer.appendChild(addonRow);
         updateAddonDropdowns();
-        attachEventListeners();
+        attachEventListeners(); // Re-attach for new row
         updateCalculations();
     }
     
@@ -482,10 +553,10 @@
         const addButton = document.getElementById('add-addon-btn');
         const availableAddons = allAddonItems.length - selectedAddons.filter(item => item !== 'No Extras').length;
         addButton.disabled = availableAddons <= 0;
-
     }
 
     function attachEventListeners() {
+        // This function now attaches listeners to ALL relevant inputs on the page
         document.querySelectorAll('.config-option, .config-input').forEach(el => {
             el.removeEventListener('input', updateCalculations);
             el.addEventListener('input', updateCalculations);
@@ -603,85 +674,110 @@
 
         let totalRetail = 0, totalInsSvgs = 0, totalFinalCost = 0;
 
-        // Ensure dropdowns are updated first based on insurance type
         updateRxDropdown(); 
         updateCoatingsDropdown();
 
-        // Rx -> Lens Type auto-selection logic
         const rxSelect = document.getElementById('select-rx');
         const lensTypeSelect = document.getElementById('select-lens-type');
         if (rxSelect && lensTypeSelect) {
             const rxValue = rxSelect.value;
             let targetLensType = 'None';
-            // Logic to auto-select lens type based on Rx
             if (rxValue.includes('S.V.')) targetLensType = 'S.V. Digital Aspheric';
             else if (rxValue.includes('BiFocal')) targetLensType = 'BiFocal Digital Aspheric';
             else if (rxValue.startsWith('PG')) targetLensType = 'Prog. Digital Aspheric';
             
-            // Check if the target option actually exists in the lensTypeSelect dropdown
             const optionExists = Array.from(lensTypeSelect.options).some(option => option.value === targetLensType);
 
             if (optionExists) {
                 lensTypeSelect.value = targetLensType;
-                lensTypeSelect.disabled = (targetLensType !== 'None'); // Disable if auto-selected
+                lensTypeSelect.disabled = (targetLensType !== 'None');
             } else {
-                // If the target option is not available, ensure Lens Type is "None" and remains enabled
                 lensTypeSelect.value = 'None';
-                lensTypeSelect.disabled = false; // Keep it enabled if auto-selection failed
+                lensTypeSelect.disabled = false;
             }
         }
 
-
-        // Logic for Backside UV auto-checking based on Coatings selection
         const coatingsSelect = document.getElementById('select-coatings');
         const backsideUVCheckbox = document.getElementById('checkbox-backside-uv');
-
         if (coatingsSelect && backsideUVCheckbox) {
-            if (coatingsSelect.value === 'Premium Plus A.R.') {
-                backsideUVCheckbox.checked = true;
-            } else {
-                backsideUVCheckbox.checked = false;
-            }
+            backsideUVCheckbox.checked = (coatingsSelect.value === 'Premium Plus A.R.');
         }
 
         // --- Handle visibility of global vs. individual inputs ---
-        const decliningBalanceInputsContainer = document.getElementById('declining-balance-inputs');
-        if (decliningBalanceInputsContainer) {
-            decliningBalanceInputsContainer.style.display = isDecliningBalance ? 'grid' : 'none';
-        }
+        document.getElementById('declining-balance-inputs').style.display = isDecliningBalance ? 'grid' : 'none';
+        
+        // This selector now targets ALL allowance/discount/copay inputs across the page
+        document.querySelectorAll('[id^="allowance-"], [id^="discount-"], [id^="copay-"]').forEach(input => {
+            // Exclude the global inputs
+            if (input.id.startsWith('global-')) return;
 
-        const frameAllowanceInput = document.getElementById('allowance-frame');
-        const frameDiscountInput = document.getElementById('discount-frame');
-        if (frameAllowanceInput && frameDiscountInput) {
-            frameAllowanceInput.style.display = isDecliningBalance ? 'none' : 'block';
-            frameDiscountInput.style.display = isDecliningBalance ? 'none' : 'block';
-            if (isDecliningBalance) {
-                frameAllowanceInput.value = '';
-                frameDiscountInput.value = '';
+            // VSP Material Co-Pay has only a copay field
+            if (input.id === 'copay-material-co-pay') {
+                const container = document.getElementById('container-material-co-pay');
+                if (container) container.style.display = (insuranceType === 'VSP' && !isDecliningBalance) ? 'block' : 'none';
+                if (container && container.style.display === 'none') input.value = '';
+                return; // Skip to next input
             }
-        }
-
-        const vspCopayContainer = document.getElementById('container-material-co-pay');
-        if (vspCopayContainer) {
-            if (insuranceType === 'VSP' && !isDecliningBalance) {
-                vspCopayContainer.style.display = 'block';
-            } else {
-                vspCopayContainer.style.display = 'none';
-                document.getElementById('copay-material-co-pay').value = ''; 
-            }
-        }
+            
+            input.style.display = isDecliningBalance ? 'none' : 'block';
+            if (isDecliningBalance) input.value = '';
+        });
 
 
         summaryItemsEl.innerHTML = '<p class="text-gray-500 initial-text">Your selections will appear here.</p>'; 
         let summaryContent = '';
 
+        // --- Process Exam Items ---
+        examCategories.forEach(cat => {
+            const catId = cat.id;
+            const priceEl = document.getElementById(`price-${catId}`);
+            let selectedValue;
+
+            const checkbox = document.getElementById(`checkbox-${catId}`);
+            if (checkbox) {
+                if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
+            } else {
+                 const select = document.getElementById(`select-${catId}`);
+                 if (select) selectedValue = select.value;
+            }
+
+            if (!selectedValue || selectedValue === "None") { 
+                if(priceEl) priceEl.textContent = ''; 
+                return; 
+            }
+            
+            // Use examListData here
+            const selectedItem = examListData.find(p => p.exam_type === selectedValue);
+            if (!selectedItem) return;
+
+            const inputs = {
+                retail: selectedItem.price_retail, // Use correct price column
+                insAllow: isDecliningBalance ? 0 : getCleanValue(`allowance-${catId}`),
+                discount: isDecliningBalance ? 0 : getCleanValue(`discount-${catId}`),
+                copay: isDecliningBalance ? 0 : getCleanValue(`copay-${catId}`),
+            };
+
+            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
+            if (calc.isError && !errorFound) {
+                errorFound = true;
+                showErrorModal(`The final price for ${cat.label} cannot exceed its retail price.`);
+                document.getElementById(`container-${catId}`).classList.add('error');
+            }
+            totalRetail += inputs.retail;
+            if (!isDecliningBalance) {
+                totalInsSvgs += calc.insSvgs;
+                totalFinalCost += calc.finalCost;
+            }
+            summaryContent += createSummaryItemHTML(catId, cat.label, inputs, calc);
+            if (priceEl) priceEl.textContent = formatCurrency(isDecliningBalance ? inputs.retail : calc.finalCost);
+        });
+
         // --- Process Frame Details ---
         const frameRetail = getCleanValue('frame-retail-price');
-        const frameInsAllow = isDecliningBalance ? 0 : getCleanValue('allowance-frame');
-        const frameDiscount = isDecliningBalance ? 0 : getCleanValue('discount-frame');
-        const frameCopay = 0; 
-
         if (frameRetail > 0) {
+            const frameInsAllow = isDecliningBalance ? 0 : getCleanValue('allowance-frame');
+            const frameDiscount = isDecliningBalance ? 0 : getCleanValue('discount-frame');
+            const frameCopay = 0; 
             const frameCalc = calculateItem(frameRetail, frameInsAllow, frameDiscount, frameCopay, true);
             if (frameCalc.isError && !errorFound) {
                 errorFound = true;
@@ -694,7 +790,7 @@
                 totalFinalCost += frameCalc.finalCost;
             }
             summaryContent += createSummaryItemHTML('frame', 'Frame', {retail: frameRetail, insAllow: frameInsAllow, discount: frameDiscount, copay: frameCopay}, frameCalc);
-            document.getElementById('price-frame').textContent = formatCurrency(frameCalc.finalCost);
+            document.getElementById('price-frame').textContent = formatCurrency(isDecliningBalance ? frameRetail : frameCalc.finalCost);
         } else {
             document.getElementById('price-frame').textContent = '';
         }
@@ -702,34 +798,14 @@
         // --- Process Lens & Add-On Configuration categories ---
         categories.forEach(cat => {
             if (cat.id === 'Add-Ons') return;
-            
             if (cat.id === 'Protection' && insuranceType === 'VSP') return; 
 
             const catId = toId(cat.id);
             const priceEl = document.getElementById(`price-${catId}`);
-            const allowanceInput = document.getElementById(`allowance-${catId}`);
-            const discountInput = document.getElementById(`discount-${catId}`);
-            const copayInput = document.getElementById(`copay-${catId}`);
-
-            if (allowanceInput && discountInput && copayInput) {
-                allowanceInput.style.display = isDecliningBalance ? 'none' : 'block';
-                discountInput.style.display = isDecliningBalance ? 'none' : 'block';
-                copayInput.style.display = isDecliningBalance ? 'none' : 'block';
-                if (isDecliningBalance) {
-                    allowanceInput.value = '';
-                    discountInput.value = '';
-                    copayInput.value = '';
-                }
-            }
-
             let selectedValue;
             const checkbox = document.getElementById(`checkbox-${catId}`);
             if (checkbox) {
                 if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
-                else { 
-                    if(priceEl) priceEl.textContent = ''; 
-                    return; 
-                }
             } else {
                  const select = document.getElementById(`select-${catId}`);
                  if (select) selectedValue = select.value;
@@ -772,21 +848,6 @@
             const itemName = select.value;
             const priceEl = document.getElementById(`price-addon-${rowId}`);
 
-            const allowanceInput = document.getElementById(`allowance-addon-${rowId}`);
-            const discountInput = document.getElementById(`discount-addon-${rowId}`);
-            const copayInput = document.getElementById(`copay-addon-${rowId}`);
-
-            if (allowanceInput && discountInput && copayInput) {
-                allowanceInput.style.display = isDecliningBalance ? 'none' : 'block';
-                discountInput.style.display = isDecliningBalance ? 'none' : 'block';
-                copayInput.style.display = isDecliningBalance ? 'none' : 'block';
-                if (isDecliningBalance) {
-                    allowanceInput.value = '';
-                    discountInput.value = '';
-                    copayInput.value = '';
-                }
-            }
-
             if (itemName === 'No Extras') {
                 if(priceEl) priceEl.textContent = '';
                 return;
@@ -821,24 +882,17 @@
         if (isDecliningBalance) {
             const globalAllowance = getCleanValue('global-allowance');
             const globalDiscount = getCleanValue('global-discount');
-
-            let subtotal = totalRetail - globalAllowance;
-            totalFinalCost = subtotal * (1 - (globalDiscount / 100));
+            totalFinalCost = (totalRetail - globalAllowance) * (1 - (globalDiscount / 100));
             totalFinalCost = Math.max(0, totalFinalCost);
-
             totalInsSvgs = totalRetail - totalFinalCost;
-
         } else {
             const vspCopayValue = getCleanValue('copay-material-co-pay');
-            const vspCopayPriceEl = document.getElementById('price-material-co-pay');
             if (insuranceType === 'VSP' && vspCopayValue > 0) {
                 totalFinalCost += vspCopayValue; 
                 const vspInputs = { retail: 0, insAllow: 0, discount: 0, copay: vspCopayValue };
                 const vspOutputs = { yourCost: 0, insSvgs: -vspCopayValue, finalCost: vspCopayValue };
                 summaryContent += createSummaryItemHTML('material-co-pay', 'VSP Material Co-Pay', vspInputs, vspOutputs);
-                vspCopayPriceEl.textContent = formatCurrency(vspCopayValue);
-            } else if (vspCopayPriceEl) {
-                vspCopayPriceEl.textContent = '';
+                document.getElementById('price-material-co-pay').textContent = formatCurrency(vspCopayValue);
             }
         }
 
@@ -847,21 +901,18 @@
         }
 
         const insSavingsDetailsEl = document.getElementById('summary-ins-svgs-details');
-        if (insSavingsDetailsEl) {
-            if (isDecliningBalance) {
-                const globalAllowance = getCleanValue('global-allowance');
-                const globalDiscount = getCleanValue('global-discount');
-                const calculatedDiscountAmount = (totalRetail - globalAllowance) * (globalDiscount / 100);
-
-                insSavingsDetailsEl.innerHTML = `
-                    <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Global Allowance</span><span>-${formatCurrency(globalAllowance)}</span></div>
-                    <div class="flex justify-between text-xs pt-1"><span>Global Discount (${globalDiscount}%)</span><span>-${formatCurrency(calculatedDiscountAmount)}</span></div>
-                `;
-                insSavingsDetailsEl.classList.add('open');
-            } else {
-                insSavingsDetailsEl.innerHTML = '';
-                insSavingsDetailsEl.classList.remove('open');
-            }
+        if (isDecliningBalance) {
+            const globalAllowance = getCleanValue('global-allowance');
+            const globalDiscount = getCleanValue('global-discount');
+            const calculatedDiscountAmount = (totalRetail - globalAllowance) * (globalDiscount / 100);
+            insSavingsDetailsEl.innerHTML = `
+                <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Global Allowance</span><span>-${formatCurrency(globalAllowance)}</span></div>
+                <div class="flex justify-between text-xs pt-1"><span>Global Discount (${globalDiscount}%)</span><span>-${formatCurrency(calculatedDiscountAmount)}</span></div>
+            `;
+            insSavingsDetailsEl.classList.add('open');
+        } else {
+            insSavingsDetailsEl.innerHTML = '';
+            insSavingsDetailsEl.classList.remove('open');
         }
 
         document.getElementById('summary-retail').textContent = formatCurrency(totalRetail);
@@ -909,7 +960,8 @@
     }
 
     function resetCalculator() {
-        document.querySelectorAll('.config-input, #customer-name, #global-allowance, #global-discount').forEach(el => el.value = ''); 
+        // This selector now clears all inputs across all sections
+        document.querySelectorAll('.config-input, #customer-name').forEach(el => el.value = ''); 
         document.querySelectorAll('.config-option').forEach(el => {
             if (el.tagName === 'SELECT') {
                 el.selectedIndex = 0; 
@@ -930,20 +982,18 @@
     }
 
     function initializeCalculator() {
-        buildInputs();
+        buildExamInputs(); // Build exam inputs first
+        buildInputs(); // Then build lens/frame inputs
+        
         document.getElementById('reset-button').addEventListener('click', resetCalculator);
         document.getElementById('save-quote-button').addEventListener('click', () => {
             console.log("Quote saved (placeholder).");
         });
 
-         document.querySelectorAll('#customer-name, #insurance-type-select, #frame-retail-price, #allowance-frame, #discount-frame, #global-allowance, #global-discount').forEach(el => {
-            el.addEventListener('input', updateCalculations);
-             if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
-                el.addEventListener('focus', onFocus);
-                el.addEventListener('blur', onBlur);
-            }
-        });
-
+        // This single call now handles all event listeners
+        attachEventListeners();
+        
+        // Add listener for insurance type change
         document.getElementById('insurance-type-select').addEventListener('change', updateCalculations);
 
         updateCalculations();
