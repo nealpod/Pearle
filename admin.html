@@ -196,23 +196,18 @@
     }
 
     async function fetchData() {
+        // Fetch components
         const { data: componentsData, error: componentsError } = await supabase.from('components').select('*');
         if(componentsError) console.error("Error fetching components:", componentsError);
         else priceListData = componentsData;
         
-        const { data: profilesData, error: profilesError } = await supabase
-            .from('profiles')
-            .select(`id, full_name, role, users:id(email)`);
+        // MODIFIED: Fetch users by calling the Edge Function
+        const { data: usersData, error: usersError } = await supabase.functions.invoke('get-all-users');
             
-        if(profilesError) {
-            console.error("Error fetching users:", profilesError);
+        if(usersError) {
+            console.error("Error fetching users:", usersError);
         } else {
-            userData = profilesData.map(p => ({
-                id: p.id,
-                full_name: p.full_name,
-                role: p.role,
-                email: p.users ? p.users.email : 'N/A'
-            }));
+            userData = usersData;
         }
 
         renderComponentsTable();
@@ -256,7 +251,6 @@
         closeItemModal();
     });
 
-    // MODIFIED: Calls the 'create-user' Edge Function
     userForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitButton = userForm.querySelector('button[type="submit"]');
@@ -279,7 +273,7 @@
             alert(`Error creating user: ${error.message}`);
         } else {
             alert('User created successfully!');
-            await fetchData(); // Refresh the user list
+            await fetchData();
             closeUserModal();
         }
     });
@@ -298,7 +292,6 @@
         }
     });
     
-    // MODIFIED: Calls the 'delete-user' Edge Function
     usersTableBody.addEventListener('click', async (e) => {
         if (e.target.classList.contains('remove-user-btn')) {
             const id = e.target.dataset.id;
@@ -318,7 +311,7 @@
                     e.target.textContent = 'Remove';
                 } else {
                     alert('User deleted successfully.');
-                    await fetchData(); // Refresh the user list
+                    await fetchData();
                 }
             }
         }
