@@ -1064,7 +1064,7 @@
                 quoteDetails.exams.push({
                     name: cat.label,
                     selection: selectedValue,
-                    price: getCleanValue(`price-${cat.id}`)
+                    price: parseFloat(document.getElementById(`price-${cat.id}`).textContent.replace(/[$,]/g, '') || 0)
                 });
             }
         });
@@ -1074,7 +1074,7 @@
         if (framePrice > 0) {
             quoteDetails.frame = {
                 price: framePrice,
-                finalCost: getCleanValue('price-frame')
+                finalCost: parseFloat(document.getElementById('price-frame').textContent.replace(/[$,]/g, '') || 0)
             };
         }
 
@@ -1091,7 +1091,7 @@
                 if (cat.id !== 'Add-Ons') {
                      quoteDetails.lenses[cat.label] = {
                         selection: selectedValue,
-                        price: getCleanValue(`price-${catId}`)
+                        price: parseFloat(document.getElementById(`price-${catId}`).textContent.replace(/[$,]/g, '') || 0)
                     };
                 }
             }
@@ -1103,7 +1103,7 @@
             if (select && select.value !== 'No Extras') {
                 quoteDetails.addOns.push({
                     selection: select.value,
-                    price: getCleanValue(`price-addon-${rowId}`)
+                    price: parseFloat(document.getElementById(`price-addon-${rowId}`).textContent.replace(/[$,]/g, '') || 0)
                 });
             }
         });
@@ -1114,9 +1114,9 @@
             optician_id: user.id,
             store_id: selectedStore.id,
             customer_name: customerName,
-            final_cost: getCleanValue('summary-final-cost'),
-            total_retail: getCleanValue('summary-retail'),
-            insurance_savings: getCleanValue('summary-ins-svgs'),
+            final_cost: parseFloat(document.getElementById('summary-final-cost').textContent.replace(/[$,]/g, '') || 0),
+            total_retail: parseFloat(document.getElementById('summary-retail').textContent.replace(/[$,]/g, '') || 0),
+            insurance_savings: parseFloat(document.getElementById('summary-ins-svgs').textContent.replace(/[$,]/g, '') || 0),
             quote_details: quoteDetails
         };
 
