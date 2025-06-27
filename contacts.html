@@ -168,8 +168,8 @@
     <!-- Main Content Area -->
     <main class="p-4 sm:p-6 lg:p-8">
         <div class="max-w-7xl mx-auto">
-            <!-- MODIFIED: New top row for Customer and Exam info -->
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- MODIFIED: Changed layout to a single column stack -->
+            <div class="space-y-8 mb-8">
                 <!-- Customer Information Card -->
                 <div class="bg-white p-6 rounded-lg shadow">
                     <h3 class="text-xl font-semibold mb-4 border-b pb-2">Customer Information</h3>
@@ -198,7 +198,7 @@
                 </div>
             </div>
 
-            <!-- MODIFIED: Bottom row for Contacts and Summary -->
+            <!-- Bottom row for Contacts and Summary -->
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
                 <!-- Left Column: Configuration Panel -->
                 <div class="lg:col-span-2">
@@ -255,7 +255,6 @@
                                      <tr class="border-b"><th scope="row" class="savings">Store Discount (5%)</th><td id="discount-3m" class="savings">-$0.00</td><td id="discount-6m" class="savings">-$0.00</td><td id="discount-annual" class="annual-col savings">-$0.00</td></tr>
                                       <tr class="border-b"><th scope="row">Sales Tax (6%)</th><td id="tax-3m">$0.00</td><td id="tax-6m">$0.00</td><td id="tax-annual" class="annual-col">$0.00</td></tr>
                                       <tr class="border-b"><th scope="row" class="highlight">Cost / Box</th><td id="cost-per-box-3m" class="highlight">$0.00</td><td id="cost-per-box-6m" class="highlight">$0.00</td><td id="cost-per-box-annual" class="annual-col highlight">$0.00</td></tr>
-                                      <!-- ADDED: Exam Total Row -->
                                      <tr class="border-b"><th scope="row" class="highlight">Exams Total</th><td colspan="3" id="exam-total-display" class="text-center highlight">$0.00</td></tr>
                                       <tr><th scope="row" class="highlight pt-4">Today's Total (w/ Tax)</th><td id="final-3m" class="highlight final-total pt-4">$0.00</td><td id="final-6m" class="highlight final-total pt-4">$0.00</td><td id="final-annual" class="highlight final-total annual-col rounded-b-lg pt-4 text-xl">$0.00</td></tr>
                                  </tbody>
