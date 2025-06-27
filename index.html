@@ -119,7 +119,8 @@
                     if (userRole === 'owner') {
                         window.location.href = './admin.html';
                     } else if (userRole === 'optician') {
-                        window.location.href = './calculator.html';
+                        // MODIFIED: Redirect to the new store selection page
+                        window.location.href = './select-store.html';
                     } else {
                         statusMessage.innerText = 'Unknown user role. Access denied.';
                         await supabase.auth.signOut();
