@@ -304,6 +304,7 @@
     let contactLensDatabase = [];
     let examListData = [];
     let select2Data = [];
+    let selectedStore = null; // To hold the selected store info
     
     // Constants
     const STORE_DISCOUNT_PERCENTAGE = 0.05;
@@ -332,7 +333,6 @@
         document.getElementById('error-modal').classList.remove('hidden');
     }
     
-    // MODIFIED: Replaced with the more detailed function from the glasses calculator
     function calculateItem(retail, insAllow, discount, copay, isFrame = false) {
         let finalCost, yourCost, insSvgs;
 
@@ -341,7 +341,7 @@
             yourCost = 0; 
             insSvgs = retail - finalCost;
         } else { 
-            if (isFrame) { // This part is not used for exams, but kept for consistency
+            if (isFrame) {
                  yourCost = (retail - insAllow) * (1 - (discount / 100));
             } else {
                  yourCost = retail * (1 - (discount / 100)) - insAllow;
@@ -355,7 +355,6 @@
         return { yourCost, finalCost, insSvgs, isError };
     }
 
-    // Function to build exam inputs (from glasses calculator, adapted)
     function buildExamInputs() {
         const examOptionsGrid = document.getElementById('exam-options-grid');
         examOptionsGrid.innerHTML = '';
@@ -407,12 +406,11 @@
                 if (eyeExamSelect.value !== 'None') {
                     refractionCheckbox.checked = true;
                 }
-                calculate(); // Recalculate when changed
+                calculate();
             });
         }
     }
     
-    // NEW function to calculate total cost of exams
     function getExamCost() {
         let totalExamCost = 0;
         examCategories.forEach(cat => {
@@ -445,7 +443,6 @@
             const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
             totalExamCost += calc.finalCost;
             
-            // Update individual price display
             if (priceEl) priceEl.textContent = formatCurrency(calc.finalCost);
         });
         return totalExamCost;
@@ -456,13 +453,12 @@
         const selectedLensId = $('#contact-lens-select').val();
         const summaryContainer = $('#summary-container');
         
-        // Calculate exam cost first
         const examTotal = getExamCost();
         $('#exam-total-display').text(formatCurrency(examTotal));
 
         if (!selectedLensId) {
             summaryContainer.addClass('opacity-25');
-            resetSummary(examTotal); // Pass exam total to reset
+            resetSummary(examTotal);
             return;
         }
         summaryContainer.removeClass('opacity-25');
@@ -492,7 +488,7 @@
         const rebate3m = lens.new_wearer_rebate_three || 0;
         const discount3m = 0;
         const tax3m = total3m * TAX_RATE;
-        const final3m = Math.max(0, total3m - visionBenefit - discount3m) + tax3m + examTotal; // Add exam total
+        const final3m = Math.max(0, total3m - visionBenefit - discount3m) + tax3m + examTotal;
         const costPerBox3m = boxes_3m > 0 ? (total3m - visionBenefit - rebate3m - discount3m) / boxes_3m : 0;
 
         $('#total-3m').text(formatCurrency(total3m));
@@ -507,7 +503,7 @@
         const rebate6m = lens.new_wearer_rebate_six || 0;
         const discount6m = 0;
         const tax6m = total6m * TAX_RATE;
-        const final6m = Math.max(0, total6m - visionBenefit - discount6m) + tax6m + examTotal; // Add exam total
+        const final6m = Math.max(0, total6m - visionBenefit - discount6m) + tax6m + examTotal;
         const costPerBox6m = boxes_6m > 0 ? (total6m - visionBenefit - rebate6m - discount6m) / boxes_6m : 0;
 
         $('#total-6m').text(formatCurrency(total6m));
@@ -523,7 +519,7 @@
         const amountForStoreDiscountAnnual = totalAnnual - visionBenefit - rebateAnnual;
         const discountAnnual = amountForStoreDiscountAnnual > 0 ? amountForStoreDiscountAnnual * STORE_DISCOUNT_PERCENTAGE : 0;
         const taxAnnual = totalAnnual * TAX_RATE;
-        const finalAnnual = Math.max(0, totalAnnual - visionBenefit - discountAnnual) + taxAnnual + examTotal; // Add exam total
+        const finalAnnual = Math.max(0, totalAnnual - visionBenefit - discountAnnual) + taxAnnual + examTotal;
         const costPerBoxAnnual = boxes_annual > 0 ? (totalAnnual - visionBenefit - rebateAnnual - discountAnnual) / boxes_annual : 0;
 
         $('#total-annual').text(formatCurrency(totalAnnual));
@@ -544,12 +540,11 @@
             $(`#discount-${d}`).text('-$0.00');
             $(`#tax-${d}`).text('$0.00');
             $(`#cost-per-box-${d}`).text('$0.00');
-            $(`#final-${d}`).text(formatCurrency(examTotal)); // Final cost is just exam cost if no lenses
+            $(`#final-${d}`).text(formatCurrency(examTotal));
         });
     }
     
     function resetCalculator() {
-        // Reset customer and exam inputs
         $('#customer-name').val('');
         $('#insurance-type-select').val('Other Insurance');
         examCategories.forEach(cat => {
@@ -563,7 +558,6 @@
             document.getElementById(`copay-${cat.id}`).value = '';
         });
 
-        // Reset contacts inputs
         $('#contact-lens-select').val(null).trigger('change');
         $('#vision-plan-benefit').val('');
         $('#wearer-new').prop('checked', true);
@@ -600,7 +594,7 @@
         
         examListData = [{ "exam_type": "None", "Category": "All", "price_retail": 0 }, ...examsResult.data];
 
-        buildExamInputs(); // Build the new exam section
+        buildExamInputs();
 
         $('#contact-lens-select').select2({
             placeholder: 'Type to search for a lens...',
@@ -608,27 +602,24 @@
             allowClear: true
         });
         
-        // Attach all event listeners
-        // Using vanilla JS for new inputs to avoid mixing syntax too much
         document.querySelectorAll('.config-option, .config-input, #customer-name, #insurance-type-select').forEach(el => {
             el.addEventListener('input', calculate);
         });
 
-        // jQuery listeners for existing elements
         $('#contact-lens-select, input[name="wearer-type"]').on('change', calculate);
         $('#vision-plan-benefit').on('input', calculate);
 
         $('#reset-button').on('click', resetCalculator);
         $('#close-error-modal-btn').on('click', () => $('#error-modal').addClass('hidden'));
         $('#logout-btn').on('click', async () => {
+            sessionStorage.removeItem('selectedStore');
             await supabase.auth.signOut();
             window.location.href = './index.html';
         });
 
-        calculate(); // Initial calculation
+        calculate();
     }
 
-    // MODIFIED: Updated checkUser function to fetch and display full name
     async function checkUser() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
@@ -657,4 +648,4 @@
     });
 </script>
 </body>
-</html>
+</ht
