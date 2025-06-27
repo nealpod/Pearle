@@ -145,7 +145,6 @@
             <div class="lg:col-span-2 space-y-6">
 
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <!-- MODIFIED: Title changed -->
                     <h3 class="text-xl font-semibold mb-4 border-b pb-2">Customer Information</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="input-group space-y-2">
@@ -700,21 +699,35 @@
             backsideUVCheckbox.checked = (coatingsSelect.value === 'Premium Plus A.R.');
         }
 
+        // --- MODIFIED: Refined logic for showing/hiding inputs ---
         document.getElementById('declining-balance-inputs').style.display = isDecliningBalance ? 'grid' : 'none';
         
-        document.querySelectorAll('[id^="allowance-"], [id^="discount-"], [id^="copay-"]').forEach(input => {
-            if (input.id.startsWith('global-')) return;
+        // Select only the inputs within the Frame & Lens Configuration card
+        const frameAndLensInputs = document.querySelectorAll(
+            '#frame-group [id^="allowance-"], #frame-group [id^="discount-"],' +
+            '#dynamic-options-grid [id^="allowance-"], #dynamic-options-grid [id^="discount-"], #dynamic-options-grid [id^="copay-"]'
+        );
 
-            if (input.id === 'copay-material-co-pay') {
-                const container = document.getElementById('container-material-co-pay');
-                if (container) container.style.display = (insuranceType === 'VSP' && !isDecliningBalance) ? 'block' : 'none';
-                if (container && container.style.display === 'none') input.value = '';
-                return;
-            }
+        // Toggle visibility for Frame & Lens inputs based on Declining Balance
+        frameAndLensInputs.forEach(input => {
+            // Skip the special VSP copay input, it's handled next
+            if (input.id === 'copay-material-co-pay') return;
             
             input.style.display = isDecliningBalance ? 'none' : 'block';
-            if (isDecliningBalance) input.value = '';
+            if (isDecliningBalance) {
+                input.value = '';
+            }
         });
+
+        // Handle special VSP Co-Pay container visibility
+        const vspCopayContainer = document.getElementById('container-material-co-pay');
+        if (vspCopayContainer) {
+            vspCopayContainer.style.display = (insuranceType === 'VSP' && !isDecliningBalance) ? 'block' : 'none';
+            if (vspCopayContainer.style.display === 'none') {
+                document.getElementById('copay-material-co-pay').value = '';
+            }
+        }
+        // Exam inputs are not selected and will remain visible, as intended.
 
 
         summaryItemsEl.innerHTML = '<p class="text-gray-500 initial-text">Your selections will appear here.</p>'; 
@@ -744,9 +757,10 @@
 
             const inputs = {
                 retail: selectedItem.price_retail,
-                insAllow: isDecliningBalance ? 0 : getCleanValue(`allowance-${catId}`),
-                discount: isDecliningBalance ? 0 : getCleanValue(`discount-${catId}`),
-                copay: isDecliningBalance ? 0 : getCleanValue(`copay-${catId}`),
+                // For exams, these inputs are always read, regardless of insurance type
+                insAllow: getCleanValue(`allowance-${catId}`),
+                discount: getCleanValue(`discount-${catId}`),
+                copay: getCleanValue(`copay-${catId}`),
             };
 
             const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
@@ -756,12 +770,12 @@
                 document.getElementById(`container-${catId}`).classList.add('error');
             }
             totalRetail += inputs.retail;
-            if (!isDecliningBalance) {
-                totalInsSvgs += calc.insSvgs;
-                totalFinalCost += calc.finalCost;
-            }
+            // For exams, we always add their individual costs to the total
+            totalInsSvgs += calc.insSvgs;
+            totalFinalCost += calc.finalCost;
+
             summaryContent += createSummaryItemHTML(catId, cat.label, inputs, calc);
-            if (priceEl) priceEl.textContent = formatCurrency(isDecliningBalance ? inputs.retail : calc.finalCost);
+            if (priceEl) priceEl.textContent = formatCurrency(calc.finalCost); // Always show calculated cost for exams
         });
 
         // --- Process Frame Details ---
@@ -874,13 +888,32 @@
         if (isDecliningBalance) {
             const globalAllowance = getCleanValue('global-allowance');
             const globalDiscount = getCleanValue('global-discount');
-            totalFinalCost = (totalRetail - globalAllowance) * (1 - (globalDiscount / 100));
-            totalFinalCost = Math.max(0, totalFinalCost);
-            totalInsSvgs = totalRetail - totalFinalCost;
+            
+            // Find the retail total of only the items affected by declining balance
+            let decliningBalanceRetail = totalRetail - (examCategories.reduce((acc, cat) => {
+                const checkbox = document.getElementById(`checkbox-${cat.id}`);
+                let selectedValue;
+                if (checkbox) {
+                    if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
+                } else {
+                    const select = document.getElementById(`select-${cat.id}`);
+                    if (select) selectedValue = select.value;
+                }
+                if (!selectedValue || selectedValue === "None") return acc;
+                const selectedItem = examListData.find(p => p.exam_type === selectedValue);
+                return acc + (selectedItem ? selectedItem.price_retail : 0);
+            }, 0));
+
+            // The final cost is the exam cost + the calculated declining balance cost for other items
+            const decliningBalanceCost = Math.max(0, (decliningBalanceRetail - globalAllowance) * (1 - (globalDiscount / 100)));
+            totalFinalCost += decliningBalanceCost;
+            totalInsSvgs += (decliningBalanceRetail - decliningBalanceCost);
+
         } else {
             const vspCopayValue = getCleanValue('copay-material-co-pay');
             if (insuranceType === 'VSP' && vspCopayValue > 0) {
                 totalFinalCost += vspCopayValue; 
+                totalInsSvgs -= vspCopayValue;
                 const vspInputs = { retail: 0, insAllow: 0, discount: 0, copay: vspCopayValue };
                 const vspOutputs = { yourCost: 0, insSvgs: -vspCopayValue, finalCost: vspCopayValue };
                 summaryContent += createSummaryItemHTML('material-co-pay', 'VSP Material Co-Pay', vspInputs, vspOutputs);
@@ -896,7 +929,20 @@
         if (isDecliningBalance) {
             const globalAllowance = getCleanValue('global-allowance');
             const globalDiscount = getCleanValue('global-discount');
-            const calculatedDiscountAmount = (totalRetail - globalAllowance) * (globalDiscount / 100);
+            let decliningBalanceRetail = totalRetail - (examCategories.reduce((acc, cat) => {
+                const checkbox = document.getElementById(`checkbox-${cat.id}`);
+                let selectedValue;
+                if (checkbox) {
+                    if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
+                } else {
+                    const select = document.getElementById(`select-${cat.id}`);
+                    if (select) selectedValue = select.value;
+                }
+                if (!selectedValue || selectedValue === "None") return acc;
+                const selectedItem = examListData.find(p => p.exam_type === selectedValue);
+                return acc + (selectedItem ? selectedItem.price_retail : 0);
+            }, 0));
+            const calculatedDiscountAmount = (decliningBalanceRetail - globalAllowance) * (globalDiscount / 100);
             insSavingsDetailsEl.innerHTML = `
                 <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Global Allowance</span><span>-${formatCurrency(globalAllowance)}</span></div>
                 <div class="flex justify-between text-xs pt-1"><span>Global Discount (${globalDiscount}%)</span><span>-${formatCurrency(calculatedDiscountAmount)}</span></div>
@@ -916,6 +962,7 @@
         let discountCalcAmount; 
         const insuranceType = document.getElementById('insurance-type-select').value;
         const isDecliningBalance = (insuranceType === 'Declining Balance');
+        const isExam = examCategories.some(cat => cat.id === id);
 
         if (id === 'frame') {
             discountCalcAmount = (inputs.retail - inputs.insAllow) * (inputs.discount / 100);
@@ -927,18 +974,21 @@
         if (inputs.copay > 0) { 
              copayHTML = `<div class="flex justify-between text-xs pt-1"><span>Co-Pay</span><span>+${formatCurrency(inputs.copay)}</span></div>`;
         }
+        
+        // For declining balance, don't show the breakdown for non-exam items
+        const showBreakdown = !isDecliningBalance || isExam;
 
         return `
             <div class="border-b border-gray-200 pb-1">
                 <div class="summary-item-header flex justify-between items-center" onclick="toggleDetails('details-${id}')">
                     <span class="font-medium">${title}</span>
-                    <span class="font-semibold">${formatCurrency(isDecliningBalance ? inputs.retail : outputs.finalCost)}</span>
+                    <span class="font-semibold">${formatCurrency((isDecliningBalance && !isExam) ? inputs.retail : outputs.finalCost)}</span>
                 </div>
                 <div id="details-${id}" class="summary-item-details bg-gray-50 rounded px-3 text-gray-600">
                     <div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Retail</span><span>${formatCurrency(inputs.retail)}</span></div>
-                    ${!isDecliningBalance ? `<div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Ins. Allowance</span><span>-${formatCurrency(inputs.insAllow)}</span></div>` : ''}
-                    ${!isDecliningBalance ? `<div class="flex justify-between text-xs ${inputs.copay > 0 ? 'border-b border-gray-200 py-1' : 'pt-1'}"><span>Discount (${inputs.discount}%)</span><span>-${formatCurrency(discountCalcAmount)}</span></div>` : ''}
-                    ${!isDecliningBalance ? copayHTML : ''}
+                    ${showBreakdown ? `<div class="flex justify-between text-xs border-b border-gray-200 py-1"><span>Ins. Allowance</span><span>-${formatCurrency(inputs.insAllow)}</span></div>` : ''}
+                    ${showBreakdown ? `<div class="flex justify-between text-xs ${inputs.copay > 0 ? 'border-b border-gray-200 py-1' : 'pt-1'}"><span>Discount (${inputs.discount}%)</span><span>-${formatCurrency(discountCalcAmount)}</span></div>` : ''}
+                    ${showBreakdown ? copayHTML : ''}
                 </div>
             </div>
         `;
