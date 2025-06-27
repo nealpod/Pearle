@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Store - Pearle Vision</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pearl-green: #007a33;
+            --light-gray: #f8f9fa;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--light-gray);
+        }
+        .store-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .store-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white shadow-md p-4 flex justify-between items-center">
+        <div>
+            <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" alt="Pearle Vision Logo" class="h-8">
+        </div>
+        <div class="flex items-center space-x-4">
+            <span id="user-display" class="text-sm font-medium"></span>
+            <button id="logout-btn" class="text-sm text-gray-600 hover:text-gray-900">Log Out</button>
+        </div>
+    </header>
+
+    <main class="p-4 sm:p-6 lg:p-8 flex items-center justify-center" style="min-height: calc(100vh - 72px);">
+        <div class="max-w-md w-full text-center">
+            <h1 id="welcome-message" class="text-3xl font-bold text-gray-800 mb-2">Welcome!</h1>
+            <p class="text-gray-600 mb-8">Please select your store for this session.</p>
+            
+            <div id="store-selection-container" class="space-y-4">
+                <!-- Store cards will be dynamically inserted here -->
+                <p id="loading-stores" class="text-gray-500">Loading assigned stores...</p>
+            </div>
+        </div>
+    </main>
+
+<script type="module">
+    import { supabase } from './supabase-client.js';
+
+    const userDisplay = document.getElementById('user-display');
+    const welcomeMessage = document.getElementById('welcome-message');
+    const storeSelectionContainer = document.getElementById('store-selection-container');
+    const loadingMessage = document.getElementById('loading-stores');
+    const logoutBtn = document.getElementById('logout-btn');
+
+    async function checkUserAndGetAssignments() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            window.location.href = './index.html';
+            return;
+        }
+
+        // Fetch user's full name from their profile
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('full_name')
+            .eq('id', user.id)
+            .single();
+        
+        if (profile) {
+            const displayName = profile.full_name || user.email;
+            userDisplay.textContent = `Welcome, ${displayName}`;
+            welcomeMessage.textContent = `Welcome, ${displayName}!`;
+        }
+
+        // Fetch the stores this user is assigned to
+        const { data: assignments, error: assignmentsError } = await supabase
+            .from('store_assignments')
+            .select(`
+                stores (
+                    id,
+                    name,
+                    address
+                )
+            `)
+            .eq('optician_id', user.id);
+
+        if (assignmentsError) {
+            loadingMessage.textContent = 'Error fetching store assignments.';
+            console.error('Error fetching assignments:', assignmentsError);
+            return;
+        }
+
+        // If user is assigned to only one store, redirect automatically
+        if (assignments && assignments.length === 1) {
+            const store = assignments[0].stores;
+            sessionStorage.setItem('selectedStore', JSON.stringify(store));
+            window.location.href = './calculator.html';
+            return;
+        }
+
+        // If user is assigned to multiple stores, render the selection cards
+        if (assignments && assignments.length > 0) {
+            renderStoreCards(assignments.map(a => a.stores));
+        } else {
+            loadingMessage.textContent = 'You are not assigned to any stores. Please contact an administrator.';
+        }
+    }
+
+    function renderStoreCards(stores) {
+        loadingMessage.style.display = 'none';
+        storeSelectionContainer.innerHTML = ''; // Clear loading message
+
+        stores.forEach(store => {
+            const card = document.createElement('div');
+            card.className = 'store-card bg-white p-6 rounded-lg shadow-md cursor-pointer text-left';
+            card.dataset.storeId = store.id;
+            card.dataset.storeData = JSON.stringify(store);
+
+            card.innerHTML = `
+                <h2 class="text-xl font-bold text-gray-900">${store.name}</h2>
+                <p class="text-gray-500 text-sm">${store.address || ''}</p>
+            `;
+            storeSelectionContainer.appendChild(card);
+        });
+    }
+
+    storeSelectionContainer.addEventListener('click', (e) => {
+        const card = e.target.closest('.store-card');
+        if (card) {
+            const storeData = card.dataset.storeData;
+            // Store the entire store object as a JSON string in sessionStorage
+            sessionStorage.setItem('selectedStore', storeData);
+            window.location.href = './calculator.html';
+        }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        await supabase.auth.signOut();
+        window.location.href = './index.html';
+    });
+
+    // Run the initialization function
+    checkUserAndGetAssignments();
+
+</script>
+</body>
+</html>
