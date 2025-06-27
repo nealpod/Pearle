@@ -144,8 +144,9 @@
 
             <div class="lg:col-span-2 space-y-6">
 
+                <!-- Patient & Insurance & Eye Exam Section -->
                 <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Customer & Frame</h3>
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Patient & Insurance & Eye Exam</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="input-group space-y-2">
                             <label for="customer-name" class="block text-sm font-medium text-gray-700">Customer Name</label>
@@ -156,10 +157,10 @@
                             <select id="insurance-type-select" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
                                 <option>Other Insurance</option>
                                 <option>VSP</option>
-                                <option>Declining Balance</option> <!-- ADDED: New insurance option -->
+                                <option>Declining Balance</option>
                             </select>
                         </div>
-                        <!-- UPDATED: Global Allowance/Discount Fields (CoPay removed) -->
+                        <!-- Global Allowance/Discount Fields (for Declining Balance) -->
                         <div id="declining-balance-inputs" class="md:col-span-2 grid grid-cols-2 gap-2 input-group" style="display: none;">
                             <div class="space-y-1">
                                 <label for="global-allowance" class="block text-sm font-medium text-gray-700">Global Allowance</label>
@@ -169,9 +170,71 @@
                                 <label for="global-discount" class="block text-sm font-medium text-gray-700">Global Discount</label>
                                 <input type="text" inputmode="decimal" id="global-discount" placeholder="Discount" class="config-input percent-format w-full border-gray-300 rounded-md shadow-sm text-sm">
                             </div>
-                            <!-- Global CoPay input removed here -->
                         </div>
 
+                        <!-- Eye Exam Details Section -->
+                        <div class="md:col-span-2 space-y-4">
+                            <h4 class="font-medium text-gray-700 border-t pt-4">Eye Exam Details</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                <!-- Eye Exam Type (Mandatory) -->
+                                <div class="input-group space-y-2">
+                                    <div class="component-label">
+                                        <label for="select-eye-exam-type" class="font-medium text-gray-700">Eye Exam Type</label>
+                                        <span id="price-eye-exam-type" class="component-price"></span>
+                                    </div>
+                                    <select id="select-eye-exam-type" data-category="Eye Exam Type" class="config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                                        <option value="None">Select Eye Exam</option>
+                                        <!-- Options populated dynamically from Supabase (e.g., "New Patient Comprehensive Eye Exam", "Existing Patient Comprehensive Eye Exam") -->
+                                    </select>
+                                    <div class="flex space-x-1">
+                                        <input type="text" inputmode="decimal" id="allowance-eye-exam-type" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                                        <input type="text" inputmode="decimal" id="discount-eye-exam-type" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                                        <input type="text" inputmode="decimal" id="copay-eye-exam-type" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                                    </div>
+                                </div>
+
+                                <!-- Contact Lens Exam (Optional) -->
+                                <div class="input-group space-y-2">
+                                    <div class="component-label">
+                                        <label for="select-contact-lens-exam" class="font-medium text-gray-700">Contact Lens Exam</label>
+                                        <span id="price-contact-lens-exam" class="component-price"></span>
+                                    </div>
+                                    <select id="select-contact-lens-exam" data-category="Contact Lens Exam" class="config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                                        <option value="None">None</option>
+                                        <!-- Options populated dynamically from Supabase -->
+                                    </select>
+                                    <div class="flex space-x-1">
+                                        <input type="text" inputmode="decimal" id="allowance-contact-lens-exam" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                                        <input type="text" inputmode="decimal" id="discount-contact-lens-exam" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                                        <input type="text" inputmode="decimal" id="copay-contact-lens-exam" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                                    </div>
+                                </div>
+
+                                <!-- Retinal Fundus Photos (Optional Checkbox) -->
+                                <div class="input-group space-y-2">
+                                    <div class="component-label">
+                                        <label class="flex items-center cursor-pointer">
+                                            <input type="checkbox" id="checkbox-retinal-fundus-photos" data-item-name="Retinal Fundus Photos" class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                                            <span class="ml-2 font-medium text-gray-700">Retinal Fundus Photos</span>
+                                        </label>
+                                        <span id="price-retinal-fundus-photos" class="component-price"></span>
+                                    </div>
+                                    <div class="flex space-x-1">
+                                        <input type="text" inputmode="decimal" id="allowance-retinal-fundus-photos" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                                        <input type="text" inputmode="decimal" id="discount-retinal-fundus-photos" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                                        <input type="text" inputmode="decimal" id="copay-retinal-fundus-photos" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Frame and Lens Configuration Section (Renamed and Frame Details moved here) -->
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Frame and Lens Configuration</h3>
+                    <div id="frame-lens-dynamic-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <!-- Frame Details (Moved from above) -->
                         <div id="frame-group" class="md:col-span-2 input-group space-y-2">
                             <div class="component-label">
                                 <label for="frame-retail-price" class="block font-medium text-gray-700">Frame Details</label>
@@ -183,13 +246,9 @@
                                <input type="text" inputmode="decimal" id="discount-frame" placeholder="Discount" class="config-input percent-format w-1/4 border-gray-300 rounded-md shadow-sm text-sm">
                             </div>
                         </div>
+                        <!-- Dynamic options for Rx, Lens Type, Material, etc. will be built here by JS -->
+                        <div id="dynamic-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4"></div>
                     </div>
-                </div>
-
-                <div class="bg-white p-6 rounded-lg shadow">
-                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Lens & Add-On Configuration</h3>
-                    <div id="dynamic-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                               </div>
                 </div>
 
             </div>
@@ -280,21 +339,50 @@
     }
 
     async function fetchData() {
-        // Fetch only active components from the database
-        const { data, error } = await supabase
+        // Fetch active components from the 'components' table
+        const { data: componentsData, error: componentsError } = await supabase
             .from('components')
             .select('*')
             .eq('is_active', true);
 
-        if (error) {
-            console.error("Error fetching pricing data:", error);
-            // Changed alert to use your existing modal for better UX
-            showErrorModal("Could not load pricing data. Please contact support. Error: " + error.message);
+        // Fetch active exams from the new 'exams' table
+        const { data: examsData, error: examsError } = await supabase
+            .from('exams')
+            .select('exam_type, price_retail, price_eyemed, price_vsp, is_active') // Assuming is_active column exists in exams
+            .eq('is_active', true); // Filter for active exams
+
+        if (componentsError) {
+            console.error("Error fetching components data:", componentsError);
+            showErrorModal("Could not load components pricing data. Please contact support. Error: " + componentsError.message);
+            return;
+        }
+        if (examsError) {
+            console.error("Error fetching exams data:", examsError);
+            showErrorModal("Could not load exams pricing data. Please contact support. Error: " + examsError.message);
             return;
         }
         
-        // Add a "None" item for dropdown defaults
-        priceListData = [{ "Item": "None", "Category": "All", "Retail": 0 }, ...data];
+        // Map exams data to match priceListData structure for consistency
+        const mappedExamsData = examsData.map(exam => {
+            let category;
+            if (exam.exam_type.includes('Comprehensive Eye Exam')) category = 'Eye Exam Type';
+            else if (exam.exam_type.includes('Contact Lens Exam')) category = 'Contact Lens Exam';
+            else if (exam.exam_type === 'Retinal Fundus Photos') category = 'Retinal Fundus Photos';
+            else if (exam.exam_type === 'Refraction Charge') category = 'Refraction'; // Assuming this item exists in your exams table
+            else category = 'Exams Other'; // Fallback category for any other exam types
+
+            return {
+                Item: exam.exam_type,
+                Category: category,
+                Retail: exam.price_retail,
+                price_eyemed: exam.price_eyemed || 0, // Default to 0 if not present
+                price_vsp: exam.price_vsp || 0,       // Default to 0 if not present
+                is_active: exam.is_active // Pass through active status
+            };
+        });
+
+        // Combine components and mapped exams data into a single priceListData
+        priceListData = [{ "Item": "None", "Category": "All", "Retail": 0 }, ...componentsData, ...mappedExamsData];
         
         // Once data is loaded, build the UI
         initializeCalculator();
@@ -308,14 +396,18 @@
 
     // --- CALCULATOR LOGIC ---
 
+    // Updated categories array to reflect new structure and include exam types
     const categories = [
+        { id: 'Eye Exam Type', label: 'Eye Exam Type' }, // New: Mandatory Eye Exam
+        { id: 'Contact Lens Exam', label: 'Contact Lens Exam' }, // New: Optional Contact Lens Exam
+        { id: 'Retinal Fundus Photos', label: 'Retinal Fundus Photos' }, // New: Optional Retinal Fundus Photos
         { id: 'Rx', label: 'Rx' },
         { id: 'Lens Type', label: 'Lens Design' }, 
         { id: 'Material', label: 'Material' },
+        { id: 'Color', label: 'Color' }, 
         { id: 'Coatings', label: 'Coatings' },
         { id: 'Backside UV', label: 'Backside UV' },
         { id: 'Edge Polish', label: 'Edge Polish' }, 
-        { id: 'Color', label: 'Color' }, 
         { id: "Custom Measurements", label: "Custom Measurements" },
         { id: 'Blue Light', label: 'Blue Light Filter' },
         { id: 'Protection', label: '1Yr. Protection' },
@@ -347,68 +439,104 @@
     }
 
     function buildInputs() {
-        optionsGrid.innerHTML = '';
+        // Clear the dynamic-options-grid only, as frame-group is now static in HTML
+        optionsGrid.innerHTML = ''; 
+
+        // Populate the new Eye Exam Type dropdown first, as it's mandatory
+        const eyeExamTypeSelect = document.getElementById('select-eye-exam-type');
+        if (eyeExamTypeSelect) {
+            const eyeExamOptions = priceListData.filter(p => p.Category === 'Eye Exam Type' && p.Item !== 'None');
+            eyeExamTypeSelect.innerHTML = `<option value="None">Select Eye Exam</option>` + 
+                                          eyeExamOptions.map(o => `<option value="${o.Item}">${o.Item}</option>`).join('');
+        }
+        
+        // Populate Contact Lens Exam dropdown
+        const contactLensExamSelect = document.getElementById('select-contact-lens-exam');
+        if (contactLensExamSelect) {
+            const contactLensOptions = priceListData.filter(p => p.Category === 'Contact Lens Exam' && p.Item !== 'None');
+            contactLensExamSelect.innerHTML = `<option value="None">None</option>` +
+                                              contactLensOptions.map(o => `<option value="${o.Item}">${o.Item}</option>`).join('');
+        }
+
+        // Now build the rest of the dynamic options (Rx, Lens Type, etc.)
         categories.forEach(cat => {
+            // Skip the new exam categories and Frame Details as they are now explicitly in HTML or handled above
+            if (['Eye Exam Type', 'Contact Lens Exam', 'Retinal Fundus Photos'].includes(cat.id)) return;
+            if (cat.id === 'Add-Ons') return; // Handled separately below
+            
             const catId = toId(cat.id);
             const container = document.createElement('div');
             container.id = `container-${catId}`;
 
-            if (cat.id === 'Add-Ons') {
-                container.className = 'md:col-span-2 space-y-2';
-                container.innerHTML = `
-                    <h4 class="font-medium text-gray-700">${cat.label}</h4>
-                    <div id="addons-repeater-container" class="space-y-3"></div>
-                    <button id="add-addon-btn" type="button" class="btn btn-primary text-sm px-3 py-1">+ Add Add-On</button>
-                `;
-            } else {
-                container.className = 'input-group space-y-2';
-                const options = priceListData.filter(p => p.Category === cat.id && !p.Item.toLowerCase().startsWith('no ') && p.Item !== 'None');
+            container.className = 'input-group space-y-2';
+            const options = priceListData.filter(p => p.Category === cat.id && !p.Item.toLowerCase().startsWith('no ') && p.Item !== 'None');
 
-                if (options.length <= 1 && cat.id !== 'Rx' && cat.id !== 'Coatings' && cat.id !== 'Color' && cat.id !== 'Material' && cat.id !== 'Lens Type') {
-                    const singleOption = options[0] || { Item: cat.label };
-                    // Determine if the checkbox should be initially checked (only Edge Polish by default)
-                    const isCheckedDefault = (cat.id === 'Edge Polish') ? 'checked' : ''; 
-                    container.innerHTML = `
-                        <div class="component-label">
-                             <label class="flex items-center cursor-pointer">
-                                 <input type="checkbox" id="checkbox-${catId}" data-item-name="${singleOption.Item}" ${isCheckedDefault} class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
-                                 <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
-                             </label>
-                             <span id="price-${catId}" class="component-price"></span>
-                        </div>
-                        <div class="flex space-x-1">
-                            <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                            <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                            <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                        </div>
-                    `;
-                } else {
-                    const allOptions = [priceListData.find(p => p.Item === 'None'), ...options];
-                    container.innerHTML = `
-                        <div class="component-label">
-                            <label for="select-${catId}" class="font-medium text-gray-700">${cat.label}</label>
-                            <span id="price-${catId}" class="component-price"></span>
-                        </div>
-                        <select id="select-${catId}" data-category="${cat.id}" class="config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
-                            ${allOptions.map(o => o && `<option value="${o.Item}">${o.Item}</option>`).join('')}
-                        </select>
-                        <div class="flex space-x-1">
-                            <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                            <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                            <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
-                        </div>
-                    `;
-                }
+            // Special handling for Retinal Fundus Photos checkbox, as it's a new checkbox item
+            if (cat.id === 'Retinal Fundus Photos') {
+                const singleOption = options[0] || { Item: cat.label }; // Fallback if not in DB
+                const isCheckedDefault = (cat.id === 'Edge Polish') ? 'checked' : ''; // Only Edge Polish is default checked on load/reset
+                container.innerHTML = `
+                    <div class="component-label">
+                         <label class="flex items-center cursor-pointer">
+                             <input type="checkbox" id="checkbox-${catId}" data-item-name="${singleOption.Item}" ${isCheckedDefault} class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                             <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
+                         </label>
+                         <span id="price-${catId}" class="component-price"></span>
+                    </div>
+                    <div class="flex space-x-1">
+                        <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                    </div>
+                `;
+            }
+            // Existing logic for other single-option checkboxes (like Edge Polish)
+            else if (options.length <= 1 && cat.id !== 'Rx' && cat.id !== 'Coatings' && cat.id !== 'Color' && cat.id !== 'Material' && cat.id !== 'Lens Type') {
+                const singleOption = options[0] || { Item: cat.label };
+                const isCheckedDefault = (cat.id === 'Edge Polish') ? 'checked' : ''; 
+                container.innerHTML = `
+                    <div class="component-label">
+                         <label class="flex items-center cursor-pointer">
+                             <input type="checkbox" id="checkbox-${catId}" data-item-name="${singleOption.Item}" ${isCheckedDefault} class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                             <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
+                         </label>
+                         <span id="price-${catId}" class="component-price"></span>
+                    </div>
+                    <div class="flex space-x-1">
+                        <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                    </div>
+                `;
+            } 
+            // Existing logic for dropdowns
+            else {
+                const allOptions = [priceListData.find(p => p.Item === 'None'), ...options];
+                container.innerHTML = `
+                    <div class="component-label">
+                        <label for="select-${catId}" class="font-medium text-gray-700">${cat.label}</label>
+                        <span id="price-${catId}" class="component-price"></span>
+                    </div>
+                    <select id="select-${catId}" data-category="${cat.id}" class="config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                        ${allOptions.map(o => o && `<option value="${o.Item}">${o.Item}</option>`).join('')}
+                    </select>
+                    <div class="flex space-x-1">
+                        <input type="text" inputmode="decimal" id="allowance-${catId}" placeholder="Allowance" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        <input type="text" inputmode="decimal" id="discount-${catId}" placeholder="Discount" class="config-input percent-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                        <input type="text" inputmode="decimal" id="copay-${catId}" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
+                    </div>
+                `;
             }
             
-            optionsGrid.appendChild(container);
+            // Append to the dynamic-options-grid which is now inside Frame and Lens Configuration
+            document.getElementById('frame-lens-dynamic-grid').appendChild(container);
 
-            // Conditional VSP Material Co-Pay container placement
-            if (cat.id === 'Protection') { // Current placement for VSP Material Co-Pay after Protection
+            // Conditional VSP Material Co-Pay container placement (still after Protection)
+            if (cat.id === 'Protection') { 
                 const vspCopayContainer = document.createElement('div');
                 vspCopayContainer.id = 'container-material-co-pay';
                 vspCopayContainer.className = 'input-group space-y-2'; 
-                vspCopayContainer.style.display = 'none'; // Initially hidden
+                vspCopayContainer.style.display = 'none'; 
                 vspCopayContainer.innerHTML = `
                     <div class="component-label">
                         <label class="font-medium text-gray-700">VSP Material Co-Pay</label>
@@ -418,7 +546,7 @@
                         <input type="text" inputmode="decimal" id="copay-material-co-pay" placeholder="CoPay" class="config-input dollar-format w-1/3 border-gray-300 rounded-md shadow-sm text-xs p-1">
                     </div>
                 `;
-                optionsGrid.appendChild(vspCopayContainer);
+                document.getElementById('frame-lens-dynamic-grid').appendChild(vspCopayContainer); // Append to the main dynamic grid
             }
         });
 
@@ -456,7 +584,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash" viewBox="0 0 16 16">
                     <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
                     <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0
-                            0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
                 </svg>
             </button>
         `;
@@ -683,6 +811,122 @@
         summaryItemsEl.innerHTML = '<p class="text-gray-500 initial-text">Your selections will appear here.</p>'; 
         let summaryContent = '';
 
+        // --- Process Eye Exam Details ---
+        const eyeExamTypeSelect = document.getElementById('select-eye-exam-type');
+        const contactLensExamSelect = document.getElementById('select-contact-lens-exam');
+        const retinalFundusPhotosCheckbox = document.getElementById('checkbox-retinal-fundus-photos');
+        
+        // Process Eye Exam Type (Mandatory)
+        if (eyeExamTypeSelect && eyeExamTypeSelect.value !== 'None') {
+            const selectedEyeExamItem = priceListData.find(p => p.Item === eyeExamTypeSelect.value && p.Category === 'Eye Exam Type');
+            if (selectedEyeExamItem) {
+                // Determine allowance for Eye Exams based on insurance type
+                let examAllowance = 0;
+                if (insuranceType === 'VSP' && selectedEyeExamItem.price_vsp) {
+                    examAllowance = selectedEyeExamItem.price_vsp;
+                } else if (insuranceType === 'Other Insurance' && selectedEyeExamItem.price_eyemed) {
+                    examAllowance = selectedEyeExamItem.price_eyemed;
+                }
+                // Use individual allowance/discount/copay inputs if not Declining Balance
+                const inputs = {
+                    retail: selectedEyeExamItem.Retail,
+                    insAllow: isDecliningBalance ? 0 : getCleanValue(`allowance-eye-exam-type`) || examAllowance, // Use DB allowance if no manual input
+                    discount: isDecliningBalance ? 0 : getCleanValue(`discount-eye-exam-type`),
+                    copay: isDecliningBalance ? 0 : getCleanValue(`copay-eye-exam-type`),
+                };
+                const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
+                if (calc.isError && !errorFound) {
+                    errorFound = true;
+                    showErrorModal(`The final price for ${selectedEyeExamItem.Item} cannot exceed its retail price.`);
+                    document.getElementById('container-eye-exam-type').classList.add('error');
+                }
+                totalRetail += inputs.retail;
+                if (!isDecliningBalance) {
+                    totalInsSvgs += calc.insSvgs;
+                    totalFinalCost += calc.finalCost;
+                }
+                summaryContent += createSummaryItemHTML('eye-exam-type', selectedEyeExamItem.Item, inputs, calc);
+                document.getElementById('price-eye-exam-type').textContent = formatCurrency(isDecliningBalance ? inputs.retail : calc.finalCost);
+
+                // Automatically add Refraction Charge if an Eye Exam is selected
+                const refractionItem = priceListData.find(p => p.Item === 'Refraction Charge' && p.Category === 'Refraction');
+                if (refractionItem) {
+                    const refractionInputs = {
+                        retail: refractionItem.Retail,
+                        insAllow: isDecliningBalance ? 0 : 0, // Refraction typically has no allowance/discount/copay
+                        discount: isDecliningBalance ? 0 : 0,
+                        copay: isDecliningBalance ? 0 : 0,
+                    };
+                    const refractionCalc = calculateItem(refractionInputs.retail, refractionInputs.insAllow, refractionInputs.discount, refractionInputs.copay);
+                    totalRetail += refractionInputs.retail;
+                    if (!isDecliningBalance) {
+                        totalInsSvgs += refractionCalc.insSvgs;
+                        totalFinalCost += refractionCalc.finalCost;
+                    }
+                    summaryContent += createSummaryItemHTML('refraction-charge', 'Refraction Charge', refractionInputs, refractionCalc);
+                }
+            }
+        } else {
+            // Clear price for eye exam type if "None" is selected
+            if (eyeExamTypeSelect) document.getElementById('price-eye-exam-type').textContent = '';
+        }
+
+        // Process Contact Lens Exam (Optional)
+        if (contactLensExamSelect && contactLensExamSelect.value !== 'None') {
+            const selectedCLExamItem = priceListData.find(p => p.Item === contactLensExamSelect.value && p.Category === 'Contact Lens Exam');
+            if (selectedCLExamItem) {
+                const inputs = {
+                    retail: selectedCLExamItem.Retail,
+                    insAllow: isDecliningBalance ? 0 : getCleanValue(`allowance-contact-lens-exam`),
+                    discount: isDecliningBalance ? 0 : getCleanValue(`discount-contact-lens-exam`),
+                    copay: isDecliningBalance ? 0 : getCleanValue(`copay-contact-lens-exam`),
+                };
+                const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
+                if (calc.isError && !errorFound) {
+                    errorFound = true;
+                    showErrorModal(`The final price for ${selectedCLExamItem.Item} cannot exceed its retail price.`);
+                    document.getElementById('container-contact-lens-exam').classList.add('error');
+                }
+                totalRetail += inputs.retail;
+                if (!isDecliningBalance) {
+                    totalInsSvgs += calc.insSvgs;
+                    totalFinalCost += calc.finalCost;
+                }
+                summaryContent += createSummaryItemHTML('contact-lens-exam', selectedCLExamItem.Item, inputs, calc);
+                document.getElementById('price-contact-lens-exam').textContent = formatCurrency(isDecliningBalance ? inputs.retail : calc.finalCost);
+            }
+        } else {
+            if (contactLensExamSelect) document.getElementById('price-contact-lens-exam').textContent = '';
+        }
+
+        // Process Retinal Fundus Photos (Optional Checkbox)
+        if (retinalFundusPhotosCheckbox && retinalFundusPhotosCheckbox.checked) {
+            const retinalItem = priceListData.find(p => p.Item === 'Retinal Fundus Photos' && p.Category === 'Retinal Fundus Photos');
+            if (retinalItem) {
+                const inputs = {
+                    retail: retinalItem.Retail,
+                    insAllow: isDecliningBalance ? 0 : getCleanValue(`allowance-retinal-fundus-photos`),
+                    discount: isDecliningBalance ? 0 : getCleanValue(`discount-retinal-fundus-photos`),
+                    copay: isDecliningBalance ? 0 : getCleanValue(`copay-retinal-fundus-photos`),
+                };
+                const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
+                if (calc.isError && !errorFound) {
+                    errorFound = true;
+                    showErrorModal(`The final price for ${retinalItem.Item} cannot exceed its retail price.`);
+                    document.getElementById('container-retinal-fundus-photos').classList.add('error');
+                }
+                totalRetail += inputs.retail;
+                if (!isDecliningBalance) {
+                    totalInsSvgs += calc.insSvgs;
+                    totalFinalCost += calc.finalCost;
+                }
+                summaryContent += createSummaryItemHTML('retinal-fundus-photos', retinalItem.Item, inputs, calc);
+                document.getElementById('price-retinal-fundus-photos').textContent = formatCurrency(isDecliningBalance ? inputs.retail : calc.finalCost);
+            }
+        } else {
+            if (retinalFundusPhotosCheckbox) document.getElementById('price-retinal-fundus-photos').textContent = '';
+        }
+
         // --- Process Frame Details ---
         const frameRetail = getCleanValue('frame-retail-price');
         // For frame, if Declining Balance, individual allowance/discount are ignored for calculation
@@ -710,10 +954,10 @@
             document.getElementById('price-frame').textContent = '';
         }
 
-        // --- Process Lens & Add-On Configuration categories ---
+        // --- Process Lens & Add-On Configuration categories (excluding new exam items) ---
         categories.forEach(cat => {
-            // Skip 'Add-Ons' as it's handled in a separate loop below
-            if (cat.id === 'Add-Ons') return;
+            // Skip the new exam categories and Add-Ons as they are handled explicitly
+            if (['Eye Exam Type', 'Contact Lens Exam', 'Retinal Fundus Photos', 'Add-Ons'].includes(cat.id)) return;
             
             // Skip the category that houses the VSP Copay container if VSP is selected (to avoid double processing)
             if (cat.id === 'Protection' && insuranceType === 'VSP') return; 
@@ -743,8 +987,6 @@
                 if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
                 else { 
                     if(priceEl) priceEl.textContent = ''; 
-                    // When a checkbox is unchecked, regardless of insurance, we don't want its retail
-                    // to contribute to totalRetail, and we stop processing for this item.
                     return; 
                 }
             } else {
@@ -856,9 +1098,6 @@
 
             totalInsSvgs = totalRetail - totalFinalCost; // Savings based on new final cost
 
-            // Removed the loop that cleared individual component prices.
-            // Individual component prices will now show their retail values if selected.
-
         } else { // Existing logic for Other Insurance and VSP
             const vspCopayValue = getCleanValue('copay-material-co-pay');
             const vspCopayPriceEl = document.getElementById('price-material-co-pay');
@@ -875,8 +1114,6 @@
 
         // Summary content generation
         if(summaryContent) {
-            // No need to add a separate "Declining Balance Net" summary item here.
-            // The breakdown will be shown under "Insurance Savings" directly.
             summaryItemsEl.innerHTML = summaryContent;
         }
 
