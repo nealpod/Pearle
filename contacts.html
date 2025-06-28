@@ -135,6 +135,14 @@
         .results-table .final-total {
             font-size: 1.125rem; /* text-lg */
         }
+        .results-table .supply-option-cell {
+            padding-top: 1rem;
+            padding-bottom: 0.5rem;
+        }
+        .results-table .supply-option-cell input:checked {
+            border-color: var(--pearl-green);
+            background-color: var(--pearl-green);
+        }
          .component-label {
             display: flex;
             justify-content: space-between;
@@ -245,6 +253,13 @@
                                          <th class="font-semibold">6 MONTH</th>
                                          <th class="font-bold text-green-700 annual-col rounded-t-lg">ANNUAL</th>
                                      </tr>
+                                     <!-- ADDED: Radio buttons for supply selection -->
+                                     <tr class="border-b">
+                                        <th class="text-left">Select Supply</th>
+                                        <td class="supply-option-cell"><input type="radio" name="supply-option" value="3m" class="h-5 w-5"></td>
+                                        <td class="supply-option-cell"><input type="radio" name="supply-option" value="6m" class="h-5 w-5"></td>
+                                        <td class="supply-option-cell annual-col"><input type="radio" name="supply-option" value="annual" class="h-5 w-5"></td>
+                                     </tr>
                                  </thead>
                                  <tbody>
                                      <tr class="border-b"><th scope="row">No. of Boxes</th><td id="boxes-3m">0</td><td id="boxes-6m">0</td><td id="boxes-annual" class="annual-col">0</td></tr>
@@ -267,7 +282,7 @@
              <div class="mt-8 pt-6 border-t border-gray-200 flex justify-center">
                  <div class="flex space-x-4 w-full md:w-2/3 lg:w-1/2">
                      <button id="reset-button" class="btn btn-secondary w-full py-3 text-base">Reset</button>
-                     <button id="save-quote-button" class="btn btn-primary w-full py-3 text-base">Save Quote</button>
+                     <button id="save-quote-button" class="btn btn-primary w-full py-3 text-base" disabled>Save Quote</button>
                  </div>
              </div>
         </div>
@@ -304,13 +319,12 @@
     let contactLensDatabase = [];
     let examListData = [];
     let select2Data = [];
-    let selectedStore = null; // To hold the selected store info
+    let selectedStore = null;
     
     // Constants
     const STORE_DISCOUNT_PERCENTAGE = 0.05;
     const TAX_RATE = 0.06;
 
-    // Exam Categories (from glasses calculator)
     const examCategories = [
         { id: 'eye-exam', label: 'Eye Exam', type: 'select' },
         { id: 'contacts-exam', label: 'Contacts Exam', type: 'select' },
@@ -333,26 +347,12 @@
         document.getElementById('error-modal').classList.remove('hidden');
     }
     
-    function calculateItem(retail, insAllow, discount, copay, isFrame = false) {
-        let finalCost, yourCost, insSvgs;
-
-        if (insAllow === 0 && discount === 0 && copay > 0) {
-            finalCost = copay;
-            yourCost = 0; 
-            insSvgs = retail - finalCost;
-        } else { 
-            if (isFrame) {
-                 yourCost = (retail - insAllow) * (1 - (discount / 100));
-            } else {
-                 yourCost = retail * (1 - (discount / 100)) - insAllow;
-            }
-            yourCost = Math.max(0, yourCost);
-            finalCost = yourCost + copay;
-            insSvgs = retail - finalCost;
-        }
-        
-        const isError = retail > 0 && finalCost > retail;
-        return { yourCost, finalCost, insSvgs, isError };
+    function calculateItem(retail, insAllow, discount, copay) {
+        let yourCost = retail * (1 - (discount / 100)) - insAllow;
+        yourCost = Math.max(0, yourCost);
+        const finalCost = yourCost + copay;
+        const insSvgs = retail - finalCost;
+        return { finalCost, insSvgs };
     }
 
     function buildExamInputs() {
@@ -413,6 +413,9 @@
     
     function getExamCost() {
         let totalExamCost = 0;
+        let totalExamRetail = 0;
+        let totalExamInsSvgs = 0;
+        
         examCategories.forEach(cat => {
             const catId = cat.id;
             const priceEl = document.getElementById(`price-${catId}`);
@@ -442,30 +445,37 @@
 
             const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
             totalExamCost += calc.finalCost;
+            totalExamRetail += inputs.retail;
+            totalExamInsSvgs += calc.insSvgs;
             
             if (priceEl) priceEl.textContent = formatCurrency(calc.finalCost);
         });
-        return totalExamCost;
+        return { totalExamCost, totalExamRetail, totalExamInsSvgs };
     }
 
 
     function calculate() {
         const selectedLensId = $('#contact-lens-select').val();
         const summaryContainer = $('#summary-container');
+        const saveQuoteBtn = document.getElementById('save-quote-button');
         
-        const examTotal = getExamCost();
-        $('#exam-total-display').text(formatCurrency(examTotal));
+        const { totalExamCost, totalExamRetail, totalExamInsSvgs } = getExamCost();
+        $('#exam-total-display').text(formatCurrency(totalExamCost));
+        
+        const selectedSupply = document.querySelector('input[name="supply-option"]:checked');
+        saveQuoteBtn.disabled = !selectedSupply;
+
 
         if (!selectedLensId) {
             summaryContainer.addClass('opacity-25');
-            resetSummary(examTotal);
+            resetSummary(totalExamCost);
             return;
         }
         summaryContainer.removeClass('opacity-25');
 
         const lens = contactLensDatabase.find(l => l.id == selectedLensId);
         if (!lens) {
-            resetSummary(examTotal);
+            resetSummary(totalExamCost);
             return;
         }
 
@@ -488,7 +498,7 @@
         const rebate3m = lens.new_wearer_rebate_three || 0;
         const discount3m = 0;
         const tax3m = total3m * TAX_RATE;
-        const final3m = Math.max(0, total3m - visionBenefit - discount3m) + tax3m + examTotal;
+        const final3m = Math.max(0, total3m - visionBenefit - discount3m) + tax3m + totalExamCost;
         const costPerBox3m = boxes_3m > 0 ? (total3m - visionBenefit - rebate3m - discount3m) / boxes_3m : 0;
 
         $('#total-3m').text(formatCurrency(total3m));
@@ -503,7 +513,7 @@
         const rebate6m = lens.new_wearer_rebate_six || 0;
         const discount6m = 0;
         const tax6m = total6m * TAX_RATE;
-        const final6m = Math.max(0, total6m - visionBenefit - discount6m) + tax6m + examTotal;
+        const final6m = Math.max(0, total6m - visionBenefit - discount6m) + tax6m + totalExamCost;
         const costPerBox6m = boxes_6m > 0 ? (total6m - visionBenefit - rebate6m - discount6m) / boxes_6m : 0;
 
         $('#total-6m').text(formatCurrency(total6m));
@@ -519,7 +529,7 @@
         const amountForStoreDiscountAnnual = totalAnnual - visionBenefit - rebateAnnual;
         const discountAnnual = amountForStoreDiscountAnnual > 0 ? amountForStoreDiscountAnnual * STORE_DISCOUNT_PERCENTAGE : 0;
         const taxAnnual = totalAnnual * TAX_RATE;
-        const finalAnnual = Math.max(0, totalAnnual - visionBenefit - discountAnnual) + taxAnnual + examTotal;
+        const finalAnnual = Math.max(0, totalAnnual - visionBenefit - discountAnnual) + taxAnnual + totalExamCost;
         const costPerBoxAnnual = boxes_annual > 0 ? (totalAnnual - visionBenefit - rebateAnnual - discountAnnual) / boxes_annual : 0;
 
         $('#total-annual').text(formatCurrency(totalAnnual));
@@ -561,8 +571,89 @@
         $('#contact-lens-select').val(null).trigger('change');
         $('#vision-plan-benefit').val('');
         $('#wearer-new').prop('checked', true);
+        
+        // Uncheck all supply options
+        document.querySelectorAll('input[name="supply-option"]').forEach(radio => radio.checked = false);
+
         calculate();
     }
+    
+    async function saveQuote() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || !selectedStore) {
+            alert("Error: Not logged in or no store selected.");
+            return;
+        }
+
+        const customerName = document.getElementById('customer-name').value;
+        if (!customerName) {
+            alert("Please enter a customer name before saving.");
+            return;
+        }
+        
+        const selectedSupply = document.querySelector('input[name="supply-option"]:checked')?.value;
+        if (!selectedSupply) {
+            alert("Please select a supply option (3-month, 6-month, or annual) before saving.");
+            return;
+        }
+
+        const lens = contactLensDatabase.find(l => l.id == $('#contact-lens-select').val());
+        if (!lens) {
+            alert("Please select a contact lens brand.");
+            return;
+        }
+
+        const { totalExamCost, totalExamRetail, totalExamInsSvgs } = getExamCost();
+        
+        // Gather details for the selected supply
+        const finalCost = parseFloat(document.getElementById(`final-${selectedSupply}`).textContent.replace(/[$,]/g, '') || 0);
+        const totalRetail = parseFloat(document.getElementById(`total-${selectedSupply}`).textContent.replace(/[$,]/g, '') || 0) + totalExamRetail;
+        const insuranceSavings = (totalRetail - finalCost);
+
+        const quoteDetails = {
+            type: 'Contacts',
+            supply: `${selectedSupply} supply`,
+            lens_brand: lens.name,
+            exams: [],
+            vision_benefit: getCleanValue('vision-plan-benefit')
+        };
+        
+        examCategories.forEach(cat => {
+            const checkbox = document.getElementById(`checkbox-${cat.id}`);
+            const select = document.getElementById(`select-${cat.id}`);
+            let selectedValue = null;
+            if (checkbox && checkbox.checked) selectedValue = checkbox.dataset.itemName;
+            if (select && select.value !== 'None') selectedValue = select.value;
+            
+            if (selectedValue) {
+                quoteDetails.exams.push({
+                    name: cat.label,
+                    selection: selectedValue,
+                });
+            }
+        });
+
+        const saleData = {
+            optician_id: user.id,
+            store_id: selectedStore.id,
+            customer_name: customerName,
+            final_cost: finalCost,
+            total_retail: totalRetail,
+            insurance_savings: insuranceSavings,
+            quote_details: quoteDetails
+        };
+
+        const { error } = await supabase.from('sales').insert([saleData]);
+
+        if (error) {
+            console.error('Error saving quote:', error);
+            alert('There was an error saving the quote. Please try again.');
+        } else {
+            alert('Quote saved successfully!');
+            resetCalculator();
+        }
+    }
+
 
     async function initializeApp() {
         const contactsPromise = supabase.from('contacts').select('id, contact_name, price, number_of_contacts_three_months, number_of_contacts_six_months, number_of_contacts_one_year, new_wearer_rebate_three, new_wearer_rebate_six, new_wearer_rebate_annual, old_wearer_rebate_annual, contact_type');
@@ -602,14 +693,17 @@
             allowClear: true
         });
         
-        document.querySelectorAll('.config-option, .config-input, #customer-name, #insurance-type-select').forEach(el => {
+        // Attach all event listeners
+        document.querySelectorAll('.config-option, .config-input, #customer-name, #insurance-type-select, input[name="supply-option"]').forEach(el => {
             el.addEventListener('input', calculate);
+            el.addEventListener('change', calculate);
         });
 
         $('#contact-lens-select, input[name="wearer-type"]').on('change', calculate);
         $('#vision-plan-benefit').on('input', calculate);
 
         $('#reset-button').on('click', resetCalculator);
+        $('#save-quote-button').on('click', saveQuote);
         $('#close-error-modal-btn').on('click', () => $('#error-modal').addClass('hidden'));
         $('#logout-btn').on('click', async () => {
             sessionStorage.removeItem('selectedStore');
@@ -621,6 +715,13 @@
     }
 
     async function checkUser() {
+        const storeData = sessionStorage.getItem('selectedStore');
+        if (!storeData) {
+            window.location.href = './select-store.html';
+            return;
+        }
+        selectedStore = JSON.parse(storeData);
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
             window.location.href = './index.html';
@@ -648,4 +749,4 @@
     });
 </script>
 </body>
-</ht
+</html>
