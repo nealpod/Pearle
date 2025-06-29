@@ -253,7 +253,6 @@
                                          <th class="font-semibold">6 MONTH</th>
                                          <th class="font-bold text-green-700 annual-col rounded-t-lg">ANNUAL</th>
                                      </tr>
-                                     <!-- ADDED: Radio buttons for supply selection -->
                                      <tr class="border-b">
                                         <th class="text-left">Select Supply</th>
                                         <td class="supply-option-cell"><input type="radio" name="supply-option" value="3m" class="h-5 w-5"></td>
@@ -347,7 +346,21 @@
         document.getElementById('error-modal').classList.remove('hidden');
     }
     
-    // MODIFIED: Replaced with the more detailed function from the glasses calculator
+    // ADDED: Formatting functions from glasses calculator
+    const onFocus = (event) => {
+        let value = event.target.value;
+        value = value.replace(/[$,%]/g, '');
+        event.target.value = value;
+    };
+
+    const onBlur = (event) => {
+        let value = event.target.value;
+        if (value) {
+            if (event.target.classList.contains('dollar-format')) event.target.value = `$${value}`;
+            else if (event.target.classList.contains('percent-format')) event.target.value = `${value}%`;
+        }
+    };
+
     function calculateItem(retail, insAllow, discount, copay) {
         let finalCost, yourCost, insSvgs;
 
@@ -665,6 +678,24 @@
         }
     }
 
+    // ADDED: Centralized event listener function
+    function attachEventListeners() {
+        // Use a single selector to grab all inputs that need formatting or calculation
+        document.querySelectorAll('.config-input, #customer-name, #insurance-type-select, input[name="supply-option"], #vision-plan-benefit').forEach(el => {
+            el.addEventListener('input', calculate);
+            el.addEventListener('change', calculate); // For selects and radios
+
+            // Attach formatting listeners
+            if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
+                el.addEventListener('focus', onFocus);
+                el.addEventListener('blur', onBlur);
+            }
+        });
+
+        // jQuery listeners for Select2 and wearer type toggle
+        $('#contact-lens-select, input[name="wearer-type"]').on('change', calculate);
+    }
+
 
     async function initializeApp() {
         const contactsPromise = supabase.from('contacts').select('id, contact_name, price, number_of_contacts_three_months, number_of_contacts_six_months, number_of_contacts_one_year, new_wearer_rebate_three, new_wearer_rebate_six, new_wearer_rebate_annual, old_wearer_rebate_annual, contact_type');
@@ -704,14 +735,8 @@
             allowClear: true
         });
         
-        // Attach all event listeners
-        document.querySelectorAll('.config-option, .config-input, #customer-name, #insurance-type-select, input[name="supply-option"]').forEach(el => {
-            el.addEventListener('input', calculate);
-            el.addEventListener('change', calculate);
-        });
-
-        $('#contact-lens-select, input[name="wearer-type"]').on('change', calculate);
-        $('#vision-plan-benefit').on('input', calculate);
+        // MODIFIED: Centralized event listener attachment
+        attachEventListeners();
 
         $('#reset-button').on('click', resetCalculator);
         $('#save-quote-button').on('click', saveQuote);
@@ -760,4 +785,4 @@
     });
 </script>
 </body>
-</ht
+</html>
