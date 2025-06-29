@@ -678,7 +678,7 @@
         }
     }
 
-    // ADDED: Centralized event listener function
+    // MODIFIED: Centralized event listener function
     function attachEventListeners() {
         // Use a single selector to grab all inputs that need formatting or calculation
         document.querySelectorAll('.config-input, #customer-name, #insurance-type-select, input[name="supply-option"], #vision-plan-benefit').forEach(el => {
@@ -691,6 +691,15 @@
                 el.addEventListener('blur', onBlur);
             }
         });
+        
+        // Also attach to dynamically created exam inputs
+        document.querySelectorAll('#exam-options-grid .config-input').forEach(el => {
+             if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
+                el.addEventListener('focus', onFocus);
+                el.addEventListener('blur', onBlur);
+            }
+        });
+
 
         // jQuery listeners for Select2 and wearer type toggle
         $('#contact-lens-select, input[name="wearer-type"]').on('change', calculate);
@@ -735,7 +744,6 @@
             allowClear: true
         });
         
-        // MODIFIED: Centralized event listener attachment
         attachEventListeners();
 
         $('#reset-button').on('click', resetCalculator);
