@@ -347,12 +347,23 @@
         document.getElementById('error-modal').classList.remove('hidden');
     }
     
+    // MODIFIED: Replaced with the more detailed function from the glasses calculator
     function calculateItem(retail, insAllow, discount, copay) {
-        let yourCost = retail * (1 - (discount / 100)) - insAllow;
-        yourCost = Math.max(0, yourCost);
-        const finalCost = yourCost + copay;
-        const insSvgs = retail - finalCost;
-        return { finalCost, insSvgs };
+        let finalCost, yourCost, insSvgs;
+
+        if (insAllow === 0 && discount === 0 && copay > 0) {
+            finalCost = copay;
+            yourCost = 0; 
+            insSvgs = retail - finalCost;
+        } else { 
+            yourCost = retail * (1 - (discount / 100)) - insAllow;
+            yourCost = Math.max(0, yourCost);
+            finalCost = yourCost + copay;
+            insSvgs = retail - finalCost;
+        }
+        
+        const isError = retail > 0 && finalCost > retail;
+        return { yourCost, finalCost, insSvgs, isError };
     }
 
     function buildExamInputs() {
@@ -749,4 +760,4 @@
     });
 </script>
 </body>
-</html>
+</ht
