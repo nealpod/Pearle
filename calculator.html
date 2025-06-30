@@ -127,7 +127,6 @@
             <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" class="h-8" alt="Pearle Vision Logo">
         </div>
 
-        <!-- Calculator Toggle Button -->
         <div class="calculator-toggle">
             <button class="active" onclick="window.location.href='./calculator.html'">Glasses</button>
             <button onclick="window.location.href='./contacts.html'">Contacts</button>
@@ -175,8 +174,7 @@
                 <div class="bg-white p-6 rounded-lg shadow">
                     <h3 class="text-xl font-semibold mb-4 border-b pb-2">Exams</h3>
                     <div id="exam-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <!-- Exam inputs will be dynamically inserted here -->
-                    </div>
+                        </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow">
@@ -195,10 +193,26 @@
                     </div>
                     
                     <div id="dynamic-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                               </div>
+                                            </div>
                 </div>
 
-            </div>
+                <div id="second-pair-section" class="bg-white p-6 rounded-lg shadow" style="display: none;">
+                    <h3 class="text-xl font-semibold mb-4 border-b pb-2">Second Pair Configuration</h3>
+                    <div class="input-group space-y-2">
+                        <div class="component-label">
+                            <label for="second-pair-retail-price" class="block font-medium text-gray-700">Second Pair Retail Price</label>
+                            <span id="price-second-pair" class="component-price"></span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" inputmode="decimal" id="second-pair-retail-price" placeholder="Retail Price" class="config-input w-2/4 border-gray-300 rounded-md shadow-sm dollar-format">
+                            <input type="text" inputmode="decimal" id="second-pair-discount" placeholder="Discount" class="config-input percent-format w-1/4 border-gray-300 rounded-md shadow-sm text-sm">
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-end">
+                    <button id="add-second-pair-btn" class="btn btn-primary">Add Second Pair</button>
+                </div>
+                </div>
 
             <div class="lg:col-span-1">
                 <div class="bg-white p-6 rounded-lg shadow sticky top-24">
@@ -679,6 +693,15 @@
         return { yourCost, finalCost, insSvgs, isError };
     }
 
+    // NEW: Function to calculate second pair price
+    function calculateSecondPairPrice(retail, discount) {
+        if (retail <= 0) {
+            return { finalCost: 0, retail, discount };
+        }
+        const finalCost = retail * (1 - (discount / 100));
+        return { finalCost, retail, discount };
+    }
+
 
     function updateCalculations() {
         document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
@@ -929,6 +952,23 @@
                 document.getElementById('price-material-co-pay').textContent = formatCurrency(vspCopayValue);
             }
         }
+        
+        // MODIFIED: Process Second Pair
+        const secondPairSection = document.getElementById('second-pair-section');
+        if (secondPairSection.style.display !== 'none') {
+            const secondPairRetail = getCleanValue('second-pair-retail-price');
+            const secondPairDiscount = getCleanValue('second-pair-discount');
+            const secondPairCalc = calculateSecondPairPrice(secondPairRetail, secondPairDiscount);
+            if (secondPairRetail > 0) {
+                totalRetail += secondPairCalc.retail;
+                totalFinalCost += secondPairCalc.finalCost;
+                summaryContent += createSummaryItemHTML('second-pair', 'Second Pair', {retail: secondPairRetail, discount: secondPairDiscount, insAllow: 0, copay: 0}, {finalCost: secondPairCalc.finalCost});
+                document.getElementById('price-second-pair').textContent = formatCurrency(secondPairCalc.finalCost);
+            } else {
+                 document.getElementById('price-second-pair').textContent = '';
+            }
+        }
+        // END MODIFIED
 
         if(summaryContent) {
             summaryItemsEl.innerHTML = summaryContent;
@@ -1026,6 +1066,13 @@
         if (edgePolishCheckbox) { 
             edgePolishCheckbox.checked = true;
         }
+        
+        // MODIFIED: Hide and reset second pair section
+        const secondPairSection = document.getElementById('second-pair-section');
+        secondPairSection.style.display = 'none';
+        document.getElementById('add-second-pair-btn').style.display = 'block';
+        document.getElementById('second-pair-retail-price').value = '';
+        document.getElementById('second-pair-discount').value = '';
 
         updateCalculations();
     }
@@ -1049,7 +1096,9 @@
             exams: [],
             frame: {},
             lenses: {},
-            addOns: []
+            addOns: [],
+            // MODIFIED: Add second pair details
+            secondPair: {}
         };
 
         // Get exam details
@@ -1090,9 +1139,9 @@
             if (selectedValue) {
                 if (cat.id !== 'Add-Ons') {
                      quoteDetails.lenses[cat.label] = {
-                        selection: selectedValue,
-                        price: parseFloat(document.getElementById(`price-${catId}`).textContent.replace(/[$,]/g, '') || 0)
-                    };
+                         selection: selectedValue,
+                         price: parseFloat(document.getElementById(`price-${catId}`).textContent.replace(/[$,]/g, '') || 0)
+                     };
                 }
             }
         });
@@ -1107,6 +1156,16 @@
                 });
             }
         });
+        
+        // MODIFIED: Get second pair details
+        const secondPairRetail = getCleanValue('second-pair-retail-price');
+        if (secondPairRetail > 0) {
+            quoteDetails.secondPair = {
+                retail: secondPairRetail,
+                discount: getCleanValue('second-pair-discount'),
+                finalCost: parseFloat(document.getElementById('price-second-pair').textContent.replace(/[$,]/g, '') || 0)
+            };
+        }
 
 
         // Prepare the data for insertion
@@ -1143,6 +1202,12 @@
         attachEventListeners();
         
         document.getElementById('insurance-type-select').addEventListener('change', updateCalculations);
+
+        // MODIFIED: Add event listener for the second pair button
+        document.getElementById('add-second-pair-btn').addEventListener('click', () => {
+            document.getElementById('second-pair-section').style.display = 'block';
+            document.getElementById('add-second-pair-btn').style.display = 'none';
+        });
 
         updateCalculations();
     }
