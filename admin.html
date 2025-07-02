@@ -56,13 +56,25 @@
         .modal-overlay {
             background-color: rgba(0,0,0,0.5);
         }
+        /* Accordion Styles */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .accordion-button svg {
+            transition: transform 0.3s ease-in-out;
+        }
+        .accordion-button.open svg {
+            transform: rotate(180deg);
+        }
     </style>
 </head>
 <body class="text-gray-800">
 
     <header class="bg-white shadow-md p-4 flex justify-between items-center sticky top-0 z-20">
         <div>
-            <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" alt="Pearle Vision Logo" class="h-8">
+            <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" alt="Pearle Vision Logo" class="h-8" onerror="this.onerror=null;this.src='https://placehold.co/150x40/ffffff/000000?text=Logo';">
         </div>
         <nav class="flex items-center space-x-4">
             <a href="./dashboard.html" class="text-sm font-medium text-gray-600 hover:text-pearl-green">Dashboard</a>
@@ -85,15 +97,18 @@
                     <table class="w-full text-sm text-left"><thead class="bg-gray-100"><tr><th class="p-2">Name</th><th class="p-2">Email</th><th class="p-2">Role</th><th class="p-2 text-center">Actions</th></tr></thead><tbody id="users-table-body"></tbody></table>
                 </div>
             </div>
+            
+            <!-- MODIFIED: Component Management Section with Accordion -->
             <div id="component-management" class="card">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold">Component & Pricing Management</h2>
                     <button id="add-new-btn" class="btn-primary text-white font-bold py-2 px-4 rounded">+ Add New Item</button>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left"><thead class="bg-gray-100"><tr><th class="p-2">Item</th><th class="p-2">Category</th><th class="p-2">Retail Price</th><th class="p-2 text-center">Active</th><th class="p-2 text-center">Actions</th></tr></thead><tbody id="components-table-body"></tbody></table>
+                <div id="components-accordion-container" class="space-y-2">
+                    <!-- Accordion items will be dynamically inserted here -->
                 </div>
             </div>
+
         </div>
     </main>
     
@@ -101,7 +116,6 @@
     <div id="item-modal" class="fixed inset-0 z-30 hidden items-center justify-center modal-overlay"><div class="card w-full max-w-md"><h3 id="modal-title" class="text-xl font-bold mb-4">Add New Item</h3><form id="item-form" class="space-y-4"><input type="hidden" id="item-id"><div><label for="item-name" class="block text-sm font-medium text-gray-700">Item Name</label><input type="text" id="item-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="item-category" class="block text-sm font-medium text-gray-700">Category</label><input type="text" id="item-category" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="item-price" class="block text-sm font-medium text-gray-700">Retail Price</label><input type="number" step="0.01" id="item-price" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div class="flex justify-end space-x-2 pt-4"><button type="button" id="cancel-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded">Cancel</button><button type="submit" class="btn-primary text-white font-bold py-2 px-4 rounded">Save</button></div></form></div></div>
     <div id="user-modal" class="fixed inset-0 z-30 hidden items-center justify-center modal-overlay"><div class="card w-full max-w-md"><h3 class="text-xl font-bold mb-4">Add New User</h3><form id="user-form" class="space-y-4"><div><label for="user-full-name" class="block text-sm font-medium text-gray-700">Full Name</label><input type="text" id="user-full-name" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="user-email" class="block text-sm font-medium text-gray-700">Email</label><input type="email" id="user-email" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="user-password" class="block text-sm font-medium text-gray-700">Password</label><input type="password" id="user-password" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required></div><div><label for="user-role" class="block text-sm font-medium text-gray-700">Role</label><select id="user-role" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" required><option value="optician">Optician</option><option value="owner">Owner</option></select></div><div class="flex justify-end space-x-2 pt-4"><button type="button" id="cancel-user-btn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded">Cancel</button><button type="submit" class="btn-primary text-white font-bold py-2 px-4 rounded">Create User</button></div></form></div></div>
     
-    <!-- ADDED: Store Assignment Modal -->
     <div id="store-assignment-modal" class="fixed inset-0 z-30 hidden items-center justify-center modal-overlay">
         <div class="card w-full max-w-md">
             <h3 id="store-modal-title" class="text-xl font-bold mb-4">Manage Store Assignments</h3>
@@ -124,9 +138,8 @@
 
     let priceListData = [];
     let userData = [];
-    let allStores = []; // ADDED: To store list of all stores
+    let allStores = [];
 
-    const componentsTableBody = document.getElementById('components-table-body');
     const usersTableBody = document.getElementById('users-table-body');
     const itemModal = document.getElementById('item-modal');
     const itemForm = document.getElementById('item-form');
@@ -137,32 +150,62 @@
     const addUserBtn = document.getElementById('add-new-user-btn');
     const cancelUserBtn = document.getElementById('cancel-user-btn');
     const logoutBtn = document.getElementById('logout-btn');
-    
-    // ADDED: Store Assignment Modal elements
     const storeAssignmentModal = document.getElementById('store-assignment-modal');
     const storeAssignmentForm = document.getElementById('store-assignment-form');
     const cancelAssignmentBtn = document.getElementById('cancel-assignment-btn');
     const storeCheckboxContainer = document.getElementById('store-checkbox-container');
+    const componentsAccordionContainer = document.getElementById('components-accordion-container');
 
     const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
     
-    const renderComponentsTable = () => {
-        componentsTableBody.innerHTML = '';
-        priceListData.forEach(item => {
-            const row = document.createElement('tr');
-            row.className = 'border-b hover:bg-gray-50';
-            row.innerHTML = `
-                <td class="p-2">${item.Item}</td>
-                <td class="p-2">${item.Category}</td>
-                <td class="p-2">${formatCurrency(item.Retail)}</td>
-                <td class="p-2 text-center">
-                    <input type="checkbox" data-id="${item.id}" class="active-toggle h-4 w-4 text-green-600 border-gray-300 rounded" ${item.is_active ? 'checked' : ''}>
-                </td>
-                <td class="p-2 text-center">
-                    <button data-id="${item.id}" class="edit-btn text-sm text-blue-600 hover:underline">Edit</button>
-                </td>
+    // MODIFIED: Renders components into an accordion structure
+    const renderComponentsAccordion = () => {
+        componentsAccordionContainer.innerHTML = '';
+        const groupedByCategory = priceListData.reduce((acc, item) => {
+            (acc[item.Category] = acc[item.Category] || []).push(item);
+            return acc;
+        }, {});
+
+        Object.keys(groupedByCategory).sort().forEach(category => {
+            const accordionItem = document.createElement('div');
+            accordionItem.className = 'border border-gray-200 rounded-md';
+            
+            const items = groupedByCategory[category];
+            const tableRows = items.map(item => `
+                <tr class="border-b hover:bg-gray-50 last:border-b-0">
+                    <td class="p-2">${item.Item}</td>
+                    <td class="p-2">${formatCurrency(item.Retail)}</td>
+                    <td class="p-2 text-center">
+                        <input type="checkbox" data-id="${item.id}" class="active-toggle h-4 w-4 text-green-600 border-gray-300 rounded" ${item.is_active ? 'checked' : ''}>
+                    </td>
+                    <td class="p-2 text-center">
+                        <button data-id="${item.id}" class="edit-btn text-sm text-blue-600 hover:underline">Edit</button>
+                    </td>
+                </tr>
+            `).join('');
+
+            accordionItem.innerHTML = `
+                <button class="accordion-button w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 focus:outline-none">
+                    <span class="font-bold text-lg text-gray-700">${category}</span>
+                    <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div class="accordion-content bg-white p-2">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="p-2">Item</th>
+                                <th class="p-2">Retail Price</th>
+                                <th class="p-2 text-center">Active</th>
+                                <th class="p-2 text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tableRows}
+                        </tbody>
+                    </table>
+                </div>
             `;
-            componentsTableBody.appendChild(row);
+            componentsAccordionContainer.appendChild(accordionItem);
         });
     };
 
@@ -206,7 +249,6 @@
     };
     const closeUserModal = () => userModal.classList.add('hidden');
 
-    // ADDED: Functions to open and close the store assignment modal
     const openStoreAssignmentModal = async (userId) => {
         const user = userData.find(u => u.id === userId);
         if (!user) return;
@@ -214,7 +256,6 @@
         document.getElementById('store-modal-title').textContent = `Manage Assignments for ${user.full_name}`;
         document.getElementById('assignment-optician-id').value = userId;
 
-        // Fetch current assignments for this user
         const { data: assignments, error } = await supabase
             .from('store_assignments')
             .select('store_id')
@@ -280,7 +321,7 @@
         if (storesResult.error) console.error("Error fetching stores:", storesResult.error);
         else allStores = storesResult.data;
 
-        renderComponentsTable();
+        renderComponentsAccordion(); // MODIFIED: Call the new accordion render function
         renderUsersTable();
     }
     
@@ -298,7 +339,6 @@
     cancelUserBtn.addEventListener('click', closeUserModal);
     userModal.addEventListener('click', (e) => { if (e.target === userModal) closeUserModal(); });
 
-    // ADDED: Event listeners for the new modal
     cancelAssignmentBtn.addEventListener('click', closeStoreAssignmentModal);
     storeAssignmentModal.addEventListener('click', (e) => { if (e.target === storeAssignmentModal) closeStoreAssignmentModal(); });
 
@@ -352,7 +392,6 @@
         }
     });
 
-    // ADDED: Event listener for the store assignment form
     storeAssignmentForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitButton = storeAssignmentForm.querySelector('button[type="submit"]');
@@ -380,17 +419,35 @@
         }
     });
 
-    componentsTableBody.addEventListener('click', async (e) => {
+    // MODIFIED: Event delegation for accordion and dynamic content inside
+    componentsAccordionContainer.addEventListener('click', async (e) => {
+        // Handle accordion toggle
+        const button = e.target.closest('.accordion-button');
+        if (button) {
+            button.classList.toggle('open');
+            const content = button.nextElementSibling;
+            if (content.style.maxHeight) {
+                content.style.maxHeight = null;
+            } else {
+                content.style.maxHeight = content.scrollHeight + "px";
+            }
+            return;
+        }
+
+        // Handle edit button clicks
         if (e.target.classList.contains('edit-btn')) {
             const id = e.target.dataset.id;
             const itemToEdit = priceListData.find(item => item.id == id);
             openItemModal(itemToEdit);
         }
+
+        // Handle active toggle clicks
         if (e.target.classList.contains('active-toggle')) {
             const id = e.target.dataset.id;
             const is_active = e.target.checked;
             await supabase.from('components').update({ is_active }).eq('id', id);
-            fetchData();
+            // We don't need to call fetchData() here, as the UI is already updated.
+            // This prevents the accordion from closing on every toggle.
         }
     });
     
@@ -417,7 +474,6 @@
                 }
             }
         }
-        // ADDED: Event listener for the new "Manage Stores" button
         if (e.target.classList.contains('manage-stores-btn')) {
             const id = e.target.dataset.id;
             openStoreAssignmentModal(id);
