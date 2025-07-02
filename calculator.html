@@ -124,7 +124,7 @@
 
     <header class="bg-white shadow-md p-4 flex justify-between items-center sticky top-0 z-20">
         <div>
-            <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" class="h-8" alt="Pearle Vision Logo">
+            <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" class="h-8" alt="Pearle Vision Logo" onerror="this.onerror=null;this.src='https://placehold.co/200x50/e2e8f0/4a5568?text=Pearle+Vision';">
         </div>
 
         <!-- Calculator Toggle Button -->
@@ -537,7 +537,7 @@
 
         addonRow.innerHTML = `
             <div class="component-label">
-                  <select id="select-addon-${addonCounter}" class="addon-select config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
+                <select id="select-addon-${addonCounter}" class="addon-select config-option block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
                    ${optionsHTML}
                </select>
                 <span id="price-addon-${addonCounter}" class="component-price ml-2"></span>
@@ -668,14 +668,18 @@
         }
     }
 
-    function calculateItem(retail, insAllow, discount, copay, isFrame = false) {
+    // --- MODIFIED: Added isCopayOnly parameter to handle the new logic ---
+    function calculateItem(retail, insAllow, discount, copay, isFrame = false, isCopayOnly = false) {
         let finalCost, yourCost, insSvgs;
 
-        if (insAllow === 0 && discount === 0 && copay > 0) {
+        // If only the copay field was entered, that value becomes the final cost.
+        // This correctly handles when a user enters "0" for the copay.
+        if (isCopayOnly) {
             finalCost = copay;
             yourCost = 0; 
             insSvgs = retail - finalCost;
         } else { 
+            // Original calculation logic
             if (isFrame) {
                  yourCost = (retail - insAllow) * (1 - (discount / 100));
             } else {
@@ -697,7 +701,6 @@
 
         const insuranceType = document.getElementById('insurance-type-select').value;
         const isDecliningBalance = (insuranceType === 'Declining Balance');
-        // ADDED: Flags for new insurance types
         const isNoInsurance = (insuranceType === 'No Insurance');
         const isSecondPair = (insuranceType === 'Second Pair');
         const isGlobalDiscountScenario = isNoInsurance || isSecondPair;
@@ -738,7 +741,6 @@
 
         document.getElementById('declining-balance-inputs').style.display = isDecliningBalance ? 'grid' : 'none';
         
-        // ADDED: UI logic for new insurance types
         document.getElementById('global-discount-section').style.display = isGlobalDiscountScenario ? 'grid' : 'none';
         document.getElementById('exams-section-container').style.display = isSecondPair ? 'none' : 'block';
         if (isSecondPair) { // Clear exam inputs if hidden
@@ -798,6 +800,15 @@
             const selectedItem = examListData.find(p => p.exam_type === selectedValue);
             if (!selectedItem) return;
 
+            // --- MODIFIED: Check if only the copay field is set ---
+            const allowanceEl = document.getElementById(`allowance-${catId}`);
+            const discountEl = document.getElementById(`discount-${catId}`);
+            const copayEl = document.getElementById(`copay-${catId}`);
+            const allowanceIsSet = allowanceEl && allowanceEl.value !== '';
+            const discountIsSet = discountEl && discountEl.value !== '';
+            const copayIsSet = copayEl && copayEl.value !== '';
+            const isCopayOnly = !allowanceIsSet && !discountIsSet && copayIsSet;
+
             const inputs = {
                 retail: selectedItem.price_retail,
                 insAllow: getCleanValue(`allowance-${catId}`),
@@ -805,7 +816,7 @@
                 copay: getCleanValue(`copay-${catId}`),
             };
 
-            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
+            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay, false, isCopayOnly);
             if (calc.isError && !errorFound) {
                 errorFound = true;
                 showErrorModal(`The final price for ${cat.label} cannot exceed its retail price.`);
@@ -835,8 +846,9 @@
             if (isNoInsurance || isDecliningBalance) {
                 frameInputs.discount = 0;
             }
-
-            const frameCalc = calculateItem(frameInputs.retail, frameInputs.insAllow, frameInputs.discount, frameInputs.copay, true);
+            
+            // Frame calculation is different and doesn't have a "copay-only" scenario.
+            const frameCalc = calculateItem(frameInputs.retail, frameInputs.insAllow, frameInputs.discount, frameInputs.copay, true, false);
             if (frameCalc.isError && !errorFound) {
                 errorFound = true;
                 showErrorModal("The final price for the Frame cannot exceed its retail price.");
@@ -876,6 +888,15 @@
             const selectedItem = priceListData.find(p => p.Item === selectedValue);
             if (!selectedItem) return;
 
+            // --- MODIFIED: Check if only the copay field is set ---
+            const allowanceEl = document.getElementById(`allowance-${catId}`);
+            const discountEl = document.getElementById(`discount-${catId}`);
+            const copayEl = document.getElementById(`copay-${catId}`);
+            const allowanceIsSet = allowanceEl && allowanceEl.value !== '';
+            const discountIsSet = discountEl && discountEl.value !== '';
+            const copayIsSet = copayEl && copayEl.value !== '';
+            const isCopayOnly = !allowanceIsSet && !discountIsSet && copayIsSet;
+
             const inputs = {
                 retail: selectedItem.Retail,
                 insAllow: getCleanValue(`allowance-${catId}`),
@@ -892,7 +913,7 @@
                 }
             }
 
-            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
+            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay, false, isCopayOnly);
             if (calc.isError && !errorFound) {
                 errorFound = true;
                 showErrorModal(`The final price for ${cat.label} cannot exceed its retail price.`);
@@ -922,6 +943,15 @@
             const selectedItem = priceListData.find(p => p.Item === itemName);
             if (!selectedItem) return;
 
+            // --- MODIFIED: Check if only the copay field is set ---
+            const allowanceEl = document.getElementById(`allowance-addon-${rowId}`);
+            const discountEl = document.getElementById(`discount-addon-${rowId}`);
+            const copayEl = document.getElementById(`copay-addon-${rowId}`);
+            const allowanceIsSet = allowanceEl && allowanceEl.value !== '';
+            const discountIsSet = discountEl && discountEl.value !== '';
+            const copayIsSet = copayEl && copayEl.value !== '';
+            const isCopayOnly = !allowanceIsSet && !discountIsSet && copayIsSet;
+
             const inputs = {
                 retail: selectedItem.Retail,
                 insAllow: getCleanValue(`allowance-addon-${rowId}`),
@@ -933,7 +963,7 @@
                 inputs.discount = getCleanValue('global-discount-input');
             }
 
-            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
+            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay, false, isCopayOnly);
             if (calc.isError && !errorFound) {
                 errorFound = true;
                 showErrorModal(`The final price for ${itemName} cannot exceed its retail price.`);
@@ -985,7 +1015,7 @@
             totalFinalCost = examTotalRetail + protectionPlanRetail + decliningBalanceCost;
             totalInsSvgs = totalRetail - totalFinalCost;
 
-        } else if (!isGlobalDiscountScenario) { // MODIFIED: was just `else`
+        } else if (!isGlobalDiscountScenario) {
             const vspCopayValue = getCleanValue('copay-material-co-pay');
             if (insuranceType === 'VSP' && vspCopayValue > 0) {
                 totalFinalCost += vspCopayValue; 
@@ -1126,7 +1156,6 @@
         updateCalculations();
     }
 
-    // MODIFIED: Added saveQuote function
     async function saveQuote() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user || !selectedStore) {
@@ -1233,7 +1262,6 @@
         buildInputs();
         
         document.getElementById('reset-button').addEventListener('click', resetCalculator);
-        // MODIFIED: Updated event listener to call saveQuote
         document.getElementById('save-quote-button').addEventListener('click', saveQuote);
 
         attachEventListeners();
