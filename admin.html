@@ -98,7 +98,6 @@
                 </div>
             </div>
             
-            <!-- MODIFIED: Component Management Section with Accordion -->
             <div id="component-management" class="card">
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold">Component & Pricing Management</h2>
@@ -158,7 +157,6 @@
 
     const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
     
-    // MODIFIED: Renders components into an accordion structure
     const renderComponentsAccordion = () => {
         componentsAccordionContainer.innerHTML = '';
         const groupedByCategory = priceListData.reduce((acc, item) => {
@@ -321,7 +319,7 @@
         if (storesResult.error) console.error("Error fetching stores:", storesResult.error);
         else allStores = storesResult.data;
 
-        renderComponentsAccordion(); // MODIFIED: Call the new accordion render function
+        renderComponentsAccordion();
         renderUsersTable();
     }
     
@@ -349,6 +347,10 @@
 
     itemForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const submitButton = itemForm.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.textContent = 'Saving...';
+
         const id = document.getElementById('item-id').value;
         const itemData = {
             Item: document.getElementById('item-name').value,
@@ -356,13 +358,29 @@
             Retail: parseFloat(document.getElementById('item-price').value),
         };
         
+        let error;
         if (id) {
-            await supabase.from('components').update(itemData).eq('id', id);
+            const { error: updateError } = await supabase.functions.invoke('update-component', {
+                body: { id: id, itemData: itemData }
+            });
+            error = updateError;
         } else {
-            await supabase.from('components').insert([itemData]);
+            const { error: createError } = await supabase.functions.invoke('create-component', {
+                body: { itemData: itemData }
+            });
+            error = createError;
         }
-        fetchData();
-        closeItemModal();
+
+        submitButton.disabled = false;
+        submitButton.textContent = 'Save';
+
+        if (error) {
+            alert(`Error saving item: ${error.message}`);
+        } else {
+            alert('Item saved successfully!');
+            await fetchData();
+            closeItemModal();
+        }
     });
 
     userForm.addEventListener('submit', async (e) => {
@@ -419,9 +437,7 @@
         }
     });
 
-    // MODIFIED: Event delegation for accordion and dynamic content inside
     componentsAccordionContainer.addEventListener('click', async (e) => {
-        // Handle accordion toggle
         const button = e.target.closest('.accordion-button');
         if (button) {
             button.classList.toggle('open');
@@ -434,20 +450,32 @@
             return;
         }
 
-        // Handle edit button clicks
         if (e.target.classList.contains('edit-btn')) {
             const id = e.target.dataset.id;
             const itemToEdit = priceListData.find(item => item.id == id);
             openItemModal(itemToEdit);
         }
 
-        // Handle active toggle clicks
         if (e.target.classList.contains('active-toggle')) {
-            const id = e.target.dataset.id;
-            const is_active = e.target.checked;
-            await supabase.from('components').update({ is_active }).eq('id', id);
-            // We don't need to call fetchData() here, as the UI is already updated.
-            // This prevents the accordion from closing on every toggle.
+            const checkbox = e.target;
+            const id = checkbox.dataset.id;
+            const is_active = checkbox.checked;
+
+            checkbox.disabled = true;
+
+            const { error } = await supabase.functions.invoke('update-component-status', {
+                body: { id: Number(id), is_active: is_active }
+            });
+
+            if (error) {
+                alert(`Error updating status: ${error.message}`);
+                checkbox.checked = !is_active;
+            } else {
+                const itemInList = priceListData.find(item => item.id == id);
+                if(itemInList) itemInList.is_active = is_active;
+            }
+            
+            checkbox.disabled = false;
         }
     });
     
