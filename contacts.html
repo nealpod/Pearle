@@ -264,12 +264,14 @@
                                      <tr class="border-b"><th scope="row">No. of Boxes</th><td id="boxes-3m">0</td><td id="boxes-6m">0</td><td id="boxes-annual" class="annual-col">0</td></tr>
                                      <tr class="border-b"><th scope="row">Price / Box</th><td colspan="3" id="price-per-box" class="text-center font-semibold text-gray-700"></td></tr>
                                      <tr class="border-b"><th scope="row">Total Cost</th><td id="total-3m">$0.00</td><td id="total-6m">$0.00</td><td id="total-annual" class="annual-col">$0.00</td></tr>
+                                     <!-- MODIFIED: Added Vision Plan Benefit row -->
+                                     <tr class="border-b"><th scope="row" class="savings">Vision Plan Benefit</th><td id="benefit-3m" class="savings">-$0.00</td><td id="benefit-6m" class="savings">-$0.00</td><td id="benefit-annual" class="annual-col savings">-$0.00</td></tr>
                                      <tr class="border-b"><th scope="row" class="savings">Mfr. Mail in Rebate</th><td id="rebate-3m" class="savings">-$0.00</td><td id="rebate-6m" class="savings">-$0.00</td><td id="rebate-annual" class="annual-col savings">-$0.00</td></tr>
                                      <tr class="border-b"><th scope="row" class="savings">Store Discount (5%)</th><td id="discount-3m" class="savings">-$0.00</td><td id="discount-6m" class="savings">-$0.00</td><td id="discount-annual" class="annual-col savings">-$0.00</td></tr>
-                                      <tr class="border-b"><th scope="row">Sales Tax (6%)</th><td id="tax-3m">$0.00</td><td id="tax-6m">$0.00</td><td id="tax-annual" class="annual-col">$0.00</td></tr>
-                                      <tr class="border-b"><th scope="row" class="highlight">Cost / Box</th><td id="cost-per-box-3m" class="highlight">$0.00</td><td id="cost-per-box-6m" class="highlight">$0.00</td><td id="cost-per-box-annual" class="annual-col highlight">$0.00</td></tr>
+                                     <tr class="border-b"><th scope="row">Sales Tax (6%)</th><td id="tax-3m">$0.00</td><td id="tax-6m">$0.00</td><td id="tax-annual" class="annual-col">$0.00</td></tr>
+                                     <tr class="border-b"><th scope="row" class="highlight">Cost / Box</th><td id="cost-per-box-3m" class="highlight">$0.00</td><td id="cost-per-box-6m" class="highlight">$0.00</td><td id="cost-per-box-annual" class="annual-col highlight">$0.00</td></tr>
                                      <tr class="border-b"><th scope="row" class="highlight">Exams Total</th><td colspan="3" id="exam-total-display" class="text-center highlight">$0.00</td></tr>
-                                      <tr><th scope="row" class="highlight pt-4">Today's Total (w/ Tax)</th><td id="final-3m" class="highlight final-total pt-4">$0.00</td><td id="final-6m" class="highlight final-total pt-4">$0.00</td><td id="final-annual" class="highlight final-total annual-col rounded-b-lg pt-4 text-xl">$0.00</td></tr>
+                                     <tr><th scope="row" class="highlight pt-4">Today's Total (w/ Tax)</th><td id="final-3m" class="highlight final-total pt-4">$0.00</td><td id="final-6m" class="highlight final-total pt-4">$0.00</td><td id="final-annual" class="highlight final-total annual-col rounded-b-lg pt-4 text-xl">$0.00</td></tr>
                                  </tbody>
                              </table>
                         </div>
@@ -360,10 +362,10 @@
         }
     };
 
-    function calculateItem(retail, insAllow, discount, copay) {
+    function calculateItem(retail, insAllow, discount, copay, isCopayOnly = false) {
         let finalCost, yourCost, insSvgs;
 
-        if (insAllow === 0 && discount === 0 && copay > 0) {
+        if (isCopayOnly) {
             finalCost = copay;
             yourCost = 0; 
             insSvgs = retail - finalCost;
@@ -459,6 +461,14 @@
             const selectedItem = examListData.find(p => p.exam_type === selectedValue);
             if (!selectedItem) return;
 
+            const allowanceEl = document.getElementById(`allowance-${catId}`);
+            const discountEl = document.getElementById(`discount-${catId}`);
+            const copayEl = document.getElementById(`copay-${catId}`);
+            const allowanceIsSet = allowanceEl && allowanceEl.value !== '';
+            const discountIsSet = discountEl && discountEl.value !== '';
+            const copayIsSet = copayEl && copayEl.value !== '';
+            const isCopayOnly = !allowanceIsSet && !discountIsSet && copayIsSet;
+
             const inputs = {
                 retail: selectedItem.price_retail,
                 insAllow: getCleanValue(`allowance-${catId}`),
@@ -466,7 +476,7 @@
                 copay: getCleanValue(`copay-${catId}`),
             };
 
-            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay);
+            const calc = calculateItem(inputs.retail, inputs.insAllow, inputs.discount, inputs.copay, isCopayOnly);
             totalExamCost += calc.finalCost;
             totalExamRetail += inputs.retail;
             totalExamInsSvgs += calc.insSvgs;
@@ -504,6 +514,11 @@
 
         const wearerType = $('input[name="wearer-type"]:checked').val();
         const visionBenefit = getCleanValue('vision-plan-benefit');
+
+        // MODIFIED: Update the new Vision Plan Benefit row in the table
+        $('#benefit-3m').text(`-${formatCurrency(visionBenefit)}`);
+        $('#benefit-6m').text(`-${formatCurrency(visionBenefit)}`);
+        $('#benefit-annual').text(`-${formatCurrency(visionBenefit)}`);
 
         $('#price-per-box').text(formatCurrency(lens.price_per_box));
         $('#lens-type-display').text(lens.type || 'N/A');
@@ -569,6 +584,8 @@
         ['3m', '6m', 'annual'].forEach(d => {
             $(`#boxes-${d}`).text('0');
             $(`#total-${d}`).text('$0.00');
+            // MODIFIED: Reset the new benefit row
+            $(`#benefit-${d}`).text('-$0.00');
             $(`#rebate-${d}`).text('-$0.00');
             $(`#discount-${d}`).text('-$0.00');
             $(`#tax-${d}`).text('$0.00');
