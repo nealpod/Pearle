@@ -264,7 +264,6 @@
                                      <tr class="border-b"><th scope="row">No. of Boxes</th><td id="boxes-3m">0</td><td id="boxes-6m">0</td><td id="boxes-annual" class="annual-col">0</td></tr>
                                      <tr class="border-b"><th scope="row">Price / Box</th><td colspan="3" id="price-per-box" class="text-center font-semibold text-gray-700"></td></tr>
                                      <tr class="border-b"><th scope="row">Total Cost</th><td id="total-3m">$0.00</td><td id="total-6m">$0.00</td><td id="total-annual" class="annual-col">$0.00</td></tr>
-                                     <!-- MODIFIED: Added Vision Plan Benefit row -->
                                      <tr class="border-b"><th scope="row" class="savings">Vision Plan Benefit</th><td id="benefit-3m" class="savings">-$0.00</td><td id="benefit-6m" class="savings">-$0.00</td><td id="benefit-annual" class="annual-col savings">-$0.00</td></tr>
                                      <tr class="border-b"><th scope="row" class="savings">Mfr. Mail in Rebate</th><td id="rebate-3m" class="savings">-$0.00</td><td id="rebate-6m" class="savings">-$0.00</td><td id="rebate-annual" class="annual-col savings">-$0.00</td></tr>
                                      <tr class="border-b"><th scope="row" class="savings">Store Discount (5%)</th><td id="discount-3m" class="savings">-$0.00</td><td id="discount-6m" class="savings">-$0.00</td><td id="discount-annual" class="annual-col savings">-$0.00</td></tr>
@@ -279,8 +278,16 @@
                 </div>
              </div>
              
+             <!-- MODIFIED: Added Customer Approval Checkbox -->
+             <div class="mt-8 flex justify-center">
+                <div class="flex items-center">
+                    <input id="customer-approval-checkbox" name="customer-approval" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                    <label for="customer-approval-checkbox" class="ml-2 block text-sm text-gray-900">I have reviewed the charges and approve this quote.</label>
+                </div>
+            </div>
+
              <!-- Page Actions -->
-             <div class="mt-8 pt-6 border-t border-gray-200 flex justify-center">
+             <div class="mt-4 pt-6 border-t border-gray-200 flex justify-center">
                  <div class="flex space-x-4 w-full md:w-2/3 lg:w-1/2">
                      <button id="reset-button" class="btn btn-secondary w-full py-3 text-base">Reset</button>
                      <button id="save-quote-button" class="btn btn-primary w-full py-3 text-base" disabled>Save Quote</button>
@@ -496,7 +503,9 @@
         $('#exam-total-display').text(formatCurrency(totalExamCost));
         
         const selectedSupply = document.querySelector('input[name="supply-option"]:checked');
-        saveQuoteBtn.disabled = !selectedSupply;
+        // MODIFIED: Also check for customer approval
+        const isApproved = document.getElementById('customer-approval-checkbox').checked;
+        saveQuoteBtn.disabled = !selectedSupply || !isApproved;
 
 
         if (!selectedLensId) {
@@ -515,7 +524,6 @@
         const wearerType = $('input[name="wearer-type"]:checked').val();
         const visionBenefit = getCleanValue('vision-plan-benefit');
 
-        // MODIFIED: Update the new Vision Plan Benefit row in the table
         $('#benefit-3m').text(`-${formatCurrency(visionBenefit)}`);
         $('#benefit-6m').text(`-${formatCurrency(visionBenefit)}`);
         $('#benefit-annual').text(`-${formatCurrency(visionBenefit)}`);
@@ -584,7 +592,6 @@
         ['3m', '6m', 'annual'].forEach(d => {
             $(`#boxes-${d}`).text('0');
             $(`#total-${d}`).text('$0.00');
-            // MODIFIED: Reset the new benefit row
             $(`#benefit-${d}`).text('-$0.00');
             $(`#rebate-${d}`).text('-$0.00');
             $(`#discount-${d}`).text('-$0.00');
@@ -614,6 +621,9 @@
         
         // Uncheck all supply options
         document.querySelectorAll('input[name="supply-option"]').forEach(radio => radio.checked = false);
+        
+        // MODIFIED: Uncheck the approval checkbox
+        document.getElementById('customer-approval-checkbox').checked = false;
 
         calculate();
     }
@@ -637,6 +647,13 @@
             return;
         }
 
+        // MODIFIED: Final check for approval before saving
+        const isApproved = document.getElementById('customer-approval-checkbox').checked;
+        if (!isApproved) {
+            alert("Please have the customer approve the quote by checking the box before saving.");
+            return;
+        }
+
         const lens = contactLensDatabase.find(l => l.id == $('#contact-lens-select').val());
         if (!lens) {
             alert("Please select a contact lens brand.");
@@ -655,7 +672,8 @@
             supply: `${selectedSupply} supply`,
             lens_brand: lens.name,
             exams: [],
-            vision_benefit: getCleanValue('vision-plan-benefit')
+            vision_benefit: getCleanValue('vision-plan-benefit'),
+            customer_approved: isApproved // Log the approval state
         };
         
         examCategories.forEach(cat => {
@@ -697,7 +715,7 @@
     // MODIFIED: Centralized event listener function
     function attachEventListeners() {
         // Use a single selector to grab all inputs that need formatting or calculation
-        document.querySelectorAll('.config-input, .config-option, #customer-name, #insurance-type-select, input[name="supply-option"], #vision-plan-benefit').forEach(el => {
+        document.querySelectorAll('.config-input, .config-option, #customer-name, #insurance-type-select, input[name="supply-option"], #vision-plan-benefit, #customer-approval-checkbox').forEach(el => {
             el.addEventListener('input', calculate);
             el.addEventListener('change', calculate); // For selects and radios
 
