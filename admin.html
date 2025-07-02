@@ -345,6 +345,7 @@
         window.location.href = './index.html'; 
     });
 
+    // MODIFIED: This form now calls Edge Functions
     itemForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const submitButton = itemForm.querySelector('button[type="submit"]');
@@ -360,11 +361,13 @@
         
         let error;
         if (id) {
+            // Update existing item
             const { error: updateError } = await supabase.functions.invoke('update-component', {
                 body: { id: id, itemData: itemData }
             });
             error = updateError;
         } else {
+            // Create new item
             const { error: createError } = await supabase.functions.invoke('create-component', {
                 body: { itemData: itemData }
             });
