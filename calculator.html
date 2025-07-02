@@ -157,7 +157,6 @@
                                 <option>Other Insurance</option>
                                 <option>VSP</option>
                                 <option>Declining Balance</option>
-                                <!-- ADDED: New insurance options -->
                                 <option>No Insurance</option>
                                 <option>Second Pair</option>
                             </select>
@@ -172,7 +171,6 @@
                                 <input type="text" inputmode="decimal" id="global-discount" placeholder="Discount" class="config-input percent-format w-full border-gray-300 rounded-md shadow-sm text-sm">
                             </div>
                         </div>
-                        <!-- ADDED: Global discount section for No Insurance / Second Pair -->
                         <div id="global-discount-section" class="md:col-span-2 grid grid-cols-1 gap-2 input-group" style="display: none;">
                             <div class="space-y-1">
                                 <label for="global-discount-input" class="block text-sm font-medium text-gray-700">Global Discount</label>
@@ -182,7 +180,6 @@
                     </div>
                 </div>
 
-                <!-- ADDED: ID to this container for easy show/hide -->
                 <div id="exams-section-container" class="bg-white p-6 rounded-lg shadow">
                     <h3 class="text-xl font-semibold mb-4 border-b pb-2">Exams</h3>
                     <div id="exam-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -238,9 +235,15 @@
                         <span id="summary-final-cost" class="text-2xl font-bold summary-total-final">$0.00</span>
                     </div>
 
-                    <div class="mt-6 flex space-x-2">
+                    <!-- MODIFIED: Added Customer Approval Checkbox -->
+                    <div class="mt-6 flex items-center justify-center">
+                        <input id="customer-approval-checkbox" name="customer-approval" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
+                        <label for="customer-approval-checkbox" class="ml-2 block text-sm text-gray-900">I have reviewed and approve the charges.</label>
+                    </div>
+
+                    <div class="mt-4 flex space-x-2">
                         <button id="reset-button" class="btn btn-secondary w-full">Reset</button>
-                        <button id="save-quote-button" class="btn btn-primary w-full">Save Quote</button>
+                        <button id="save-quote-button" class="btn btn-primary w-full" disabled>Save Quote</button>
                     </div>
                 </div>
             </div>
@@ -583,7 +586,8 @@
     }
 
     function attachEventListeners() {
-        document.querySelectorAll('.config-option, .config-input').forEach(el => {
+        // MODIFIED: Added approval checkbox to the selector
+        document.querySelectorAll('.config-option, .config-input, #customer-approval-checkbox').forEach(el => {
             el.removeEventListener('input', updateCalculations);
             el.addEventListener('input', updateCalculations);
             if (el.classList.contains('dollar-format') || el.classList.contains('percent-format')) {
@@ -668,18 +672,14 @@
         }
     }
 
-    // --- MODIFIED: Added isCopayOnly parameter to handle the new logic ---
     function calculateItem(retail, insAllow, discount, copay, isFrame = false, isCopayOnly = false) {
         let finalCost, yourCost, insSvgs;
 
-        // If only the copay field was entered, that value becomes the final cost.
-        // This correctly handles when a user enters "0" for the copay.
         if (isCopayOnly) {
             finalCost = copay;
             yourCost = 0; 
             insSvgs = retail - finalCost;
         } else { 
-            // Original calculation logic
             if (isFrame) {
                  yourCost = (retail - insAllow) * (1 - (discount / 100));
             } else {
@@ -704,6 +704,11 @@
         const isNoInsurance = (insuranceType === 'No Insurance');
         const isSecondPair = (insuranceType === 'Second Pair');
         const isGlobalDiscountScenario = isNoInsurance || isSecondPair;
+
+        // MODIFIED: Check approval status to enable/disable save button
+        const isApproved = document.getElementById('customer-approval-checkbox').checked;
+        const saveQuoteBtn = document.getElementById('save-quote-button');
+        saveQuoteBtn.disabled = !isApproved;
 
 
         let totalRetail = 0, totalInsSvgs = 0, totalFinalCost = 0;
@@ -800,7 +805,6 @@
             const selectedItem = examListData.find(p => p.exam_type === selectedValue);
             if (!selectedItem) return;
 
-            // --- MODIFIED: Check if only the copay field is set ---
             const allowanceEl = document.getElementById(`allowance-${catId}`);
             const discountEl = document.getElementById(`discount-${catId}`);
             const copayEl = document.getElementById(`copay-${catId}`);
@@ -847,7 +851,6 @@
                 frameInputs.discount = 0;
             }
             
-            // Frame calculation is different and doesn't have a "copay-only" scenario.
             const frameCalc = calculateItem(frameInputs.retail, frameInputs.insAllow, frameInputs.discount, frameInputs.copay, true, false);
             if (frameCalc.isError && !errorFound) {
                 errorFound = true;
@@ -888,7 +891,6 @@
             const selectedItem = priceListData.find(p => p.Item === selectedValue);
             if (!selectedItem) return;
 
-            // --- MODIFIED: Check if only the copay field is set ---
             const allowanceEl = document.getElementById(`allowance-${catId}`);
             const discountEl = document.getElementById(`discount-${catId}`);
             const copayEl = document.getElementById(`copay-${catId}`);
@@ -943,7 +945,6 @@
             const selectedItem = priceListData.find(p => p.Item === itemName);
             if (!selectedItem) return;
 
-            // --- MODIFIED: Check if only the copay field is set ---
             const allowanceEl = document.getElementById(`allowance-addon-${rowId}`);
             const discountEl = document.getElementById(`discount-addon-${rowId}`);
             const copayEl = document.getElementById(`copay-addon-${rowId}`);
@@ -1145,6 +1146,9 @@
             }
         });
 
+        // MODIFIED: Uncheck the approval checkbox on reset
+        document.getElementById('customer-approval-checkbox').checked = false;
+
         document.getElementById('addons-repeater-container').innerHTML = '';
         addonCounter = 0; 
 
@@ -1169,12 +1173,20 @@
             return;
         }
 
+        // MODIFIED: Final check for approval before saving
+        const isApproved = document.getElementById('customer-approval-checkbox').checked;
+        if (!isApproved) {
+            alert("Please have the customer approve the quote by checking the box before saving.");
+            return;
+        }
+
         // Gather all selected items for the detailed quote
         const quoteDetails = {
             exams: [],
             frame: {},
             lenses: {},
-            addOns: []
+            addOns: [],
+            customer_approved: isApproved // Log the approval state
         };
 
         // Get exam details
