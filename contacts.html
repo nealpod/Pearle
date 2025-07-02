@@ -278,7 +278,6 @@
                 </div>
              </div>
              
-             <!-- MODIFIED: Added Customer Approval Checkbox -->
              <div class="mt-8 flex justify-center">
                 <div class="flex items-center">
                     <input id="customer-approval-checkbox" name="customer-approval" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
@@ -450,9 +449,9 @@
         
         examCategories.forEach(cat => {
             const catId = cat.id;
-            const priceEl = document.getElementById(`price-${catId}`);
+            const priceEl = document.getElementById(`price-${cat.id}`);
             let selectedValue;
-            const checkbox = document.getElementById(`checkbox-${catId}`);
+            const checkbox = document.getElementById(`checkbox-${cat.id}`);
             if (checkbox) {
                 if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
             } else {
@@ -503,7 +502,6 @@
         $('#exam-total-display').text(formatCurrency(totalExamCost));
         
         const selectedSupply = document.querySelector('input[name="supply-option"]:checked');
-        // MODIFIED: Also check for customer approval
         const isApproved = document.getElementById('customer-approval-checkbox').checked;
         saveQuoteBtn.disabled = !selectedSupply || !isApproved;
 
@@ -541,7 +539,7 @@
 
         // --- 3 Months ---
         const total3m = lens.price_per_box * boxes_3m;
-        const rebate3m = lens.new_wearer_rebate_three || 0;
+        const rebate3m = wearerType === 'current' ? (lens.old_wearer_rebate_three || 0) : (lens.new_wearer_rebate_three || 0);
         const discount3m = 0;
         const tax3m = total3m * TAX_RATE;
         const final3m = Math.max(0, total3m - visionBenefit - discount3m) + tax3m + totalExamCost;
@@ -556,7 +554,7 @@
 
         // --- 6 Months ---
         const total6m = lens.price_per_box * boxes_6m;
-        const rebate6m = lens.new_wearer_rebate_six || 0;
+        const rebate6m = wearerType === 'current' ? (lens.old_wearer_rebate_six || 0) : (lens.new_wearer_rebate_six || 0);
         const discount6m = 0;
         const tax6m = total6m * TAX_RATE;
         const final6m = Math.max(0, total6m - visionBenefit - discount6m) + tax6m + totalExamCost;
@@ -622,7 +620,6 @@
         // Uncheck all supply options
         document.querySelectorAll('input[name="supply-option"]').forEach(radio => radio.checked = false);
         
-        // MODIFIED: Uncheck the approval checkbox
         document.getElementById('customer-approval-checkbox').checked = false;
 
         calculate();
@@ -647,7 +644,6 @@
             return;
         }
 
-        // MODIFIED: Final check for approval before saving
         const isApproved = document.getElementById('customer-approval-checkbox').checked;
         if (!isApproved) {
             alert("Please have the customer approve the quote by checking the box before saving.");
@@ -712,7 +708,6 @@
         }
     }
 
-    // MODIFIED: Centralized event listener function
     function attachEventListeners() {
         // Use a single selector to grab all inputs that need formatting or calculation
         document.querySelectorAll('.config-input, .config-option, #customer-name, #insurance-type-select, input[name="supply-option"], #vision-plan-benefit, #customer-approval-checkbox').forEach(el => {
@@ -732,7 +727,8 @@
 
 
     async function initializeApp() {
-        const contactsPromise = supabase.from('contacts').select('id, contact_name, price, number_of_contacts_three_months, number_of_contacts_six_months, number_of_contacts_one_year, new_wearer_rebate_three, new_wearer_rebate_six, new_wearer_rebate_annual, old_wearer_rebate_annual, contact_type');
+        // MODIFIED: Added old_wearer_rebate_three and old_wearer_rebate_six to the select query
+        const contactsPromise = supabase.from('contacts').select('id, contact_name, price, number_of_contacts_three_months, number_of_contacts_six_months, number_of_contacts_one_year, new_wearer_rebate_three, new_wearer_rebate_six, new_wearer_rebate_annual, old_wearer_rebate_annual, old_wearer_rebate_three, old_wearer_rebate_six, contact_type');
         const examsPromise = supabase.from('exams').select('*').eq('is_active', true);
 
         const [contactsResult, examsResult] = await Promise.all([contactsPromise, examsPromise]);
@@ -755,6 +751,9 @@
             new_wearer_rebate_six: item.new_wearer_rebate_six,
             new_wearer_rebate_annual: item.new_wearer_rebate_annual,
             old_wearer_rebate_annual: item.old_wearer_rebate_annual,
+            // MODIFIED: Added the new rebate fields to the data mapping
+            old_wearer_rebate_three: item.old_wearer_rebate_three,
+            old_wearer_rebate_six: item.old_wearer_rebate_six,
             type: item.contact_type,
         }));
         select2Data = contactLensDatabase.map(lens => ({ id: lens.id, text: lens.name }));
