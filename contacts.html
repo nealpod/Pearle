@@ -320,7 +320,7 @@
                 <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2 !text-black">Benefits of Purchasing an Annual Supply with Us</h3>
             </div>
             <div class="mt-4 px-2 py-3 text-left overflow-y-auto flex-grow">
-                <ul class="list-disc list-inside space-y-2 text-gray-700 !text-black min-h-[100px]">
+                <ul class="list-disc list-inside space-y-2 text-gray-700 !text-black">
                     <li>**Convenience:** Purchasing your annual supply today gives you all of the lenses you need until your next exam.</li>
                     <li>**Flexibility:** You can return or exchange unopened boxes if your prescription changes during the year.</li>
                     <li>**Great Value:** Purchasing directly from your doctor offers you competitive pricing and exclusive savings!</li>
@@ -765,6 +765,7 @@
 
         // NEWLY ADDED: Event listeners for the benefits modal
         document.getElementById('benefits-info-button').addEventListener('click', () => {
+            console.log("Benefits info button clicked!"); // Debugging log
             document.getElementById('benefits-modal').classList.remove('hidden');
         });
 
