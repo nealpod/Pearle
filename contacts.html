@@ -189,7 +189,7 @@
                             <label for="insurance-type-select" class="block text-sm font-medium text-gray-700">Insurance</label>
                             <select id="insurance-type-select" class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500">
                                 <option>Other Insurance</option>
-                                <option>VSP</option>
+                                <option>VSP</soption>
                                 <option>Declining Balance</option>
                             </select>
                         </div>
@@ -320,7 +320,7 @@
                 </div>
                 <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2" style="color: black !important;">Benefits of Purchasing an Annual Supply with Us</h3>
             </div>
-            <div class="mt-4 px-2 py-3 text-left flex-grow" style="color: black !important;">
+            <div class="mt-4 px-2 py-3 text-left flex-grow">
                 <ul class="list-disc list-inside space-y-2">
                     <li style="color: black !important;">**Convenience:** Purchasing your annual supply today gives you all of the lenses you need until your next exam.</li>
                     <li style="color: black !important;">**Flexibility:** You can return or exchange unopened boxes if your prescription changes during the year.</li>
@@ -767,11 +767,26 @@
         // NEWLY ADDED: Event listeners for the benefits modal
         document.getElementById('benefits-info-button').addEventListener('click', () => {
             console.log("Benefits info button clicked!"); // Debugging log
-            document.getElementById('benefits-modal').classList.remove('hidden');
+            const benefitsModal = document.getElementById('benefits-modal');
+            if (benefitsModal) {
+                benefitsModal.classList.remove('hidden'); // Ensure hidden class is removed
+                benefitsModal.style.display = 'flex'; // Explicitly set display to flex
+                console.log("Modal display set to flex. Current display:", benefitsModal.style.display);
+            } else {
+                console.error("Benefits modal element not found!");
+            }
         });
 
         document.getElementById('close-benefits-modal-btn').addEventListener('click', () => {
-            document.getElementById('benefits-modal').classList.add('hidden');
+            console.log("Close benefits modal button clicked!"); // Debugging log
+            const benefitsModal = document.getElementById('benefits-modal');
+            if (benefitsModal) {
+                benefitsModal.classList.add('hidden'); // Add hidden class back
+                benefitsModal.style.display = 'none'; // Explicitly set display to none
+                console.log("Modal display set to none. Current display:", benefitsModal.style.display);
+            } else {
+                console.error("Benefits modal element not found for closing!");
+            }
         });
     }
 
@@ -781,7 +796,7 @@
         const contactsPromise = supabase.from('contacts').select('id, contact_name, price, number_of_contacts_three_months, number_of_contacts_six_months, number_of_contacts_one_year, new_wearer_rebate_three, new_wearer_rebate_six, new_wearer_rebate_annual, old_wearer_rebate_annual, old_wearer_rebate_three, old_wearer_rebate_six, contact_type');
         const examsPromise = supabase.from('exams').select('*').eq('is_active', true);
 
-        const [contactsResult, examsResult] = await Promise.all([contactsPromise, examsResult]);
+        const [contactsResult, examsResult] = await Promise.all([contactsPromise, examsPromise]);
 
         if (contactsResult.error || examsResult.error) {
             const errorMsg = contactsResult.error?.message || examsResult.error?.message;
