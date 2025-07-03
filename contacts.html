@@ -311,23 +311,38 @@
     <!-- Benefits Modal - NEWLY ADDED -->
     <div id="benefits-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50 flex items-center justify-center">
         <div class="relative bg-white p-5 border w-full max-w-md shadow-lg rounded-md flex flex-col max-h-[90vh]">
+            <style>
+                /* Specific styles for the benefits modal content to ensure visibility */
+                #benefits-modal h3,
+                #benefits-modal ul,
+                #benefits-modal li {
+                    color: #000000 !important; /* Ensure black text */
+                }
+                #benefits-modal button {
+                    color: #ffffff !important; /* Ensure white text for button */
+                }
+                #benefits-modal .benefits-icon {
+                    color: var(--pearl-green); /* Ensure icon color */
+                }
+            </style>
             <div class="mt-3 text-center flex-shrink-0">
                 <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-pearl-light-green">
-                    <svg class="h-6 w-6 text-pearl-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    <!-- Inline SVG for clarity and to avoid external rendering issues -->
+                    <svg class="h-6 w-6 benefits-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2" style="color: black !important;">Benefits of Purchasing an Annual Supply with Us</h3>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Benefits of Purchasing an Annual Supply with Us</h3>
             </div>
             <div class="mt-4 px-2 py-3 text-left overflow-y-auto flex-grow">
-                <ul class="list-disc list-inside space-y-2 text-gray-700" style="color: black !important;">
+                <ul class="list-disc list-inside space-y-2 text-gray-700">
                     <li>**Convenience:** Purchasing your annual supply today gives you all of the lenses you need until your next exam.</li>
                     <li>**Flexibility:** You can return or exchange unopened boxes if your prescription changes during the year.</li>
                     <li>**Great Value:** Purchasing directly from your doctor offers you competitive pricing and exclusive savings!</li>
                 </ul>
             </div>
             <div class="items-center px-4 py-3 flex-shrink-0">
-                <button id="close-benefits-modal-btn" class="px-4 py-2 bg-pearl-green text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-pearl-dark-green focus:outline-none focus:ring-2 focus:ring-pearl-green" style="color: white !important;">
+                <button id="close-benefits-modal-btn" class="px-4 py-2 bg-pearl-green text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-pearl-dark-green focus:outline-none focus:ring-2 focus:ring-pearl-green">
                     Got It!
                 </button>
             </div>
