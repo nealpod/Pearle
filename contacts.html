@@ -239,40 +239,55 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Why Purchase From Us Card - NEWLY ADDED -->
+                    <div class="bg-white p-6 rounded-lg shadow mt-8">
+                        <div class="flex items-center justify-between mb-2">
+                            <h2 class="text-xl font-semibold text-gray-800">Why Purchase From Us?</h2>
+                            <button id="benefits-info-button" class="text-pearl-green hover:text-pearl-dark-green focus:outline-none flex items-center space-x-1">
+                                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span class="text-sm font-medium hidden sm:inline">Learn More</span>
+                            </button>
+                        </div>
+                        <p class="text-gray-600 text-sm">Discover the exclusive advantages of buying your annual contact lens supply directly from us.</p>
+                    </div>
+
                 </div>
 
                 <!-- Right Column: Quote Summary -->
                 <div class="lg:col-span-3">
                     <div class="bg-white p-6 rounded-lg shadow h-full">
                         <div id="summary-container" class="opacity-25 transition-opacity duration-300">
-                             <table class="w-full results-table text-sm">
-                                 <thead>
-                                     <tr class="border-b">
-                                         <th></th>
-                                         <th class="font-semibold">3 MONTH</th>
-                                         <th class="font-semibold">6 MONTH</th>
-                                         <th class="font-bold text-green-700 annual-col rounded-t-lg">ANNUAL</th>
-                                     </tr>
-                                     <tr class="border-b">
-                                        <th class="text-left">Select Supply</th>
-                                        <td class="supply-option-cell"><input type="radio" name="supply-option" value="3m" class="h-5 w-5"></td>
-                                        <td class="supply-option-cell"><input type="radio" name="supply-option" value="6m" class="h-5 w-5"></td>
-                                        <td class="supply-option-cell annual-col"><input type="radio" name="supply-option" value="annual" class="h-5 w-5"></td>
-                                     </tr>
-                                 </thead>
-                                 <tbody>
-                                     <tr class="border-b"><th scope="row">No. of Boxes</th><td id="boxes-3m">0</td><td id="boxes-6m">0</td><td id="boxes-annual" class="annual-col">0</td></tr>
-                                     <tr class="border-b"><th scope="row">Price / Box</th><td colspan="3" id="price-per-box" class="text-center font-semibold text-gray-700"></td></tr>
-                                     <tr class="border-b"><th scope="row">Total Cost</th><td id="total-3m">$0.00</td><td id="total-6m">$0.00</td><td id="total-annual" class="annual-col">$0.00</td></tr>
-                                     <tr class="border-b"><th scope="row" class="savings">Vision Plan Benefit</th><td id="benefit-3m" class="savings">-$0.00</td><td id="benefit-6m" class="savings">-$0.00</td><td id="benefit-annual" class="annual-col savings">-$0.00</td></tr>
-                                     <tr class="border-b"><th scope="row" class="savings">Mfr. Mail in Rebate</th><td id="rebate-3m" class="savings">-$0.00</td><td id="rebate-6m" class="savings">-$0.00</td><td id="rebate-annual" class="annual-col savings">-$0.00</td></tr>
-                                     <tr class="border-b"><th scope="row" class="savings">Store Discount (5%)</th><td id="discount-3m" class="savings">-$0.00</td><td id="discount-6m" class="savings">-$0.00</td><td id="discount-annual" class="annual-col savings">-$0.00</td></tr>
-                                     <tr class="border-b"><th scope="row">Sales Tax (6%)</th><td id="tax-3m">$0.00</td><td id="tax-6m">$0.00</td><td id="tax-annual" class="annual-col">$0.00</td></tr>
-                                     <tr class="border-b"><th scope="row" class="highlight">Cost / Box</th><td id="cost-per-box-3m" class="highlight">$0.00</td><td id="cost-per-box-6m" class="highlight">$0.00</td><td id="cost-per-box-annual" class="annual-col highlight">$0.00</td></tr>
-                                     <tr class="border-b"><th scope="row" class="highlight">Exams Total</th><td colspan="3" id="exam-total-display" class="text-center highlight">$0.00</td></tr>
-                                     <tr><th scope="row" class="highlight pt-4">Today's Total (w/ Tax)</th><td id="final-3m" class="highlight final-total pt-4">$0.00</td><td id="final-6m" class="highlight final-total pt-4">$0.00</td><td id="final-annual" class="highlight final-total annual-col rounded-b-lg pt-4 text-xl">$0.00</td></tr>
-                                 </tbody>
-                             </table>
+                               <table class="w-full results-table text-sm">
+                                   <thead>
+                                       <tr class="border-b">
+                                           <th></th>
+                                           <th class="font-semibold">3 MONTH</th>
+                                           <th class="font-semibold">6 MONTH</th>
+                                           <th class="font-bold text-green-700 annual-col rounded-t-lg">ANNUAL</th>
+                                       </tr>
+                                       <tr class="border-b">
+                                            <th class="text-left">Select Supply</th>
+                                            <td class="supply-option-cell"><input type="radio" name="supply-option" value="3m" class="h-5 w-5"></td>
+                                            <td class="supply-option-cell"><input type="radio" name="supply-option" value="6m" class="h-5 w-5"></td>
+                                            <td class="supply-option-cell annual-col"><input type="radio" name="supply-option" value="annual" class="h-5 w-5"></td>
+                                       </tr>
+                                   </thead>
+                                   <tbody>
+                                       <tr class="border-b"><th scope="row">No. of Boxes</th><td id="boxes-3m">0</td><td id="boxes-6m">0</td><td id="boxes-annual" class="annual-col">0</td></tr>
+                                       <tr class="border-b"><th scope="row">Price / Box</th><td colspan="3" id="price-per-box" class="text-center font-semibold text-gray-700"></td></tr>
+                                       <tr class="border-b"><th scope="row">Total Cost</th><td id="total-3m">$0.00</td><td id="total-6m">$0.00</td><td id="total-annual" class="annual-col">$0.00</td></tr>
+                                       <tr class="border-b"><th scope="row" class="savings">Vision Plan Benefit</th><td id="benefit-3m" class="savings">-$0.00</td><td id="benefit-6m" class="savings">-$0.00</td><td id="benefit-annual" class="annual-col savings">-$0.00</td></tr>
+                                       <tr class="border-b"><th scope="row" class="savings">Mfr. Mail in Rebate</th><td id="rebate-3m" class="savings">-$0.00</td><td id="rebate-6m" class="savings">-$0.00</td><td id="rebate-annual" class="annual-col savings">-$0.00</td></tr>
+                                       <tr class="border-b"><th scope="row" class="savings">Store Discount (5%)</th><td id="discount-3m" class="savings">-$0.00</td><td id="discount-6m" class="savings">-$0.00</td><td id="discount-annual" class="annual-col savings">-$0.00</td></tr>
+                                       <tr class="border-b"><th scope="row">Sales Tax (6%)</th><td id="tax-3m">$0.00</td><td id="tax-6m">$0.00</td><td id="tax-annual" class="annual-col">$0.00</td></tr>
+                                       <tr class="border-b"><th scope="row" class="highlight">Cost / Box</th><td id="cost-per-box-3m" class="highlight">$0.00</td><td id="cost-per-box-6m" class="highlight">$0.00</td><td id="cost-per-box-annual" class="annual-col highlight">$0.00</td></tr>
+                                       <tr class="border-b"><th scope="row" class="highlight">Exams Total</th><td colspan="3" id="exam-total-display" class="text-center highlight">$0.00</td></tr>
+                                       <tr><th scope="row" class="highlight pt-4">Today's Total (w/ Tax)</th><td id="final-3m" class="highlight final-total pt-4">$0.00</td><td id="final-6m" class="highlight final-total pt-4">$0.00</td><td id="final-annual" class="highlight final-total annual-col rounded-b-lg pt-4 text-xl">$0.00</td></tr>
+                                   </tbody>
+                               </table>
                         </div>
                     </div>
                 </div>
@@ -294,6 +309,32 @@
              </div>
         </div>
     </main>
+
+    <!-- Benefits Modal - NEWLY ADDED -->
+    <div id="benefits-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-pearl-light-green">
+                    <svg class="h-6 w-6 text-pearl-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Benefits of Purchasing an Annual Supply with Us</h3>
+                <div class="mt-4 px-2 py-3 text-left">
+                    <ul class="list-disc list-inside space-y-2 text-gray-700">
+                        <li>**Convenience:** Purchasing your annual supply today gives you all of the lenses you need until your next exam.</li>
+                        <li>**Flexibility:** You can return or exchange unopened boxes if your prescription changes during the year.</li>
+                        <li>**Great Value:** Purchasing directly from your doctor offers you competitive pricing and exclusive savings!</li>
+                    </ul>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-benefits-modal-btn" class="px-4 py-2 bg-pearl-green text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-pearl-dark-green focus:outline-none focus:ring-2 focus:ring-pearl-green">
+                        Got It!
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Error Modal -->
     <div id="error-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
@@ -411,11 +452,11 @@
                 if (!singleOption) return;
                 container.innerHTML = `
                     <div class="component-label">
-                         <label class="flex items-center cursor-pointer">
-                             <input type="checkbox" id="checkbox-${cat.id}" data-item-name="${singleOption.exam_type}" class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
-                             <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
-                         </label>
-                         <span id="price-${cat.id}" class="component-price"></span>
+                            <label class="flex items-center cursor-pointer">
+                                <input type="checkbox" id="checkbox-${cat.id}" data-item-name="${singleOption.exam_type}" class="config-option h-4 w-4 text-green-600 border-gray-300 rounded focus:ring-green-500">
+                                <span class="ml-2 font-medium text-gray-700">${cat.label}</span>
+                            </label>
+                            <span id="price-${cat.id}" class="component-price"></span>
                     </div>
                 `;
             }
@@ -455,8 +496,8 @@
             if (checkbox) {
                 if(checkbox.checked) selectedValue = checkbox.dataset.itemName;
             } else {
-                 const select = document.getElementById(`select-${cat.id}`);
-                 if (select) selectedValue = select.value;
+                const select = document.getElementById(`select-${cat.id}`);
+                if (select) selectedValue = select.value;
             }
 
             if (!selectedValue || selectedValue === "None") {
@@ -628,31 +669,31 @@
     async function saveQuote() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user || !selectedStore) {
-            alert("Error: Not logged in or no store selected.");
+            showErrorModal("Error: Not logged in or no store selected.");
             return;
         }
 
         const customerName = document.getElementById('customer-name').value;
         if (!customerName) {
-            alert("Please enter a customer name before saving.");
+            showErrorModal("Please enter a customer name before saving.");
             return;
         }
         
         const selectedSupply = document.querySelector('input[name="supply-option"]:checked')?.value;
         if (!selectedSupply) {
-            alert("Please select a supply option (3-month, 6-month, or annual) before saving.");
+            showErrorModal("Please select a supply option (3-month, 6-month, or annual) before saving.");
             return;
         }
 
         const isApproved = document.getElementById('customer-approval-checkbox').checked;
         if (!isApproved) {
-            alert("Please have the customer approve the quote by checking the box before saving.");
+            showErrorModal("Please have the customer approve the quote by checking the box before saving.");
             return;
         }
 
         const lens = contactLensDatabase.find(l => l.id == $('#contact-lens-select').val());
         if (!lens) {
-            alert("Please select a contact lens brand.");
+            showErrorModal("Please select a contact lens brand.");
             return;
         }
 
@@ -701,9 +742,9 @@
 
         if (error) {
             console.error('Error saving quote:', error);
-            alert('There was an error saving the quote. Please try again.');
+            showErrorModal('There was an error saving the quote. Please try again.');
         } else {
-            alert('Quote saved successfully!');
+            showErrorModal('Quote saved successfully!'); // Changed from alert to modal
             resetCalculator();
         }
     }
@@ -723,6 +764,15 @@
 
         // jQuery listeners for Select2 and wearer type toggle
         $('#contact-lens-select, input[name="wearer-type"]').on('change', calculate);
+
+        // NEWLY ADDED: Event listeners for the benefits modal
+        document.getElementById('benefits-info-button').addEventListener('click', () => {
+            document.getElementById('benefits-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('close-benefits-modal-btn').addEventListener('click', () => {
+            document.getElementById('benefits-modal').classList.add('hidden');
+        });
     }
 
 
