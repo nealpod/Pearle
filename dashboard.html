@@ -140,7 +140,6 @@
     let allSales = [];
     let allProfiles = [];
     let allStores = [];
-    // MODIFIED: salesChart variable removed
     let dollarValueChart, unitCountChart;
 
     const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
@@ -215,12 +214,12 @@
         const salesMetrics = calculateSalesMetrics(filteredSales);
         
         renderCustomSummary(salesMetrics);
-        // MODIFIED: renderSalesChart call removed
         renderDollarValuePieChart(salesMetrics);
         renderUnitCountPieChart(salesMetrics);
         renderOpticianLeaderboard(filteredSales);
     }
 
+    // CORRECTED: This function now accurately calculates component values to prevent double-counting.
     function calculateSalesMetrics(sales) {
         const metrics = {
             totalSalesValue: 0, examCount: 0, examValue: 0,
@@ -233,26 +232,35 @@
             const details = sale.quote_details;
 
             if (details) {
-                let examValueInThisSale = 0;
-                if (details.exams && details.exams.length > 0) {
-                    examValueInThisSale = details.exams.reduce((sum, item) => sum + (item.price || 0), 0);
+                // This is an approximation as the final_cost of an exam is not stored.
+                // It uses the retail price, which is the best available data.
+                const examValueInThisSale = (details.exams && details.exams.length > 0)
+                    ? details.exams.reduce((sum, item) => sum + (item.price || 0), 0)
+                    : 0;
+                
+                if (examValueInThisSale > 0) {
                     metrics.examCount += details.exams.length;
                     metrics.examValue += examValueInThisSale;
                 }
 
                 if (details.type === 'Contacts') {
                     metrics.contactCount++;
+                    // The value of contacts is the transaction's final cost minus the exam value.
                     metrics.contactValue += (sale.final_cost || 0) - examValueInThisSale;
-                } else { 
-                    if (details.frame && details.frame.price > 0) {
+                } else { // Assumed to be a glasses sale
+                    const frameFinalCostInThisSale = details.frame?.finalCost || 0;
+                    if (frameFinalCostInThisSale > 0) {
                         metrics.frameCount++;
-                        metrics.frameValue += details.frame.finalCost || 0;
+                        metrics.frameValue += frameFinalCostInThisSale;
                     }
-                    const lensesAndAddonsValue = (details.lenses ? Object.values(details.lenses).reduce((sum, item) => sum + item.price, 0) : 0) + 
-                                                 (details.addOns ? details.addOns.reduce((sum, item) => sum + item.price, 0) : 0);
-                    if (lensesAndAddonsValue > 0) {
+                    
+                    // The value of lenses is the remainder of the transaction's final cost
+                    // after accounting for exams and the final frame cost.
+                    const lensValueInThisSale = (sale.final_cost || 0) - examValueInThisSale - frameFinalCostInThisSale;
+                    
+                    if (lensValueInThisSale > 0) {
                         metrics.lensCount++;
-                        metrics.lensValue += lensesAndAddonsValue;
+                        metrics.lensValue += lensValueInThisSale;
                     }
                 }
             }
@@ -297,8 +305,6 @@
         unitCountChart = renderPieChart('unit-count-chart', unitCountChart, labels, data);
     }
     
-    // MODIFIED: renderSalesChart function removed
-
     function renderOpticianLeaderboard(sales) {
         const opticianStats = sales.reduce((acc, sale) => {
             const id = sale.optician_id;
