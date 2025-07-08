@@ -113,10 +113,9 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="card lg:col-span-1"><h3 class="text-xl font-bold mb-4">Sales by $ Value</h3><canvas id="dollar-value-chart"></canvas></div>
-                <div class="card lg:col-span-1"><h3 class="text-xl font-bold mb-4">Sales by # Units</h3><canvas id="unit-count-chart"></canvas></div>
-                <div class="card lg:col-span-1"><canvas id="sales-over-time-chart"></canvas></div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="card"><h3 class="text-xl font-bold mb-4">Sales by $ Value</h3><canvas id="dollar-value-chart"></canvas></div>
+                <div class="card"><h3 class="text-xl font-bold mb-4">Sales by # Units</h3><canvas id="unit-count-chart"></canvas></div>
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -141,7 +140,8 @@
     let allSales = [];
     let allProfiles = [];
     let allStores = [];
-    let salesChart, dollarValueChart, unitCountChart;
+    // MODIFIED: salesChart variable removed
+    let dollarValueChart, unitCountChart;
 
     const formatCurrency = (amount) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
 
@@ -215,7 +215,7 @@
         const salesMetrics = calculateSalesMetrics(filteredSales);
         
         renderCustomSummary(salesMetrics);
-        renderSalesChart(filteredSales);
+        // MODIFIED: renderSalesChart call removed
         renderDollarValuePieChart(salesMetrics);
         renderUnitCountPieChart(salesMetrics);
         renderOpticianLeaderboard(filteredSales);
@@ -233,24 +233,26 @@
             const details = sale.quote_details;
 
             if (details) {
+                let examValueInThisSale = 0;
                 if (details.exams && details.exams.length > 0) {
+                    examValueInThisSale = details.exams.reduce((sum, item) => sum + (item.price || 0), 0);
                     metrics.examCount += details.exams.length;
-                    metrics.examValue += details.exams.reduce((sum, item) => sum + (item.price || 0), 0);
+                    metrics.examValue += examValueInThisSale;
                 }
 
                 if (details.type === 'Contacts') {
                     metrics.contactCount++;
-                    metrics.contactValue += sale.final_cost || 0;
-                } else {
+                    metrics.contactValue += (sale.final_cost || 0) - examValueInThisSale;
+                } else { 
                     if (details.frame && details.frame.price > 0) {
                         metrics.frameCount++;
                         metrics.frameValue += details.frame.finalCost || 0;
                     }
-                    const lensesAndAddons = (details.lenses ? Object.values(details.lenses).reduce((sum, item) => sum + item.price, 0) : 0) + 
-                                            (details.addOns ? details.addOns.reduce((sum, item) => sum + item.price, 0) : 0);
-                    if (lensesAndAddons > 0) {
+                    const lensesAndAddonsValue = (details.lenses ? Object.values(details.lenses).reduce((sum, item) => sum + item.price, 0) : 0) + 
+                                                 (details.addOns ? details.addOns.reduce((sum, item) => sum + item.price, 0) : 0);
+                    if (lensesAndAddonsValue > 0) {
                         metrics.lensCount++;
-                        metrics.lensValue += lensesAndAddons;
+                        metrics.lensValue += lensesAndAddonsValue;
                     }
                 }
             }
@@ -270,7 +272,7 @@
         document.getElementById('summary-contact-count').textContent = `${metrics.contactCount} units`;
     }
 
-    function renderPieChart(canvasId, chartInstance, labels, data, title) {
+    function renderPieChart(canvasId, chartInstance, labels, data) {
         const ctx = document.getElementById(canvasId).getContext('2d');
         if (chartInstance) chartInstance.destroy();
         return new Chart(ctx, {
@@ -295,28 +297,7 @@
         unitCountChart = renderPieChart('unit-count-chart', unitCountChart, labels, data);
     }
     
-    function renderSalesChart(sales) {
-        const ctx = document.getElementById('sales-over-time-chart').getContext('2d');
-        const salesByDate = sales.reduce((acc, sale) => {
-            const date = new Date(sale.created_at).toLocaleDateString();
-            acc[date] = (acc[date] || 0) + sale.final_cost;
-            return acc;
-        }, {});
-
-        if (salesChart) salesChart.destroy();
-        salesChart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: Object.keys(salesByDate).reverse(),
-                datasets: [{
-                    label: 'Daily Sales', data: Object.values(salesByDate).reverse(),
-                    borderColor: 'rgba(0, 122, 51, 1)', backgroundColor: 'rgba(0, 122, 51, 0.1)',
-                    fill: true, tension: 0.1
-                }]
-            },
-            options: { responsive: true, plugins: { legend: { display: false }, title: { display: true, text: 'Sales Over Time' } } }
-        });
-    }
+    // MODIFIED: renderSalesChart function removed
 
     function renderOpticianLeaderboard(sales) {
         const opticianStats = sales.reduce((acc, sale) => {
@@ -330,7 +311,7 @@
         const leaderboardData = Object.entries(opticianStats).map(([id, stats]) => {
             const profile = allProfiles.find(p => p.id === id);
             const store = allStores.find(s => s.id.toString() === stats.store_id.toString());
-            return { name: profile?.full_name || 'N/A', store: store?.name || 'N/A', ...stats };
+            return { name: profile?.full_name || 'N/A', store: store?.name || 'N/A', sales: stats.sales, count: stats.count };
         }).sort((a, b) => b.sales - a.sales);
 
         const tableBody = document.getElementById('optician-leaderboard-body');
@@ -338,7 +319,7 @@
             <tr class="border-b">
                 <td class="p-2 font-medium">${data.name}</td>
                 <td class="p-2 text-gray-600">${data.store}</td>
-                <td class="p-2 text-right font-semibold">${formatCurrency(data.totalSales)}</td>
+                <td class="p-2 text-right font-semibold">${formatCurrency(data.sales)}</td>
                 <td class="p-2 text-right">${data.count}</td>
             </tr>
         `).join('');
