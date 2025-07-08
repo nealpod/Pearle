@@ -34,13 +34,20 @@
         .kpi-value {
             color: var(--pearl-dark-green);
         }
+        /* Styles for the new summary */
+        .summary-grid-item {
+            border-right: 1px solid #e5e7eb; /* gray-200 */
+        }
+        .summary-grid-item:last-child {
+            border-right: none;
+        }
     </style>
 </head>
 <body class="text-gray-800">
 
     <header class="bg-white shadow-md p-4 flex justify-between items-center sticky top-0 z-20">
         <div>
-            <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" alt="Pearle Vision Logo" class="h-8">
+            <img src="https://1000logos.net/wp-content/uploads/2021/4/Pearle-Vision-logo.png" alt="Pearle Vision Logo" class="h-8">
         </div>
         <nav class="flex items-center space-x-4">
             <a href="./dashboard.html" class="text-sm font-bold text-pearl-green border-b-2 border-pearl-green">Dashboard</a>
@@ -54,7 +61,6 @@
 
     <main class="p-4 sm:p-6 lg:p-8">
         <div class="max-w-7xl mx-auto space-y-8">
-            <!-- Filters -->
             <div class="card">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -70,27 +76,46 @@
                         <label for="store-filter" class="block text-sm font-medium text-gray-700">Store</label>
                         <select id="store-filter" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-pearl-green focus:border-pearl-green sm:text-sm rounded-md">
                             <option value="all">All Stores</option>
-                            <!-- Store options will be populated by JS -->
-                        </select>
+                            </select>
                     </div>
                 </div>
             </div>
 
-            <!-- KPIs -->
+            <div id="custom-summary" class="card">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 text-center">
+                    <div class="summary-grid-item p-4">
+                        <h3 class="kpi-title text-sm font-medium uppercase tracking-wider">Total Sales</h3>
+                        <p id="summary-total-sales" class="text-3xl font-bold kpi-value mt-1">$0.00</p>
+                    </div>
+                    <div class="summary-grid-item p-4">
+                        <h3 class="kpi-title text-sm font-medium uppercase tracking-wider">Exams Sold</h3>
+                        <p id="summary-exam-value" class="text-3xl font-bold kpi-value mt-1">$0.00</p>
+                        <p id="summary-exam-count" class="text-sm text-gray-500 mt-1">0 units</p>
+                    </div>
+                    <div class="summary-grid-item p-4">
+                        <h3 class="kpi-title text-sm font-medium uppercase tracking-wider">Frames Sold</h3>
+                        <p id="summary-frame-value" class="text-3xl font-bold kpi-value mt-1">$0.00</p>
+                        <p id="summary-frame-count" class="text-sm text-gray-500 mt-1">0 units</p>
+                    </div>
+                    <div class="summary-grid-item p-4">
+                        <h3 class="kpi-title text-sm font-medium uppercase tracking-wider">Contact Sales</h3>
+                        <p id="summary-contact-value" class="text-3xl font-bold kpi-value mt-1">$0.00</p>
+                        <p id="summary-contact-count" class="text-sm text-gray-500 mt-1">0 units</p>
+                    </div>
+                </div>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="card kpi-card"><h3 class="kpi-title">Total Sales</h3><p id="kpi-total-sales" class="text-3xl font-bold kpi-value">$0.00</p></div>
                 <div class="card kpi-card"><h3 class="kpi-title">Total # of Sales</h3><p id="kpi-num-sales" class="text-3xl font-bold kpi-value">0</p></div>
                 <div class="card kpi-card"><h3 class="kpi-title">Average Sale Value</h3><p id="kpi-avg-sale" class="text-3xl font-bold kpi-value">$0.00</p></div>
                 <div class="card kpi-card"><h3 class="kpi-title">Insurance Savings</h3><p id="kpi-ins-savings" class="text-3xl font-bold kpi-value">$0.00</p></div>
             </div>
 
-            <!-- Charts -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="card"><canvas id="sales-over-time-chart"></canvas></div>
                 <div class="card"><canvas id="sales-by-category-chart"></canvas></div>
             </div>
 
-            <!-- Tables -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="card">
                     <h3 class="text-xl font-bold mb-4">Optician Leaderboard</h3>
@@ -181,16 +206,69 @@
                 pastDate.setDate(now.getDate() - days);
                 dateCondition = saleDate >= pastDate;
             }
-            const storeCondition = storeFilter === 'all' || sale.store_id === storeFilter;
+            const storeCondition = storeFilter === 'all' || sale.store_id.toString() === storeFilter;
             return dateCondition && storeCondition;
         });
 
         // --- Render Components ---
+        renderCustomSummary(filteredSales); // NEW function call
         renderKPIs(filteredSales);
         renderSalesChart(filteredSales);
         renderCategoryChart(filteredSales);
         renderOpticianLeaderboard(filteredSales);
         renderRecentSales(filteredSales);
+    }
+
+    // NEW: Function to render the custom summary
+    function renderCustomSummary(sales) {
+        let totalSalesValue = 0;
+        let examCount = 0;
+        let examValue = 0;
+        let frameCount = 0;
+        let frameValue = 0;
+        let contactCount = 0;
+        let contactValue = 0;
+
+        sales.forEach(sale => {
+            totalSalesValue += sale.final_cost || 0;
+            const details = sale.quote_details;
+
+            if (details) {
+                // Tally exams. Note: Exam value is only available from glasses sales due to current app logic.
+                if (details.exams && details.exams.length > 0) {
+                    examCount += details.exams.length;
+                    examValue += details.exams.reduce((sum, item) => sum + (item.price || 0), 0);
+                }
+
+                // Check sale type
+                if (details.type === 'Contacts') {
+                    contactCount++;
+                    // The value of the contact sale transaction
+                    contactValue += sale.final_cost || 0;
+                } else { // Assumes a glasses sale
+                    let currentFrameValue = 0;
+                    if (details.frame && details.frame.price > 0) {
+                        frameCount++;
+                        currentFrameValue += details.frame.finalCost || 0;
+                    }
+                    if (details.lenses) {
+                        currentFrameValue += Object.values(details.lenses).reduce((sum, item) => sum + item.price, 0);
+                    }
+                    if (details.addOns && details.addOns.length > 0) {
+                        currentFrameValue += details.addOns.reduce((sum, item) => sum + item.price, 0);
+                    }
+                    frameValue += currentFrameValue;
+                }
+            }
+        });
+
+        document.getElementById('summary-total-sales').textContent = formatCurrency(totalSalesValue);
+        document.getElementById('summary-exam-value').textContent = formatCurrency(examValue);
+        document.getElementById('summary-exam-count').textContent = `${examCount} units`;
+        document.getElementById('summary-frame-value').textContent = formatCurrency(frameValue);
+        document.getElementById('summary-frame-count').textContent = `${frameCount} units`;
+        document.getElementById('summary-contact-value').textContent = formatCurrency(contactValue);
+        document.getElementById('summary-contact-count').textContent = `${contactCount} units`;
     }
     
     function renderKPIs(sales) {
@@ -199,7 +277,8 @@
         const avgSale = numSales > 0 ? totalSales / numSales : 0;
         const insSavings = sales.reduce((sum, sale) => sum + (sale.insurance_savings || 0), 0);
 
-        document.getElementById('kpi-total-sales').textContent = formatCurrency(totalSales);
+        // This KPI is now in the main summary, so we can remove it or keep it for consistency
+        // document.getElementById('kpi-total-sales').textContent = formatCurrency(totalSales);
         document.getElementById('kpi-num-sales').textContent = numSales;
         document.getElementById('kpi-avg-sale').textContent = formatCurrency(avgSale);
         document.getElementById('kpi-ins-savings').textContent = formatCurrency(insSavings);
@@ -272,7 +351,7 @@
             },
             options: {
                 responsive: true,
-                plugins: { legend: { position: 'top' }, title: { display: true, text: 'Sales by Category' } }
+                plugins: { legend: { position: 'top' }, title: { display: true, text: 'Sales by Category (Glasses Only)' } }
             }
         });
     }
@@ -280,16 +359,17 @@
     function renderOpticianLeaderboard(sales) {
         const opticianStats = {};
         sales.forEach(sale => {
-            if (!opticianStats[sale.optician_id]) {
-                opticianStats[sale.optician_id] = { sales: 0, count: 0, store_id: sale.store_id };
+            const opticianId = sale.optician_id;
+            if (!opticianStats[opticianId]) {
+                opticianStats[opticianId] = { sales: 0, count: 0, store_id: sale.store_id };
             }
-            opticianStats[sale.optician_id].sales += sale.final_cost;
-            opticianStats[sale.optician_id].count++;
+            opticianStats[opticianId].sales += sale.final_cost;
+            opticianStats[opticianId].count++;
         });
 
         const leaderboardData = Object.entries(opticianStats).map(([id, stats]) => {
             const profile = allProfiles.find(p => p.id === id);
-            const store = allStores.find(s => s.id === stats.store_id);
+            const store = allStores.find(s => s.id.toString() === stats.store_id.toString());
             return {
                 name: profile ? profile.full_name : 'Unknown User',
                 store: store ? store.name : 'Unknown Store',
