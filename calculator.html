@@ -127,7 +127,6 @@
             <img src="https://1000logos.net/wp-content/uploads/2021/04/Pearle-Vision-logo.png" class="h-8" alt="Pearle Vision Logo" onerror="this.onerror=null;this.src='https://placehold.co/200x50/e2e8f0/4a5568?text=Pearle+Vision';">
         </div>
 
-        <!-- Calculator Toggle Button -->
         <div class="calculator-toggle">
             <button class="active" onclick="window.location.href='./calculator.html'">Glasses</button>
             <button onclick="window.location.href='./contacts.html'">Contacts</button>
@@ -183,8 +182,7 @@
                 <div id="exams-section-container" class="bg-white p-6 rounded-lg shadow">
                     <h3 class="text-xl font-semibold mb-4 border-b pb-2">Exams</h3>
                     <div id="exam-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <!-- Exam inputs will be dynamically inserted here -->
-                    </div>
+                        </div>
                 </div>
 
                 <div class="bg-white p-6 rounded-lg shadow">
@@ -203,7 +201,7 @@
                     </div>
                     
                     <div id="dynamic-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                </div>
+                    </div>
                 </div>
 
             </div>
@@ -235,7 +233,6 @@
                         <span id="summary-final-cost" class="text-2xl font-bold summary-total-final">$0.00</span>
                     </div>
 
-                    <!-- MODIFIED: Added Customer Approval Checkbox -->
                     <div class="mt-6 flex items-center justify-center">
                         <input id="customer-approval-checkbox" name="customer-approval" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500">
                         <label for="customer-approval-checkbox" class="ml-2 block text-sm text-gray-900"><span class="text-red-600 font-bold mr-1">*</span>I have reviewed the charges and approve this quote.</label>
@@ -250,6 +247,27 @@
         </div>
     </main>
 
+    <div id="success-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                    <svg class="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Success</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p id="success-modal-message" class="text-sm text-gray-500"></p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-success-modal-btn" class="px-4 py-2 bg-green-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="error-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
         <div class="relative top-20 mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
             <div class="mt-3 text-center">
@@ -258,7 +276,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                 </div>
-                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Invalid Price Calculation</h3>
+                <h3 class="text-lg leading-6 font-medium text-gray-900 mt-2">Error</h3>
                 <div class="mt-2 px-7 py-3">
                     <p id="error-modal-message" class="text-sm text-gray-500"></p>
                 </div>
@@ -290,7 +308,7 @@
     // --- AUTH & DATA FETCHING ---
 
     async function checkUser() {
-        const storeData = sessionStorage.getItem('selectedStore');
+        const storeData = localStorage.getItem('selectedStore'); // Using localStorage now
         if (!storeData) {
             window.location.href = './select-store.html';
             return;
@@ -338,7 +356,7 @@
     }
 
     logoutBtn.addEventListener('click', async () => {
-        sessionStorage.removeItem('selectedStore');
+        localStorage.removeItem('selectedStore'); // Using localStorage now
         await supabase.auth.signOut();
         window.location.href = './index.html';
     });
@@ -384,11 +402,15 @@
         }
     };
     
+    // MODIFIED: Added modal functions
+    function showSuccessModal(message) {
+        document.getElementById('success-modal-message').textContent = message;
+        document.getElementById('success-modal').classList.remove('hidden');
+    }
+
     function showErrorModal(message) {
-        const modal = document.getElementById('error-modal');
-        const modalMessage = document.getElementById('error-modal-message');
-        modalMessage.textContent = message;
-        modal.classList.remove('hidden');
+        document.getElementById('error-modal-message').textContent = message;
+        document.getElementById('error-modal').classList.remove('hidden');
     }
     
     function buildExamInputs() {
@@ -522,9 +544,6 @@
         });
 
         document.getElementById('add-addon-btn').addEventListener('click', addAddonRow);
-        document.getElementById('close-error-modal-btn').addEventListener('click', () => {
-             document.getElementById('error-modal').classList.add('hidden');
-        });
     }
 
     function addAddonRow() {
@@ -586,7 +605,6 @@
     }
 
     function attachEventListeners() {
-        // MODIFIED: Added approval checkbox to the selector
         document.querySelectorAll('.config-option, .config-input, #customer-approval-checkbox').forEach(el => {
             el.removeEventListener('input', updateCalculations);
             el.addEventListener('input', updateCalculations);
@@ -705,7 +723,6 @@
         const isSecondPair = (insuranceType === 'Second Pair');
         const isGlobalDiscountScenario = isNoInsurance || isSecondPair;
 
-        // MODIFIED: Check approval status to enable/disable save button
         const isApproved = document.getElementById('customer-approval-checkbox').checked;
         const saveQuoteBtn = document.getElementById('save-quote-button');
         saveQuoteBtn.disabled = !isApproved;
@@ -1146,7 +1163,6 @@
             }
         });
 
-        // MODIFIED: Uncheck the approval checkbox on reset
         document.getElementById('customer-approval-checkbox').checked = false;
 
         document.getElementById('addons-repeater-container').innerHTML = '';
@@ -1163,33 +1179,30 @@
     async function saveQuote() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user || !selectedStore) {
-            alert("Error: Not logged in or no store selected.");
+            showErrorModal("Error: Not logged in or no store selected.");
             return;
         }
 
         const customerName = document.getElementById('customer-name').value;
         if (!customerName) {
-            alert("Please enter a customer name before saving.");
+            showErrorModal("Please enter a customer name before saving.");
             return;
         }
 
-        // MODIFIED: Final check for approval before saving
         const isApproved = document.getElementById('customer-approval-checkbox').checked;
         if (!isApproved) {
-            alert("Please have the customer approve the quote by checking the box before saving.");
+            showErrorModal("Please have the customer approve the quote by checking the box before saving.");
             return;
         }
 
-        // Gather all selected items for the detailed quote
         const quoteDetails = {
             exams: [],
             frame: {},
             lenses: {},
             addOns: [],
-            customer_approved: isApproved // Log the approval state
+            customer_approved: isApproved
         };
 
-        // Get exam details
         examCategories.forEach(cat => {
             const checkbox = document.getElementById(`checkbox-${cat.id}`);
             const select = document.getElementById(`select-${cat.id}`);
@@ -1206,7 +1219,6 @@
             }
         });
 
-        // Get frame details
         const framePrice = getCleanValue('frame-retail-price');
         if (framePrice > 0) {
             quoteDetails.frame = {
@@ -1215,7 +1227,6 @@
             };
         }
 
-        // Get lens and add-on details
         categories.forEach(cat => {
             const catId = toId(cat.id);
             const checkbox = document.getElementById(`checkbox-${catId}`);
@@ -1246,7 +1257,6 @@
         });
 
 
-        // Prepare the data for insertion
         const saleData = {
             optician_id: user.id,
             store_id: selectedStore.id,
@@ -1257,14 +1267,14 @@
             quote_details: quoteDetails
         };
 
-        // Insert the data into the 'sales' table
         const { error } = await supabase.from('sales').insert([saleData]);
-
+        
+        // MODIFIED: Call correct modal based on result
         if (error) {
             console.error('Error saving quote:', error);
-            alert('There was an error saving the quote. Please try again.');
+            showErrorModal('There was an error saving the quote. Please try again.');
         } else {
-            alert('Quote saved successfully!');
+            showSuccessModal('Quote saved successfully!');
             resetCalculator();
         }
     }
@@ -1280,10 +1290,13 @@
         
         document.getElementById('insurance-type-select').addEventListener('change', updateCalculations);
 
+        // MODIFIED: Add event listeners for modal close buttons
+        document.getElementById('close-success-modal-btn').addEventListener('click', () => document.getElementById('success-modal').classList.add('hidden'));
+        document.getElementById('close-error-modal-btn').addEventListener('click', () => document.getElementById('error-modal').classList.add('hidden'));
+
         updateCalculations();
     }
 
-    // --- INITIALIZATION ---
     checkUser();
 </script>
 </body>
