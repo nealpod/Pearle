@@ -201,7 +201,7 @@
                     </div>
                     
                     <div id="dynamic-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    </div>
+                                </div>
                 </div>
 
             </div>
@@ -308,7 +308,7 @@
     // --- AUTH & DATA FETCHING ---
 
     async function checkUser() {
-        const storeData = localStorage.getItem('selectedStore'); // Using localStorage now
+        const storeData = sessionStorage.getItem('selectedStore');
         if (!storeData) {
             window.location.href = './select-store.html';
             return;
@@ -356,7 +356,7 @@
     }
 
     logoutBtn.addEventListener('click', async () => {
-        localStorage.removeItem('selectedStore'); // Using localStorage now
+        sessionStorage.removeItem('selectedStore');
         await supabase.auth.signOut();
         window.location.href = './index.html';
     });
@@ -544,6 +544,9 @@
         });
 
         document.getElementById('add-addon-btn').addEventListener('click', addAddonRow);
+        document.getElementById('close-error-modal-btn').addEventListener('click', () => {
+             document.getElementById('error-modal').classList.add('hidden');
+        });
     }
 
     function addAddonRow() {
@@ -605,6 +608,7 @@
     }
 
     function attachEventListeners() {
+        // MODIFIED: Added approval checkbox to the selector
         document.querySelectorAll('.config-option, .config-input, #customer-approval-checkbox').forEach(el => {
             el.removeEventListener('input', updateCalculations);
             el.addEventListener('input', updateCalculations);
@@ -1297,6 +1301,7 @@
         updateCalculations();
     }
 
+    // --- INITIALIZATION ---
     checkUser();
 </script>
 </body>
