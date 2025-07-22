@@ -1199,6 +1199,7 @@
             return;
         }
 
+        // --- Start of New Logic: Gather all data for the summary ---
         const quoteDetails = {
             exams: [],
             frame: {},
@@ -1259,7 +1260,7 @@
                 });
             }
         });
-
+        // --- End of New Logic ---
 
         const saleData = {
             optician_id: user.id,
@@ -1268,18 +1269,23 @@
             final_cost: parseFloat(document.getElementById('summary-final-cost').textContent.replace(/[$,]/g, '') || 0),
             total_retail: parseFloat(document.getElementById('summary-retail').textContent.replace(/[$,]/g, '') || 0),
             insurance_savings: parseFloat(document.getElementById('summary-ins-svgs').textContent.replace(/[$,]/g, '') || 0),
-            quote_details: quoteDetails
+            quote_details: quoteDetails // Use the detailed object here
         };
 
         const { error } = await supabase.from('sales').insert([saleData]);
         
-        // MODIFIED: Call correct modal based on result
         if (error) {
             console.error('Error saving quote:', error);
             showErrorModal('There was an error saving the quote. Please try again.');
         } else {
-            showSuccessModal('Quote saved successfully!');
-            resetCalculator();
+            // On success, save to sessionStorage and redirect
+            const summaryDataForPage = {
+                customerName: customerName,
+                finalCost: saleData.final_cost,
+                ...quoteDetails
+            };
+            sessionStorage.setItem('currentQuoteSummary', JSON.stringify(summaryDataForPage));
+            window.location.href = './quote-summary.html';
         }
     }
 
