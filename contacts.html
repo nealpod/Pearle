@@ -721,7 +721,7 @@
             lens_brand: lens.name,
             exams: [],
             vision_benefit: getCleanValue('vision-plan-benefit'),
-            customer_approved: isApproved // Log the approval state
+            customer_approved: isApproved
         };
         
         examCategories.forEach(cat => {
@@ -751,13 +751,21 @@
 
         const { error } = await supabase.from('sales').insert([saleData]);
         
-        // MODIFIED: Call correct modal based on result
         if (error) {
             console.error('Error saving quote:', error);
             showErrorModal('There was an error saving the quote. Please try again.');
         } else {
-            showSuccessModal('Quote saved successfully!');
-            resetCalculator();
+            // On success, save to sessionStorage and redirect
+            const supplyDurationMap = { '3m': '3-Month', '6m': '6-Month', 'annual': 'Annual' };
+            const summaryDataForPage = {
+                customerName: customerName,
+                finalCost: finalCost,
+                lensBrand: lens.name,
+                supplyDuration: supplyDurationMap[selectedSupply] || 'N/A',
+                exams: quoteDetails.exams
+            };
+            sessionStorage.setItem('currentContactQuoteSummary', JSON.stringify(summaryDataForPage));
+            window.location.href = './quote-summary-contacts.html';
         }
     }
 
