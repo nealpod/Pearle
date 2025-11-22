@@ -1,3 +1,7 @@
+Skip to content
+Chat history
+
+You said:
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -169,7 +173,7 @@
             accordionItem.className = 'border border-gray-200 rounded-md';
             
             const items = groupedByCategory[category];
-            const tableRows = items.map(item => `
+            const tableRows = items.map(item => 
                 <tr class="border-b hover:bg-gray-50 last:border-b-0">
                     <td class="p-2">${item.Item}</td>
                     <td class="p-2">${formatCurrency(item.Retail)}</td>
@@ -180,9 +184,9 @@
                         <button data-id="${item.id}" class="edit-btn text-sm text-blue-600 hover:underline">Edit</button>
                     </td>
                 </tr>
-            `).join('');
+            ).join('');
 
-            accordionItem.innerHTML = `
+            accordionItem.innerHTML = 
                 <button class="accordion-button w-full flex justify-between items-center p-4 bg-gray-50 hover:bg-gray-100 focus:outline-none">
                     <span class="font-bold text-lg text-gray-700">${category}</span>
                     <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -202,7 +206,7 @@
                         </tbody>
                     </table>
                 </div>
-            `;
+            ;
             componentsAccordionContainer.appendChild(accordionItem);
         });
     };
@@ -212,7 +216,7 @@
         userData.forEach(user => {
             const row = document.createElement('tr');
             row.className = 'border-b hover:bg-gray-50';
-            row.innerHTML = `
+            row.innerHTML = 
                 <td class="p-2">${user.full_name || 'N/A'}</td>
                 <td class="p-2">${user.email}</td>
                 <td class="p-2">${user.role ? user.role.charAt(0).toUpperCase() + user.role.slice(1) : 'N/A'}</td>
@@ -220,7 +224,7 @@
                     <button data-id="${user.id}" class="manage-stores-btn text-sm bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">Manage Stores</button>
                     <button data-id="${user.id}" class="remove-user-btn text-sm btn-danger px-2 py-1 rounded">Remove</button>
                 </td>
-            `;
+            ;
             usersTableBody.appendChild(row);
         });
     };
@@ -251,7 +255,7 @@
         const user = userData.find(u => u.id === userId);
         if (!user) return;
 
-        document.getElementById('store-modal-title').textContent = `Manage Assignments for ${user.full_name}`;
+        document.getElementById('store-modal-title').textContent = Manage Assignments for ${user.full_name};
         document.getElementById('assignment-optician-id').value = userId;
 
         const { data: assignments, error } = await supabase
@@ -268,12 +272,12 @@
         storeCheckboxContainer.innerHTML = '';
         allStores.forEach(store => {
             const isChecked = assignedStoreIds.includes(store.id);
-            storeCheckboxContainer.innerHTML += `
+            storeCheckboxContainer.innerHTML += 
                 <label class="flex items-center">
                     <input type="checkbox" value="${store.id}" class="h-4 w-4 text-pearl-green border-gray-300 rounded" ${isChecked ? 'checked' : ''}>
                     <span class="ml-2 text-gray-700">${store.name}</span>
                 </label>
-            `;
+            ;
         });
 
         storeAssignmentModal.classList.remove('hidden');
@@ -300,7 +304,7 @@
             return;
         }
         
-        document.getElementById('user-display').textContent = `Welcome, ${profile.full_name || user.email}`;
+        document.getElementById('user-display').textContent = Welcome, ${profile.full_name || user.email};
     }
 
     async function fetchData() {
@@ -378,7 +382,7 @@
         submitButton.textContent = 'Save';
 
         if (error) {
-            alert(`Error saving item: ${error.message}`);
+            alert(Error saving item: ${error.message});
         } else {
             alert('Item saved successfully!');
             await fetchData();
@@ -405,7 +409,7 @@
         submitButton.textContent = 'Create User';
 
         if (error) {
-            alert(`Error creating user: ${error.message}`);
+            alert(Error creating user: ${error.message});
         } else {
             alert('User created successfully!');
             await fetchData();
@@ -433,7 +437,7 @@
         submitButton.textContent = 'Save Assignments';
 
         if (error) {
-            alert(`Error updating assignments: ${error.message}`);
+            alert(Error updating assignments: ${error.message});
         } else {
             alert('Assignments updated successfully!');
             closeStoreAssignmentModal();
@@ -471,7 +475,7 @@
             });
 
             if (error) {
-                alert(`Error updating status: ${error.message}`);
+                alert(Error updating status: ${error.message});
                 checkbox.checked = !is_active;
             } else {
                 const itemInList = priceListData.find(item => item.id == id);
@@ -487,7 +491,7 @@
             const id = e.target.dataset.id;
             const userEmail = userData.find(u => u.id === id)?.email || 'this user';
             
-            if (confirm(`Are you sure you want to remove ${userEmail}? This action cannot be undone.`)) {
+            if (confirm(Are you sure you want to remove ${userEmail}? This action cannot be undone.)) {
                 e.target.disabled = true;
                 e.target.textContent = 'Removing...';
 
@@ -496,7 +500,7 @@
                 });
 
                 if (error) {
-                    alert(`Error deleting user: ${error.message}`);
+                    alert(Error deleting user: ${error.message});
                     e.target.disabled = false;
                     e.target.textContent = 'Remove';
                 } else {
@@ -514,3 +518,13 @@
 </script>
 </body>
 </html>
+why is my website so ass
+ChatGPT said:
+
+Thinking
+Answer now
+
+
+No file chosenNo file chosen
+ChatGPT can make mistakes. Check important info.
+ChatGPT is generating a response...
