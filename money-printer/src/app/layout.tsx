@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
-import { Montserrat } from "next/font/google"; // Import Montserrat
+import { Inter } from "next/font/google"; // Changed from Montserrat to Inter
 import "./globals.css";
 
-// Configure Montserrat (Proxima Nova alternative)
-const montserrat = Montserrat({
+// Configure Inter (The standard "Linear" look)
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"], // Load multiple weights for headings/body
-  variable: "--font-sans", // Bind to the standard sans variable
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -22,8 +21,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        // Apply the font variable to the body
-        className={`${montserrat.variable} antialiased font-sans`}
+        className={`${inter.variable} antialiased font-sans bg-black`}
       >
         {children}
       </body>
