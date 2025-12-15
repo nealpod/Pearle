@@ -1,5 +1,5 @@
 // CHANGE IS HERE: We added "@2" to lock the version
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 // These variables are hardcoded here (which is fine for the Anon key)
 const supabaseUrl = "https://eeyfzopydsgusqkvhsrr.supabase.co";
