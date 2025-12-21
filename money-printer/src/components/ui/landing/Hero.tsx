@@ -28,10 +28,10 @@ export function Hero() {
       {/* 2. GRADIENT COLORS (CSS Variables) */}
       <style jsx>{`
         #gradient-canvas {
-          --gradient-color-1: #020617; /* Deep Navy */
-          --gradient-color-2: #1e1b4b; /* Indigo */
-          --gradient-color-3: #1e293b; /* Slate */
-          --gradient-color-4: #0f172a; /* Dark Blue */
+          --gradient-color-4: #0f172a; /* Lifted Navy (Slate 950) */
+          --gradient-color-3: #3730a3; /* Vibrant Indigo (Indigo 800) */
+          --gradient-color-2: #475569; /* Brighter Slate (Slate 600) */
+          --gradient-color-1: #1e40af; /* Deep Royal Blue (Blue 800) */
           width: 100%;
           height: 100%;
         }
