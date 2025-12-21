@@ -51,7 +51,7 @@ export function InsuranceAPIs() {
     <section className="bg-black relative z-20 mt-4 mb-2 pb-20 pt-12 overflow-hidden">
       <div className="container mx-auto px-4 text-center mb-10">
         <p className="text-xs font-bold text-slate-300 uppercase tracking-[0.2em]">
-          Real-time integration with 1,000+ payers via pVerify
+          Real-time integration with 1,000+ payers
         </p>
       </div>
 
